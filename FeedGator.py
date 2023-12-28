@@ -1,6 +1,6 @@
 from Be import BApplication, BWindow, BView, BMenu,BMenuBar, BMenuItem, BSeparatorItem, BMessage, window_type, B_NOT_RESIZABLE, B_QUIT_ON_WINDOW_CLOSE
 from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, BScrollView, BRect, BBox, BFont, InterfaceDefs, BPath, BDirectory, BEntry
-from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView
+from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl
 from Be.GraphicsDefs import *
 from Be.Menu import menu_info,get_menu_info
 from Be.FindDirectory import *
@@ -11,12 +11,14 @@ from Be.ListView import list_view_type
 from Be.AppDefs import *
 from Be.Font import be_plain_font, be_bold_font
 from Be import AppDefs
+from Be.TextView import text_run, text_run_array
 #from Be.fs_attr import attr_info
 
 from Be import Entry
 from Be.Entry import entry_ref, get_ref_for_path
 
-import configparser,re,webbrowser, feedparser, struct, datetime
+#webbrowser,
+import configparser,re, feedparser, struct, datetime
 from threading import Thread
 
 Config=configparser.ConfigParser()
@@ -35,8 +37,10 @@ def ConfigSectionMap(section):
 
 def openlink(link):
 	global tab,name
-	webbrowser.get(name).open(link,tab,False)
-
+	osd=BUrl(link)
+	retu=osd.OpenWithPreferredApplication()
+	#webbrowser.get(name).open(link,tab,False)
+	print("risultato open with preferred application:",retu)
 
 def attr(node):
 	al = []
@@ -190,11 +194,61 @@ class PapersScrollView:
 
 	def listview(self):
 		return self.lv
+
+class AboutWindow(BWindow):
+	def __init__(self):
+		BWindow.__init__(self, BRect(100, 100, 650, 620),"About",window_type.B_FLOATING_WINDOW,B_NOT_RESIZABLE)
+		self.bckgnd = BView(self.Bounds(), "backgroundView", 8, 20000000)
+		bckgnd_bounds=self.bckgnd.Bounds()
+		self.AddChild(self.bckgnd,None)
+		self.box = BBox(bckgnd_bounds,"Underbox",0x0202|0x0404,border_style.B_FANCY_BORDER)
+		self.bckgnd.AddChild(self.box,None)
+		abrect=BRect(2,142, self.box.Bounds().Width()-2,self.box.Bounds().Height()-2)
+		inner_ab=BRect(4,4,abrect.Width()-4,abrect.Height()-4)
+		self.AboutText = BTextView(abrect, 'aBOUTTxTView', inner_ab , B_FOLLOW_NONE,2000000)
+		self.AboutText.MakeEditable(False)
+		self.AboutText.MakeSelectable(False)
+		stuff="FeedGator\nFeed our alligator with tasty newspapers!\n\nThis is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\n\nFeedGator is a reworked update of BGator that's why we start with version 1.90"
+		txtrun1=text_run()
+		txtrun1.offset=0
+		fon1=BFont(be_bold_font)
+		fon1.SetSize(48.0)
+		txtrun1.font=fon1
+		col1=rgb_color()
+		col1.red=0
+		col1.green=200
+		col1.blue=0
+		col1.alpha=200
+		txtrun1.color=col1
+		n=stuff.find("Feed our")
+		txtrun2=text_run()
+		txtrun2.offset=n
+		txtrun2.font=be_plain_font
+		col2=rgb_color()
+		col2.red=0
+		col2.green=0
+		col2.blue=0
+		col2.alpha=0
+		txtrun2.color=col2
+		arra=text_run_array()
+		arra.count=2
+		arra.runs[0]=txtrun1
+		arra.runs[1]=txtrun2
+		self.AboutText.SetText(stuff,arra)
+		self.box.AddChild(self.AboutText,None)
+
+	def MessageReceived(self, msg):
+		BWindow.MessageReceived(self, msg)
+
+	def FrameResized(self,x,y):
+		self.ResizeTo(550,520)
+	def QuitRequested(self):
+		self.Quit()
 		
 class AddFeedWindow(BWindow):
 	def __init__(self):
 		BWindow.__init__(self, BRect(150,150,500,300), "Add Feed Address", window_type.B_FLOATING_WINDOW,  B_NOT_RESIZABLE | B_QUIT_ON_WINDOW_CLOSE)#B_BORDERED_WINDOW B_FLOATING_WINDOW
-		self.bckgnd = BView(self.Bounds(), "background_View", 8, 20000000)
+		self.bckgnd = BView(self.Bounds(), "bckgnd_View", 8, 20000000)
 		bckgnd_bounds=self.bckgnd.Bounds()
 		self.AddChild(self.bckgnd,None)
 		self.box = BBox(bckgnd_bounds,"Underbox",0x0202|0x0404,border_style.B_FANCY_BORDER)
@@ -224,8 +278,8 @@ class AddFeedWindow(BWindow):
 		self.ResizeTo(350,150)
 	def QuitRequested(self):
 		self.Hide()
-		#self.Quit()
-		#return BWindow.QuitRequested(self)
+#		self.Quit()
+#		#return BWindow.QuitRequested(self)
 
 class GatorWindow(BWindow):
 	global tmpNitm,tmpPitm
@@ -238,7 +292,7 @@ class GatorWindow(BWindow):
 		)
 	def __init__(self):
 		global tab,name
-		BWindow.__init__(self, BRect(50,100,1024,750), "BGator is back", window_type.B_TITLED_WINDOW,  B_NOT_RESIZABLE | B_QUIT_ON_WINDOW_CLOSE)#B_MODAL_WINDOW
+		BWindow.__init__(self, BRect(50,100,1024,750), "Feed the Gator", window_type.B_TITLED_WINDOW,  B_NOT_RESIZABLE | B_QUIT_ON_WINDOW_CLOSE)#B_MODAL_WINDOW
 		bounds=self.Bounds()
 		self.bckgnd = BView(self.Bounds(), "background_View", 8, 20000000)
 		bckgnd_bounds=self.bckgnd.Bounds()
@@ -249,7 +303,6 @@ class GatorWindow(BWindow):
 		self.cres=0
 		perc=BPath()
 		find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-		perc.Path()
 		datapath=BDirectory(perc.Path()+"/BGator2")
 		ent=BEntry(datapath,perc.Path()+"/BGator2")
 		if not ent.Exists():
@@ -337,69 +390,7 @@ class GatorWindow(BWindow):
 		NewsPreView_bounds=self.outbox_preview.Bounds()
 		self.scroller=BScrollBar(BRect(NewsPreView_bounds.right-21,NewsPreView_bounds.top+1.2,NewsPreView_bounds.right-1.4,NewsPreView_bounds.bottom-1.6),'NewsPreView_ScrollBar',self.NewsPreView,0.0,0.0,orientation.B_VERTICAL)
 		self.outbox_preview.AddChild(self.scroller,None)
-		perc=BPath()
-		find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-		perc.Path()
-		datapath=BDirectory(perc.Path()+"/BGator2")
-		ent=BEntry(datapath,perc.Path()+"/BGator2")
-		#if not ent.Exists():
-		#	datapath.CreateDirectory(perc.Path()+"/BGator2", datapath)
-		ent.GetPath(perc)
-		confile=BPath(perc.Path()+'/config.ini',None,False)
-		ent=BEntry(confile.Path())
-		if ent.Exists():
-			Config.read(confile.Path())
-			try:
-				path=ConfigSectionMap("Browser")['path']
-				name=ConfigSectionMap("Browser")['name']
-				type=ConfigSectionMap("Browser")['type']
-				buleano=ConfigSectionMap("Browser")['newtab']
-				if buleano:
-					tab=2
-				else:
-					tab=1
-				tmpent=BEntry(path,False)
-				if tmpent.Exists():
-					if type=='Generic':
-						webbrowser.register(name,None,webbrowser.GenericBrowser(path))
-					elif type=='Mozilla':
-						webbrowser.register(name,None,webbrowser.Mozilla(path))
-					elif type=='Konqueror':
-						webbrowser.register(name,None,webbrowser.Konqueror(path)) # no pass path
-					elif type=='Opera':
-						webbrowser.register(name,None,webbrowser.Opera(path)) # no pass path
-			except:
-				find_directory(directory_which.B_SYSTEM_APPS_DIRECTORY,perc,False,None)
-				ent=BEntry(perc.Path()+"/WebPositive")
-				if ent.Exists():
-					cfgfile = open(confile.Path(),'w')
-					Config.add_section('Browser')
-					Config.set('Browser','path', perc.Path()+"/WebPositive")
-					Config.set('Browser','name', "WebPositive")
-					Config.set('Browser','type', "Generic")
-					Config.set('Browser','newtab', "True")
-					name="WebPositive"
-					tab=2
-					Config.write(cfgfile)
-					cfgfile.close()
-					Config.read(confile.Path())
-					webbrowser.register( "WebPositive",None,webbrowser.GenericBrowser(perc.Path()+"/WebPositive"))
-		else:
-			find_directory(directory_which.B_SYSTEM_APPS_DIRECTORY,perc,False,None)
-			ent=BEntry(perc.Path()+"/WebPositive")
-			if ent.Exists():
-				cfgfile = open(confile.Path(),'w')
-				Config.add_section('Browser')
-				Config.set('Browser','path', perc.Path()+"/WebPositive")
-				Config.set('Browser','name', "WebPositive")
-				Config.set('Browser','type', "Generic")
-				Config.set('Browser','newtab', "True")
-				name="WebPositive"
-				tab=2
-				Config.write(cfgfile)
-				cfgfile.close()
-				Config.read(confile.Path())
-				webbrowser.register( "WebPositive",None,webbrowser.GenericBrowser(perc.Path()+"/WebPositive"))
+
 		#fon=BFont()
 		#sameProperties=0
 		#colore=rgb_color()
@@ -493,7 +484,6 @@ class GatorWindow(BWindow):
 			#### check sort type
 			if self.set_savemenu:
 				marked=self.savemenu.FindMarked().Label()
-				print("marked is",marked)
 			curpaper=self.Paperlist.lv.ItemAt(self.Paperlist.lv.CurrentSelection())
 			x=curpaper.datapath.CountEntries()
 			if x>0:
@@ -613,6 +603,8 @@ class GatorWindow(BWindow):
 		elif msg.what == 3:
 			about = BAlert('awin', 'BGator v. 1.9.0 alpha preview by TmTFx', 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
 			about.Go()
+			about_window = AboutWindow()
+			about_window.Show()
 		elif msg.what == 2:
 			#remove feed and relative files and dir
 			cursel=self.Paperlist.lv.CurrentSelection()
