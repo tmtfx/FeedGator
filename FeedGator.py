@@ -1,6 +1,6 @@
 from Be import BApplication, BWindow, BView, BMenu,BMenuBar, BMenuItem, BSeparatorItem, BMessage, window_type, B_NOT_RESIZABLE, B_QUIT_ON_WINDOW_CLOSE
 from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, BScrollView, BRect, BBox, BFont, InterfaceDefs, BPath, BDirectory, BEntry
-from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl
+from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap
 from Be.GraphicsDefs import *
 from Be.Menu import menu_info,get_menu_info
 from Be.FindDirectory import *
@@ -235,8 +235,26 @@ class AboutWindow(BWindow):
 		arra.runs[0]=txtrun1
 		arra.runs[1]=txtrun2
 		self.AboutText.SetText(stuff,arra)
-		self.box.AddChild(self.AboutText,None)
-
+		#self.box.AddChild(self.AboutText,None)
+		img=BFile("/boot/home/Desktop/th-3300912898.bmp",0) #B_READ_ONLY
+		offset=0
+		offset_data,headdata,=img.ReadAt(10,4)
+		offset=struct.unpack("<I", offset_data)[0]
+		#img.Seek(10,SEEK_SET);
+		img.Seek(offset,0)
+		v,b = img.GetSize()
+		imgdata,sizeimg=img.Read(b-offset)
+		print(f"Offset dati immagine: {offset}")
+		print(f"Dati immagine: {imgdata}")
+		#img.Read(offset,sizeof(uint32_t))
+		#img.Seek(offset,SEEK_SET
+		#bitmhead=img.ReadAt(10,4)
+		#print(bitmhead)
+		a=BBitmap(self.box.Bounds(),color_space.B_RGBA32)
+		k=a.Bits()
+		a.SetBits(imgdata)
+		print(k)
+		#self.box.DrawBitmap(a,self.box.Bounds())
 	def MessageReceived(self, msg):
 		BWindow.MessageReceived(self, msg)
 
