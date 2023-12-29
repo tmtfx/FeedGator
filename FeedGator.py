@@ -195,6 +195,18 @@ class PapersScrollView:
 	def listview(self):
 		return self.lv
 
+
+class PBox(BBox):
+	def __init__(self,frame,name,immagine):
+		self.immagine = immagine
+		self.frame = frame
+		BBox.__init__(self,frame,name,0x0202|0x0404,InterfaceDefs.border_style.B_FANCY_BORDER)
+		
+	def Draw(self,rect):
+		BBox.Draw(self, rect)
+		inset = BRect(4, 4, self.frame.Width()-4, self.frame.Height()-4)
+		self.DrawBitmap(self.immagine, inset)
+		
 class AboutWindow(BWindow):
 	def __init__(self):
 		BWindow.__init__(self, BRect(100, 100, 650, 620),"About",window_type.B_FLOATING_WINDOW,B_NOT_RESIZABLE)
@@ -235,26 +247,39 @@ class AboutWindow(BWindow):
 		arra.runs[0]=txtrun1
 		arra.runs[1]=txtrun2
 		self.AboutText.SetText(stuff,arra)
-		#self.box.AddChild(self.AboutText,None)
-		img=BFile("/boot/home/Desktop/th-3300912898.bmp",0) #B_READ_ONLY
-		offset=0
-		offset_data,headdata,=img.ReadAt(10,4)
-		offset=struct.unpack("<I", offset_data)[0]
-		#img.Seek(10,SEEK_SET);
-		img.Seek(offset,0)
-		v,b = img.GetSize()
-		imgdata,sizeimg=img.Read(b-offset)
-		print(f"Offset dati immagine: {offset}")
-		print(f"Dati immagine: {imgdata}")
-		#img.Read(offset,sizeof(uint32_t))
-		#img.Seek(offset,SEEK_SET
-		#bitmhead=img.ReadAt(10,4)
-		#print(bitmhead)
-		a=BBitmap(self.box.Bounds(),color_space.B_RGBA32)
-		k=a.Bits()
-		a.SetBits(imgdata)
-		print(k)
-		#self.box.DrawBitmap(a,self.box.Bounds())
+		self.box.AddChild(self.AboutText,None)
+#		img=BFile("/boot/home/Desktop/nuzgator5.bmp",0) #B_READ_ONLY
+#		offset=0
+#		offset_data,headdata,=img.ReadAt(10,4)
+#		offset=struct.unpack("<I", offset_data)[0]
+#		#img.Seek(10,SEEK_SET);
+#		img.Seek(14,0)
+#		img.Seek(offset,0)
+#		v,b = img.GetSize()
+#		imgdata,sizeimg=img.Read(b-offset)
+#		#print(f"Offset dati immagine: {offset}")
+#		#print(f"Dati immagine: {imgdata}")
+#		#print(sizeimg)
+#		#img.Read(offset,sizeof(uint32_t))
+#		#img.Seek(offset,SEEK_SET
+#		#bitmhead=img.ReadAt(10,4)
+#		#print(bitmhead)
+#		a=BBitmap(self.box.Bounds(),color_space.B_RGBA32)
+#		#k=a.Bits()
+#		#l=a.BitsLength()
+#		#print(len(imgdata),a.BitsLength())
+#		#print(sizeimg)
+#		#a.SetBits(imgdata,sizeimg,0,color_space.B_RGBA32)
+#		#print(a.Bits())
+#		if len(imgdata)> a.BitsLength():
+#			img_data=imgdata[:a.BitsLength()]
+#			print(len(img_data),a.BitsLength())
+#			a.SetBits(img_data,a.BitsLength(),0,color_space.B_RGBA32)
+#		else:
+#			a.SetBits(imgdata,a.BitsLength(),0,color_space.B_RGBA32)
+#		#print(k)
+#		pictview=PBox(bckgnd_bounds,"mybitmap",a)
+#		self.bckgnd.AddChild(pictview,None)
 	def MessageReceived(self, msg):
 		BWindow.MessageReceived(self, msg)
 
@@ -305,7 +330,7 @@ class GatorWindow(BWindow):
 	tmpNitm=[]
 	tmpWind=[]
 	Menus = (
-		('File', ((1, 'Add Paper'),(2, 'Remove Paper'),(None, None),(int(AppDefs.B_QUIT_REQUESTED), 'Quit'))),('News', ((6, 'Get News'),(4, 'Mark all as read'),(5, '(Clear news)'))),('Sort', ((40, 'By Name'),(41, 'By Unread'),(42, '(By Date)'))),
+		('File', ((1, 'Add Paper'),(2, 'Remove Paper'),(None, None),(int(AppDefs.B_QUIT_REQUESTED), 'Quit'))),('News', ((6, 'Get News'),(4, 'Mark all as read'),(5, '(Clear news)'))),('Sort', ((40, 'By Name'),(41, 'By Unread'),(42, 'By Date'))),
 		('Help', ((8, 'Help'),(3, 'About')))
 		)
 	def __init__(self):
@@ -537,10 +562,28 @@ class GatorWindow(BWindow):
 							self.NewsItemConstructor(item)
 						
 					if marked == "By Date": # TODO
+						getlist=[]
+						orderedlist=[]
+						
 						while not rit:
 							itmEntry=BEntry()
 							rit=curpaper.datapath.GetNextEntry(itmEntry)
-							self.NewsItemConstructor(itmEntry)
+							nf = BNode(itmEntry)
+							attributes = attr(nf)
+							gotdate = False
+							for element in attributes:
+								if element[0] == "published":
+									published = element[2][0]
+									print(type(published),published)
+									gotdate = True
+							if not gotdate:
+								#fetch filesystem date info
+								published=datetime.datetime.now()
+								#TODO
+							getlist.append((itmEntry, published))
+						orderedlist = sorted(getlist, key=lambda x: x[1])
+						for item in orderedlist:
+							self.NewsItemConstructor(item[0])
 				else:
 					while not rit:
 						itmEntry=BEntry()
