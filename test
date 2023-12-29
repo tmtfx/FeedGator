@@ -1,0 +1,31 @@
+#include <iostream>
+#include <Application.h>
+#include <File.h>
+#include <Entry.h>
+
+int main() {
+    BApplication app("application/x-vnd.example-app");
+    
+    BEntry entry("/path/to/your/file");
+    
+    if (entry.Exists()) {
+        BFile file(&entry, B_READ_ONLY);
+        status_t result = file.InitCheck();
+        
+        if (result == B_OK) {
+            // Ottieni le informazioni sul file
+            stat_beos fileStat;
+            file.GetStat(&fileStat);
+            
+            // Stampa la data e l'ora di creazione e modifica del file
+            std::cout << "Data di creazione: " << ctime(&fileStat.st_crtime) << std::endl;
+            std::cout << "Ultima modifica: " << ctime(&fileStat.st_mtime) << std::endl;
+        } else {
+            std::cerr << "Errore nell'apertura del file: " << strerror(result) << std::endl;
+        }
+    } else {
+        std::cerr << "Il file non esiste." << std::endl;
+    }
+    
+    return 0;
+}
