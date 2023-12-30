@@ -18,7 +18,7 @@ from Be import Entry
 from Be.Entry import entry_ref, get_ref_for_path
 
 #webbrowser,
-import configparser,re, os, feedparser, struct, datetime
+import configparser,re, os, feedparser, struct, datetime, subprocess
 from threading import Thread
 
 Config=configparser.ConfigParser()
@@ -358,7 +358,7 @@ class GatorWindow(BWindow):
 			try:
 				sort=ConfigSectionMap("General")['sort']
 			except:
-				print("no sezione, scrivo sort 1")
+				#no section
 				cfgfile = open(confile.Path(),'w')
 				Config.add_section('General')
 				Config.set('General','sort', "1")
@@ -367,7 +367,7 @@ class GatorWindow(BWindow):
 				cfgfile.close()
 				Config.read(confile.Path())
 		else:
-			print("no file, scrivo sort 1")
+			#no file
 			cfgfile = open(confile.Path(),'w')
 			Config.add_section('General')
 			Config.set('General','sort', "1")
@@ -575,7 +575,6 @@ class GatorWindow(BWindow):
 							for element in attributes:
 								if element[0] == "published":
 									published = element[2][0]
-									print(type(published),published)
 									gotdate = True
 							if not gotdate:
 								#fetch filesystem date info
@@ -591,7 +590,7 @@ class GatorWindow(BWindow):
 								#published=datetime.datetime.now()
 								#TODO
 							getlist.append((itmEntry, published))
-						orderedlist = sorted(getlist, key=lambda x: x[1])
+						orderedlist = sorted(getlist, key=lambda x: x[1], reverse=True)
 						for item in orderedlist:
 							self.NewsItemConstructor(item[0])
 				else:
@@ -616,50 +615,53 @@ class GatorWindow(BWindow):
 #							self.NewsItemConstructor(itmEntry)
 
 	def NewsItemConstructor(self,entry):
-		nf = BNode(entry)
-		attributes = attr(nf)
-		addnews = False
-		blink = False
-		bunread = False
-		btitle = False
-		for element in attributes:
-			if element[0] == "link":
-					link = element[2][0]
-					blink = True
-			if element[0] == "Unread":
-					unread = element[2][0]
-					bunread = True
-			if element[0] == "title":
-					title = element[2][0]
-					btitle = True
-
-		try:
-			type(link)
-			type(unread)
-			type(title)
-			
-			addnews=True
-		except:
-			print("unconsistent news")
-			
-		
-		if addnews:
-			consist=True
-			tmpNitm.append(NewsItem(title,entry,link,unread,consist))
-			self.NewsList.lv.AddItem(tmpNitm[-1])
-		else:
-			consist=False
-			if not blink:
-				link = ""
-			if not bunread:
-				unread = False
-			if not btitle:
-				if link == "":
-					title = "No Title and no link"
+		if entry.Exists():
+			nf = BNode(entry)
+			attributes = attr(nf)
+			addnews = False
+			blink = False
+			bunread = False
+			btitle = False
+			for element in attributes:
+				if element[0] == "link":
+						link = element[2][0]
+						blink = True
+				if element[0] == "Unread":
+						unread = element[2][0]
+						bunread = True
+				if element[0] == "title":
+						title = element[2][0]
+						btitle = True
+			try:
+				type(link)
+				type(unread)
+				type(title)			
+				addnews=True
+			except:
+				print("provo getname")
+				stato,charro=entry.GetName()
+				if stato:
+					print("stato true unconsistent news for "+charro)
 				else:
-					title = link
-			tmpNitm.append(NewsItem(title,entry,link,unread,consist))
-			self.NewsList.lv.AddItem(tmpNitm[-1])
+					print("stato false unconsistent news for "+charro)
+		
+			if addnews:
+				consist=True
+				tmpNitm.append(NewsItem(title,entry,link,unread,consist))
+				self.NewsList.lv.AddItem(tmpNitm[-1])
+			else:
+				consist=False
+				if not blink:
+					link = ""
+				if not bunread:
+					unread = False
+				if not btitle:
+					if link == "":
+						title = "No Title and no link"
+					else:
+						title = link
+				tmpNitm.append(NewsItem(title,entry,link,unread,consist))
+				self.NewsList.lv.AddItem(tmpNitm[-1])
 			
 	def MessageReceived(self, msg):
 		if msg.what == 8:
@@ -729,6 +731,9 @@ class GatorWindow(BWindow):
 			menuitm.SetMarked(0)
 			menuitm=self.savemenu.FindItem(42)
 			menuitm.SetMarked(0)
+			tmpindex=self.Paperlist.lv.CurrentSelection()
+			self.Paperlist.lv.DeselectAll()
+			self.Paperlist.lv.Select(tmpindex)
 		elif msg.what == 41:
 			#TODO snellire Sort By Unread
 			perc=BPath()
@@ -752,6 +757,9 @@ class GatorWindow(BWindow):
 			menuitm.SetMarked(1)
 			menuitm=self.savemenu.FindItem(42)
 			menuitm.SetMarked(0)
+			tmpindex=self.Paperlist.lv.CurrentSelection()
+			self.Paperlist.lv.DeselectAll()
+			self.Paperlist.lv.Select(tmpindex)
 		elif msg.what == 42:
 			#TODO snellire Sort By Date
 			perc=BPath()
@@ -775,6 +783,9 @@ class GatorWindow(BWindow):
 			menuitm.SetMarked(0)
 			menuitm=self.savemenu.FindItem(42)
 			menuitm.SetMarked(1)
+			tmpindex=self.Paperlist.lv.CurrentSelection()
+			self.Paperlist.lv.DeselectAll()
+			self.Paperlist.lv.Select(tmpindex)
 		elif msg.what == self.Paperlist.PaperSelection:
 			#Paper selection
 			self.NewsList.lv.MakeEmpty()
@@ -890,8 +901,9 @@ class GatorWindow(BWindow):
 			curit=self.Paperlist.lv.CurrentSelection()
 			if curit>-1:
 				ittp=self.Paperlist.lv.ItemAt(curit)
-				print(ittp.address)
-			print("window with details and eventually per paper settings or open tracker at its path") #like pulse specified update 
+				print("indirizzo",ittp.address)
+				subprocess.run(["open",ittp.path.Path()])
+			#print("window with details and eventually per paper settings or open tracker at its path") #like pulse specified update 
 		
 		elif msg.what == 1:
 			#open add feed window
