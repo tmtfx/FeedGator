@@ -18,7 +18,7 @@ from Be import Entry
 from Be.Entry import entry_ref, get_ref_for_path
 
 #webbrowser,
-import configparser,re, feedparser, struct, datetime
+import configparser,re, os, feedparser, struct, datetime
 from threading import Thread
 
 Config=configparser.ConfigParser()
@@ -562,6 +562,7 @@ class GatorWindow(BWindow):
 							self.NewsItemConstructor(item)
 						
 					if marked == "By Date": # TODO
+						from Be import stat
 						getlist=[]
 						orderedlist=[]
 						
@@ -578,7 +579,16 @@ class GatorWindow(BWindow):
 									gotdate = True
 							if not gotdate:
 								#fetch filesystem date info
-								published=datetime.datetime.now()
+								tmpPath=BPath()
+								rt = itmEntry.GetPath(tmpPath)
+								if not rt:
+									st=os.stat(tmpPath.Path())
+									published=datetime.datetime.fromtimestamp(st.st_mtime)
+									#print(datetime_mtime)
+								#st = stat()
+								#itmEntry.GetStat(st)
+								#print(st)
+								#published=datetime.datetime.now()
 								#TODO
 							getlist.append((itmEntry, published))
 						orderedlist = sorted(getlist, key=lambda x: x[1])
