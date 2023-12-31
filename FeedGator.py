@@ -178,12 +178,30 @@ class NewsScrollView:
 
 	def listview(self):
 		return self.lv
+	
+#class PaperListView(BListView):
+#	def __init__(self, frame, name, type = list_view_type.B_SINGLE_SELECTION_LIST):#, resizingMode = B_FOLLOW_NONE , flags = 26000000):
+#		BListView.__init__(self, frame, name, type)#, resizingMode, flags)
+#	def KeyDown(self,bytes,numBytes):
+#		print("keydown")
+#		message=BMessage(B_KEY_DOWN)
+#		ads=bytes.encode('utf-8')
+#		message.AddData("bytes",TypeConstants.B_RAW_TYPE,ads,numBytes,True,1)
+#		modifiers=0
+#		message.PrintToStream()
+#		if message.FindUInt32("modifiers", modifiers) == 0:
+#			print("modifiers",modifiers)
+#			shiftPressed = (modifiers & B_SHIFT_KEY) != 0
+#			if shiftPressed:
+#				print("Shift è premuto")
+#		return BListView.KeyDown(self,bytes,numBytes)
 
 class PapersScrollView:
 	HiWhat = 33 #Doppioclick
 	PaperSelection = 101
 
 	def __init__(self, rect, name):
+		#self.lv = PaperListView(rect, name, list_view_type.B_SINGLE_SELECTION_LIST)
 		self.lv = BListView(rect, name, list_view_type.B_SINGLE_SELECTION_LIST)
 		self.lv.SetSelectionMessage(BMessage(self.PaperSelection))
 		self.lv.SetInvocationMessage(BMessage(self.HiWhat))
@@ -329,6 +347,7 @@ class GatorWindow(BWindow):
 	tmpPitm=[]
 	tmpNitm=[]
 	tmpWind=[]
+	shiftok=False
 	Menus = (
 		('File', ((1, 'Add Paper'),(2, 'Remove Paper'),(None, None),(int(AppDefs.B_QUIT_REQUESTED), 'Quit'))),('News', ((6, 'Get News'),(4, 'Mark all as read'),(5, '(Clear news)'))),('Sort', ((40, 'By Name'),(41, 'By Unread'),(42, 'By Date'))),
 		('Help', ((8, 'Help'),(3, 'About')))
@@ -467,6 +486,7 @@ class GatorWindow(BWindow):
 		self.bckgnd.AddChild(self.box, None)
 		
 		self.UpdatePapers()
+		
 		
 	def ClearNewsList(self):
 			self.NewsList.lv.DeselectAll()
@@ -616,6 +636,8 @@ class GatorWindow(BWindow):
 
 	def NewsItemConstructor(self,entry):
 		if entry.Exists():
+			stato,charro = entry.GetName()
+			print(charro)
 			nf = BNode(entry)
 			attributes = attr(nf)
 			addnews = False
@@ -664,7 +686,11 @@ class GatorWindow(BWindow):
 				self.NewsList.lv.AddItem(tmpNitm[-1])
 			
 	def MessageReceived(self, msg):
-		if msg.what == 8:
+		if msg.what == system_message_code.B_MODIFIERS_CHANGED:
+			value=msg.FindInt32("modifiers")
+			self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
+
+		elif msg.what == 8:
 			ask = BAlert('Whoa!', 'Are you sure you need help?', 'Yes','No', None, InterfaceDefs.B_WIDTH_AS_USUAL, alert_type.B_IDEA_ALERT)
 			answ=ask.Go()
 			if answ==0:
@@ -900,9 +926,11 @@ class GatorWindow(BWindow):
 		elif msg.what == self.Paperlist.HiWhat: #TODO
 			curit=self.Paperlist.lv.CurrentSelection()
 			if curit>-1:
-				ittp=self.Paperlist.lv.ItemAt(curit)
-				print("indirizzo",ittp.address)
-				subprocess.run(["open",ittp.path.Path()])
+				if self.shiftok:
+					print("apro finestra dettagli")
+				else:
+					ittp=self.Paperlist.lv.ItemAt(curit)
+					subprocess.run(["open",ittp.path.Path()])
 			#print("window with details and eventually per paper settings or open tracker at its path") #like pulse specified update 
 		
 		elif msg.what == 1:
