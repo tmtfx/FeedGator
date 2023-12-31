@@ -1,4 +1,4 @@
-from Be import BApplication, BWindow, BView, BMenu,BMenuBar, BMenuItem, BSeparatorItem, BMessage, window_type, B_NOT_RESIZABLE, B_QUIT_ON_WINDOW_CLOSE
+from Be import BApplication, BWindow, BView, BMenu,BMenuBar, BMenuItem, BSeparatorItem, BMessage, window_type, B_NOT_RESIZABLE, B_CLOSE_ON_ESCAPE, B_QUIT_ON_WINDOW_CLOSE
 from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, BScrollView, BRect, BBox, BFont, InterfaceDefs, BPath, BDirectory, BEntry
 from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap
 from Be.GraphicsDefs import *
@@ -302,13 +302,80 @@ class AboutWindow(BWindow):
 		BWindow.MessageReceived(self, msg)
 
 	def FrameResized(self,x,y):
+		print("passing through here")
 		self.ResizeTo(550,520)
+
 	def QuitRequested(self):
 		self.Quit()
 		
+class PapDetails(BWindow):
+	def __init__(self,item):
+		BWindow.__init__(self, BRect(400,150,800,450), item.name, window_type.B_FLOATING_WINDOW,  B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)
+		self.bckgnd = BView(self.Bounds(), "bckgnd_View", 8, 20000000)
+		bckgnd_bounds=self.bckgnd.Bounds()
+		self.AddChild(self.bckgnd,None)
+		self.box = BBox(bckgnd_bounds,"Underbox",0x0202|0x0404,border_style.B_FANCY_BORDER)
+		self.bckgnd.AddChild(self.box,None)
+		self.listitem=item
+
+		fon=BFont()
+		font_height_value=font_height()
+		fon.GetHeight(font_height_value)
+		desc1="Paper Name:"
+		self.desc1=BStringView(BRect(5,5,fon.StringWidth(desc1)+5,font_height_value.ascent+5),"desc1",desc1)
+		self.box.AddChild(self.desc1,None)
+		desc1_bounds=self.desc1.Frame()
+		######
+		risp1=item.name
+		self.risp1=BStringView(BRect(15,desc1_bounds.bottom+5,fon.StringWidth(risp1)+15,desc1_bounds.bottom+font_height_value.ascent+5),"risp1",risp1)
+		self.box.AddChild(self.risp1,None)
+		risp1_bounds=self.risp1.Frame()
+		###########################
+		desc2="Paper path on disk:"
+		self.desc2=BStringView(BRect(5,15+risp1_bounds.bottom,fon.StringWidth(desc2)+5,risp1_bounds.bottom + font_height_value.ascent+15),"desc2",desc2)
+		self.box.AddChild(self.desc2,None)
+		desc2_bounds=self.desc2.Frame()
+		######
+		risp2=item.path.Path()
+		#self.risp2=BStringView(BRect(15,desc2_bounds.bottom+5,fon.StringWidth(risp2)+15,desc2_bounds.bottom+font_height_value.ascent+5),"risp2",risp2)
+		self.risp2=BTextControl(BRect(15,desc2_bounds.bottom+5,bckgnd_bounds.right-15,desc2_bounds.bottom+font_height_value.ascent+5),"risp2",None,risp2,BMessage(152))
+		# questo non funziona
+		#a=self.risp2.TextView()
+		#l=a.TextLength()-10
+		#print(l,"<- mi posiziono qui")
+		#a.Select(l,l)
+		#a.ScrollToSelection()
+		self.box.AddChild(self.risp2,None)
+		risp2_bounds=self.risp2.Frame()
+		###########################
+		desc3="Feed address:"
+		self.desc3=BStringView(BRect(5,15+risp2_bounds.bottom,fon.StringWidth(desc3)+5,risp2_bounds.bottom + font_height_value.ascent+15),"desc3",desc3)
+		self.box.AddChild(self.desc3,None)
+		desc3_bounds=self.desc3.Frame()
+		######
+		risp3=item.address
+		#self.risp3=BStringView(BRect(15,desc3_bounds.bottom+5,fon.StringWidth(risp3)+15,desc3_bounds.bottom+font_height_value.ascent+5),"risp3",risp3)
+		self.risp3=BTextControl(BRect(15,desc3_bounds.bottom+5,bckgnd_bounds.right-15,desc3_bounds.bottom+font_height_value.ascent+5),"risp3",None,risp3,BMessage(153))
+		self.box.AddChild(self.risp3,None)
+		risp3_bounds=self.risp3.Frame()
+		###########################
+		desc4="Number of news(files) on disk:"
+		self.desc4=BStringView(BRect(5,15+risp3_bounds.bottom,fon.StringWidth(desc4)+5,risp3_bounds.bottom + font_height_value.ascent+15),"desc4",desc4)
+		self.box.AddChild(self.desc4,None)
+		desc4_bounds=self.desc4.Frame()
+		######
+		risp4=str(item.newscount)
+		self.risp4=BStringView(BRect(15,desc4_bounds.bottom+5,fon.StringWidth(risp4)+15,desc4_bounds.bottom+font_height_value.ascent+5),"risp4",risp4)
+		self.box.AddChild(self.risp4,None)
+		#risp4_bounds=self.risp4.Frame()
+		
+
+	def FrameResized(self,x,y):
+		self.ResizeTo(400,300)
+
 class AddFeedWindow(BWindow):
 	def __init__(self):
-		BWindow.__init__(self, BRect(150,150,500,300), "Add Feed Address", window_type.B_FLOATING_WINDOW,  B_NOT_RESIZABLE | B_QUIT_ON_WINDOW_CLOSE)#B_BORDERED_WINDOW B_FLOATING_WINDOW
+		BWindow.__init__(self, BRect(150,150,500,300), "Add Feed Address", window_type.B_FLOATING_WINDOW,  B_NOT_RESIZABLE | B_CLOSE_ON_ESCAPE)#B_QUIT_ON_WINDOW_CLOSE)#B_BORDERED_WINDOW B_FLOATING_WINDOW
 		self.bckgnd = BView(self.Bounds(), "bckgnd_View", 8, 20000000)
 		bckgnd_bounds=self.bckgnd.Bounds()
 		self.AddChild(self.bckgnd,None)
@@ -347,6 +414,7 @@ class GatorWindow(BWindow):
 	tmpPitm=[]
 	tmpNitm=[]
 	tmpWind=[]
+	papdetW=[]
 	shiftok=False
 	Menus = (
 		('File', ((1, 'Add Paper'),(2, 'Remove Paper'),(None, None),(int(AppDefs.B_QUIT_REQUESTED), 'Quit'))),('News', ((6, 'Get News'),(4, 'Mark all as read'),(5, '(Clear news)'))),('Sort', ((40, 'By Name'),(41, 'By Unread'),(42, 'By Date'))),
@@ -700,7 +768,7 @@ class GatorWindow(BWindow):
 				risp = BAlert('lol', 'If you think so...', 'Poor me', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
 				risp.Go()
 		elif msg.what == 3:
-			about = BAlert('awin', 'BGator v. 1.9.0 alpha preview by TmTFx', 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
+			about = BAlert('awin', 'BGator v. 1.9.1 alpha preview by TmTFx', 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
 			about.Go()
 			about_window = AboutWindow()
 			about_window.Show()
@@ -928,6 +996,11 @@ class GatorWindow(BWindow):
 			if curit>-1:
 				if self.shiftok:
 					print("apro finestra dettagli")
+					#global fin #<- this is needed because his FrameResized will not be executed
+					#fin=PapDetails()
+					#fin.Show()
+					self.papdetW.append(PapDetails(self.Paperlist.lv.ItemAt(curit)))
+					self.papdetW[-1].Show()
 				else:
 					ittp=self.Paperlist.lv.ItemAt(curit)
 					subprocess.run(["open",ittp.path.Path()])
@@ -1088,9 +1161,14 @@ class GatorWindow(BWindow):
 	def QuitRequested(self):
 		wnum = be_app.CountWindows()
 		if wnum>1:
-			for wind in self.tmpWind:
-				wind.Lock()
-				wind.Quit()
+			if len(self.tmpWind)>0:
+				for wind in self.tmpWind:
+					wind.Lock()
+					wind.Quit()
+			if len(self.papdetW)>0:
+				for papw in self.papdetW:
+					papw.Lock()
+					papw.Quit()
 		return BWindow.QuitRequested(self)
 		
 class App(BApplication):
