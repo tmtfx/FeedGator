@@ -235,9 +235,15 @@ class AboutWindow(BWindow):
 		self.bckgnd.AddChild(self.box,None)
 		abrect=BRect(2,142, self.box.Bounds().Width()-2,self.box.Bounds().Height()-2)
 		inner_ab=BRect(4,4,abrect.Width()-4,abrect.Height()-4)
-		self.AboutText = BTextView(abrect, 'aBOUTTxTView', inner_ab , B_FOLLOW_NONE,2000000)
+		mycolor=rgb_color()
+		mycolor.red=0
+		mycolor.green=200
+		mycolor.blue=0
+		mycolor.alpha=0
+		self.AboutText = BTextView(abrect, 'aBOUTTxTView', inner_ab , B_FOLLOW_NONE)#,2000000)
 		self.AboutText.MakeEditable(False)
 		self.AboutText.MakeSelectable(False)
+		self.AboutText.SetStylable(True)
 		stuff="FeedGator\nFeed our alligator with tasty newspapers!\n\nThis is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\n\nFeedGator is a reworked update of BGator that's why we start with version 1.90"
 		txtrun1=text_run()
 		txtrun1.offset=0
@@ -417,7 +423,7 @@ class GatorWindow(BWindow):
 	papdetW=[]
 	shiftok=False
 	Menus = (
-		('File', ((1, 'Add Paper'),(2, 'Remove Paper'),(None, None),(int(AppDefs.B_QUIT_REQUESTED), 'Quit'))),('News', ((6, 'Get News'),(4, 'Mark all as read'),(5, '(Clear news)'))),('Sort', ((40, 'By Name'),(41, 'By Unread'),(42, 'By Date'))),
+		('File', ((1, 'Add Paper'),(2, 'Remove Paper'),(None, None),(int(AppDefs.B_QUIT_REQUESTED), 'Quit'))),('News', ((6, 'Download News'),(4, 'All as read'),(5, '(Clear news)'))),('Sort By', ((40, 'Title'),(41, 'Unread'),(42, 'Date'))),
 		('Help', ((8, 'Help'),(3, 'About')))
 		)
 	def __init__(self):
@@ -462,8 +468,9 @@ class GatorWindow(BWindow):
 			Config.write(cfgfile)
 			cfgfile.close()
 			Config.read(confile.Path())
+		self.set_savemenu = False
 		for menu, items in self.Menus:
-			if menu == "Sort":
+			if menu == "Sort By":
 				self.set_savemenu = True
 				set_savemenu=True
 			else:
@@ -473,14 +480,17 @@ class GatorWindow(BWindow):
 				if k is None:
 						menu.AddItem(BSeparatorItem())
 				else:
+					if name == "Help" or name == "Quit":
+						mitm=BMenuItem(name, BMessage(k),name[0],0)
+					else:
 						mitm=BMenuItem(name, BMessage(k),name[1],0)
-						if name == "By Name" and sort == "1":
+						if name == "Title" and sort == "1":
 							mitm.SetMarked(True)
-						elif name == "By Unread" and sort == "2":
+						elif name == "Unread" and sort == "2":
 							mitm.SetMarked(True)
-						elif name == "By Date" and sort == "3":
+						elif name == "Date" and sort == "3":
 							mitm.SetMarked(True)
-						menu.AddItem(mitm)
+					menu.AddItem(mitm)
 			if set_savemenu:
 				self.savemenu = menu
 				self.bar.AddItem(menu)
@@ -515,8 +525,9 @@ class GatorWindow(BWindow):
 		self.outbox_preview=BBox(txtRect,"previewframe",0x0202|0x0404,border_style.B_FANCY_BORDER)
 		self.box.AddChild(self.outbox_preview,None)
 		innerRect= BRect(8,8,txtRect.Width()-30,txtRect.Height())
-		self.NewsPreView = BTextView(BRect(2,2, self.outbox_preview.Bounds().Width()-20,self.outbox_preview.Bounds().Height()-2), 'NewsTxTView', innerRect , B_FOLLOW_NONE,2000000)
+		self.NewsPreView = BTextView(BRect(2,2, self.outbox_preview.Bounds().Width()-20,self.outbox_preview.Bounds().Height()-2), 'NewsTxTView', innerRect , B_FOLLOW_NONE)#,2000000)
 		self.NewsPreView.MakeEditable(False)
+		self.NewsPreView.SetStylable(True)
 		NewsPreView_bounds=self.outbox_preview.Bounds()
 		self.scroller=BScrollBar(BRect(NewsPreView_bounds.right-21,NewsPreView_bounds.top+1.2,NewsPreView_bounds.right-1.4,NewsPreView_bounds.bottom-1.6),'NewsPreView_ScrollBar',self.NewsPreView,0.0,0.0,orientation.B_VERTICAL)
 		self.outbox_preview.AddChild(self.scroller,None)
@@ -608,7 +619,7 @@ class GatorWindow(BWindow):
 				self.Paperlist.lv.AddItem(tmpPitm[-1])
 
 	def gjornaaltolet(self):
-			self.NewsPreView.SetText("",None)
+			#self.NewsPreView.SetText("",None)
 			self.NewsList.lv.DeselectAll()
 			self.NewsList.lv.RemoveItems(0,self.NewsList.lv.CountItems()) #azzera newslist
 			self.NewsList.lv.ScrollToSelection()
@@ -621,12 +632,12 @@ class GatorWindow(BWindow):
 				curpaper.datapath.Rewind()
 				rit = False
 				if self.set_savemenu:
-					if marked == "By Name":
+					if marked == "Title":
 						while not rit:
 							itmEntry=BEntry()
 							rit=curpaper.datapath.GetNextEntry(itmEntry)
 							self.NewsItemConstructor(itmEntry)
-					if marked == "By Unread":
+					if marked == "Unread":
 						listunread=[]
 						listread=[]
 						while not rit:
@@ -649,7 +660,7 @@ class GatorWindow(BWindow):
 						for item in listread:
 							self.NewsItemConstructor(item)
 						
-					if marked == "By Date": # TODO
+					if marked == "Date": # TODO
 						from Be import stat
 						getlist=[]
 						orderedlist=[]
@@ -705,7 +716,6 @@ class GatorWindow(BWindow):
 	def NewsItemConstructor(self,entry):
 		if entry.Exists():
 			stato,charro = entry.GetName()
-			print(charro)
 			nf = BNode(entry)
 			attributes = attr(nf)
 			addnews = False
@@ -776,31 +786,35 @@ class GatorWindow(BWindow):
 			#remove feed and relative files and dir
 			cursel=self.Paperlist.lv.CurrentSelection()
 			if cursel>-1:
-				self.Paperlist.lv.Select(-1)
-				dirname=self.Paperlist.lv.ItemAt(cursel).path.Path()
-				datapath = BDirectory(dirname)
-				if datapath.CountEntries() > 0:
-					datapath.Rewind()
-					ret=False
-					while not ret:
-						evalent=BEntry()
-						ret=datapath.GetNextEntry(evalent)
-						if not ret:
-							ret_status=evalent.Remove()
-				if datapath.CountEntries() == 0:
-					ent=BEntry(dirname)
-					ent.Remove()
-				x=len(tmpPitm)
-				i=0
-				remarray=False
-				while i<x:
-					if tmpPitm[i].path.Path() == dirname:
-						remarray=True
-						break
-					i+=1
-				self.Paperlist.lv.RemoveItem(cursel)
-				if remarray:
-					del tmpPitm[i]
+				stuff="You are going to remove "+self.Paperlist.lv.ItemAt(cursel).name+". Proceed?"
+				ask=BAlert('rem', stuff, 'Yes', "No",None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
+				ri=ask.Go()
+				if ri==0:
+					self.Paperlist.lv.Select(-1)
+					dirname=self.Paperlist.lv.ItemAt(cursel).path.Path()
+					datapath = BDirectory(dirname)
+					if datapath.CountEntries() > 0:
+						datapath.Rewind()
+						ret=False
+						while not ret:
+							evalent=BEntry()
+							ret=datapath.GetNextEntry(evalent)
+							if not ret:
+								ret_status=evalent.Remove()
+					if datapath.CountEntries() == 0:
+						ent=BEntry(dirname)
+						ent.Remove()
+					x=len(tmpPitm)
+					i=0
+					remarray=False
+					while i<x:
+						if tmpPitm[i].path.Path() == dirname:
+							remarray=True
+							break
+						i+=1
+					self.Paperlist.lv.RemoveItem(cursel)
+					if remarray:
+						del tmpPitm[i]
 		
 		elif msg.what == 40:
 			#TODO snellire Sort By Name
@@ -883,14 +897,38 @@ class GatorWindow(BWindow):
 		elif msg.what == self.Paperlist.PaperSelection:
 			#Paper selection
 			self.NewsList.lv.MakeEmpty()
-			self.NewsPreView.SelectAll()
-			self.NewsPreView.Clear()
+			cursel=self.Paperlist.lv.CurrentSelection()
+			#self.NewsPreView.SelectAll()
+			#self.NewsPreView.Clear()
 			if len(tmpNitm)>0:
 				for item in tmpNitm:
 					del item
 				tmpNitm.clear()
-			if self.Paperlist.lv.CurrentSelection()>-1:
+			#if self.Paperlist.lv.CurrentSelection()>-1:
+			if cursel>-1:
+				stuff = self.Paperlist.lv.ItemAt(cursel).name
+				ta=text_run_array()
+				txtrun1=text_run()
+				txtrun1.offset=0
+				fon1=BFont(be_bold_font)
+				fon1.SetSize(48.0)
+				txtrun1.font=fon1
+				col1=rgb_color()
+				col1.red=0
+				col1.green=200
+				col1.blue=0
+				col1.alpha=255
+				txtrun1.color=col1
+				ta.count=1
+				ta.runs[0]=txtrun1
+				print(txtrun1.offset,txtrun1.font.Size(),txtrun1.color.red,txtrun1.color.green,txtrun1.color.blue)
+				print(ta)
+				self.NewsPreView.SetText(stuff,ta)
+				self.NewsPreView.SetRunArray(0,self.NewsPreView.TextLength(),ta)
 				self.gjornaaltolet()
+			else:
+				self.NewsPreView.SelectAll()
+				self.NewsPreView.Clear()
 
 		elif msg.what == self.NewsList.NewsSelection:
 			#News selection
@@ -919,6 +957,7 @@ class GatorWindow(BWindow):
 				self.NewsPreView.Clear()
 
 		elif msg.what == 4:
+			#mark all read
 			if self.NewsList.lv.CountItems()>0:
 				for item in self.NewsList.lv.Items():
 					item.unread = False
@@ -992,6 +1031,7 @@ class GatorWindow(BWindow):
 					t.run()
 			
 		elif msg.what == self.Paperlist.HiWhat: #TODO
+			#open paper folder or details
 			curit=self.Paperlist.lv.CurrentSelection()
 			if curit>-1:
 				if self.shiftok:
