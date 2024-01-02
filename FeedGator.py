@@ -4,7 +4,7 @@ from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextContro
 from Be.GraphicsDefs import *
 from Be.Menu import menu_info,get_menu_info
 from Be.FindDirectory import *
-from Be.View import B_FOLLOW_NONE,set_font_mask
+from Be.View import B_FOLLOW_NONE,set_font_mask,B_WILL_DRAW,B_NAVIGABLE,B_FULL_UPDATE_ON_RESIZE,B_FRAME_EVENTS,B_PULSE_NEEDED
 from Be.Alert import alert_type
 from Be.InterfaceDefs import border_style,orientation
 from Be.ListView import list_view_type
@@ -228,9 +228,10 @@ class PBox(BBox):
 class AboutWindow(BWindow):
 	def __init__(self):
 		BWindow.__init__(self, BRect(100, 100, 650, 620),"About",window_type.B_FLOATING_WINDOW,B_NOT_RESIZABLE)
-		self.bckgnd = BView(self.Bounds(), "backgroundView", 8, 20000000)
+		self.bckgnd = BView(self.Bounds(), "backgroundView", 8, 20000000)#B_WILL_DRAW|B_NAVIGABLE|B_FULL_UPDATE_ON_RESIZE|B_FRAME_EVENTS)#20000000)
 		bckgnd_bounds=self.bckgnd.Bounds()
 		self.AddChild(self.bckgnd,None)
+		self.bckgnd.SetFlags(B_WILL_DRAW|B_NAVIGABLE|B_FULL_UPDATE_ON_RESIZE|B_FRAME_EVENTS)
 		self.box = BBox(bckgnd_bounds,"Underbox",0x0202|0x0404,border_style.B_FANCY_BORDER)
 		self.bckgnd.AddChild(self.box,None)
 		abrect=BRect(2,142, self.box.Bounds().Width()-2,self.box.Bounds().Height()-2)
@@ -243,8 +244,17 @@ class AboutWindow(BWindow):
 		self.AboutText = BTextView(abrect, 'aBOUTTxTView', inner_ab , B_FOLLOW_NONE)#,2000000)
 		self.AboutText.MakeEditable(False)
 		self.AboutText.MakeSelectable(False)
-		self.AboutText.SetStylable(True)
-		stuff="FeedGator\nFeed our alligator with tasty newspapers!\n\nThis is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\n\nFeedGator is a reworked update of BGator that's why we start with version 1.90"
+		#flagghi=self.AboutText.Flags()
+		#if flagghi and B_WILL_DRAW:
+		#	print(flagghi)
+		#	print("yes there's B_WILL_DRAW")
+		#	a = B_WILL_DRAW#|B_NAVIGABLE|B_FULL_UPDATE_ON_RESIZE|B_FRAME_EVENTS
+		#	print(self.bckgnd.Flags())
+		#	print(a,B_PULSE_NEEDED)
+		#else:
+		#	print("no there's no B_WILL_DRAW")
+		#self.AboutText.SetStylable(True)
+		stuff="FeedGator\n\nFeed our alligator with tasty newspapers!\n\nThis is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\nFeedGator is a reworked update of BGator.\n\n\nVersion 1.9.9-alpha\n\t\t\t\t\t\tby TmTFx"
 		txtrun1=text_run()
 		txtrun1.offset=0
 		fon1=BFont(be_bold_font)
@@ -423,7 +433,7 @@ class GatorWindow(BWindow):
 	papdetW=[]
 	shiftok=False
 	Menus = (
-		('File', ((1, 'Add Paper'),(2, 'Remove Paper'),(None, None),(int(AppDefs.B_QUIT_REQUESTED), 'Quit'))),('News', ((6, 'Download News'),(4, 'All as read'),(5, '(Clear news)'))),('Sort By', ((40, 'Title'),(41, 'Unread'),(42, 'Date'))),
+		('File', ((1, 'Add Paper'),(2, 'Remove Paper'),(None, None),(int(AppDefs.B_QUIT_REQUESTED), 'Quit'))),('News', ((6, 'Download News'),(4, 'All as read'),(5, 'Clear news'))),('Sort By', ((40, 'Title'),(41, 'Unread'),(42, 'Date'))),
 		('Help', ((8, 'Help'),(3, 'About')))
 		)
 	def __init__(self):
@@ -480,7 +490,7 @@ class GatorWindow(BWindow):
 				if k is None:
 						menu.AddItem(BSeparatorItem())
 				else:
-					if name == "Help" or name == "Quit":
+					if name == "Help" or name == "Quit" or name == "Clear news":
 						mitm=BMenuItem(name, BMessage(k),name[0],0)
 					else:
 						mitm=BMenuItem(name, BMessage(k),name[1],0)
@@ -767,7 +777,26 @@ class GatorWindow(BWindow):
 		if msg.what == system_message_code.B_MODIFIERS_CHANGED:
 			value=msg.FindInt32("modifiers")
 			self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
-
+		elif msg.what == 5:
+			#clear paper news
+			cursel=self.Paperlist.lv.CurrentSelection()
+			if cursel>-1:
+				stuff="You are going to remove all "+self.Paperlist.lv.ItemAt(cursel).name+"'s feeds. Proceed?"
+				ask=BAlert('cle', stuff, 'Yes', "No",None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
+				ri=ask.Go()
+				if ri==0:
+					#self.Paperlist.lv.Select(-1)
+					self.Paperlist.lv.DeselectAll()
+					dirname=self.Paperlist.lv.ItemAt(cursel).path.Path()
+					datapath = BDirectory(dirname)
+					if datapath.CountEntries() > 0:
+						datapath.Rewind()
+						ret=False
+						while not ret:
+							evalent=BEntry()
+							ret=datapath.GetNextEntry(evalent)
+							if not ret:
+								ret_status=evalent.Remove()
 		elif msg.what == 8:
 			ask = BAlert('Whoa!', 'Are you sure you need help?', 'Yes','No', None, InterfaceDefs.B_WIDTH_AS_USUAL, alert_type.B_IDEA_ALERT)
 			answ=ask.Go()
@@ -778,7 +807,7 @@ class GatorWindow(BWindow):
 				risp = BAlert('lol', 'If you think so...', 'Poor me', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
 				risp.Go()
 		elif msg.what == 3:
-			about = BAlert('awin', 'BGator v. 1.9.1 alpha preview by TmTFx', 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
+			about = BAlert('awin', 'BGator v. 1.9.9-alpha by TmTFx', 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
 			about.Go()
 			about_window = AboutWindow()
 			about_window.Show()
@@ -790,7 +819,8 @@ class GatorWindow(BWindow):
 				ask=BAlert('rem', stuff, 'Yes', "No",None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
 				ri=ask.Go()
 				if ri==0:
-					self.Paperlist.lv.Select(-1)
+					#self.Paperlist.lv.Select(-1)
+					self.Paperlist.lv.DeselectAll()
 					dirname=self.Paperlist.lv.ItemAt(cursel).path.Path()
 					datapath = BDirectory(dirname)
 					if datapath.CountEntries() > 0:
@@ -921,8 +951,8 @@ class GatorWindow(BWindow):
 				txtrun1.color=col1
 				ta.count=1
 				ta.runs[0]=txtrun1
-				print(txtrun1.offset,txtrun1.font.Size(),txtrun1.color.red,txtrun1.color.green,txtrun1.color.blue)
-				print(ta)
+				#print(txtrun1.offset,txtrun1.font.Size(),txtrun1.color.red,txtrun1.color.green,txtrun1.color.blue)
+				#print(ta)
 				self.NewsPreView.SetText(stuff,ta)
 				self.NewsPreView.SetRunArray(0,self.NewsPreView.TextLength(),ta)
 				self.gjornaaltolet()
