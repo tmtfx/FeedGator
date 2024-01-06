@@ -1,0 +1,10 @@
+FeedGator is a feed aggregator written in python,
+for this version it has been used python3.10.
+
+FeedGator needs feedparser python module to run, 
+use this command to install it:
+pkgman install feedparser_python310
+
+FeedGator uses Haiku-PyAPI, you can retrive it via github at:
+https://github.com/coolcoder613eb/Haiku-PyAPI
+(other modules needed to compile)
