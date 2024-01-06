@@ -1,7 +1,9 @@
+#!/boot/system/bin/python3
 from Be import BApplication, BWindow, BView, BMenu,BMenuBar, BMenuItem, BSeparatorItem, BMessage, window_type, B_NOT_RESIZABLE, B_CLOSE_ON_ESCAPE, B_QUIT_ON_WINDOW_CLOSE
 from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, BScrollView, BRect, BBox, BFont, InterfaceDefs, BPath, BDirectory, BEntry
 from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap
 from Be.GraphicsDefs import *
+from Be.View import *
 from Be.Menu import menu_info,get_menu_info
 from Be.FindDirectory import *
 from Be.View import B_FOLLOW_NONE,set_font_mask,B_WILL_DRAW,B_NAVIGABLE,B_FULL_UPDATE_ON_RESIZE,B_FRAME_EVENTS,B_PULSE_NEEDED
@@ -169,9 +171,11 @@ class NewsScrollView:
 	NewsSelection = 102
 	def __init__(self, rect, name):
 		self.lv = BListView(rect, name, list_view_type.B_SINGLE_SELECTION_LIST)
+		self.lv.SetResizingMode(B_FOLLOW_ALL_SIDES)
 		self.lv.SetSelectionMessage(BMessage(self.NewsSelection))
 		self.lv.SetInvocationMessage(BMessage(self.HiWhat))
 		self.sv = BScrollView(name, self.lv,B_FOLLOW_NONE,0,False,True,border_style.B_FANCY_BORDER)
+		self.sv.SetResizingMode(B_FOLLOW_ALL_SIDES)
 		#'NewsScrollView'
 	def topview(self):
 		return self.sv
@@ -203,9 +207,11 @@ class PapersScrollView:
 	def __init__(self, rect, name):
 		#self.lv = PaperListView(rect, name, list_view_type.B_SINGLE_SELECTION_LIST)
 		self.lv = BListView(rect, name, list_view_type.B_SINGLE_SELECTION_LIST)
+		self.lv.SetResizingMode(B_FOLLOW_TOP_BOTTOM)
 		self.lv.SetSelectionMessage(BMessage(self.PaperSelection))
 		self.lv.SetInvocationMessage(BMessage(self.HiWhat))
 		self.sv = BScrollView(name, self.lv,B_FOLLOW_NONE,0,True,True,border_style.B_FANCY_BORDER)
+		self.sv.SetResizingMode(B_FOLLOW_TOP_BOTTOM)
 		#'PapersScrollView'
 	def topview(self):
 		return self.sv
@@ -438,9 +444,10 @@ class GatorWindow(BWindow):
 		)
 	def __init__(self):
 		global tab,name
-		BWindow.__init__(self, BRect(50,100,1024,750), "Feed the Gator", window_type.B_TITLED_WINDOW,  B_NOT_RESIZABLE | B_QUIT_ON_WINDOW_CLOSE)#B_MODAL_WINDOW
+		BWindow.__init__(self, BRect(50,100,1024,750), "Feed the Gator", window_type.B_TITLED_WINDOW, B_QUIT_ON_WINDOW_CLOSE) #B_NOT_RESIZABLE | B_QUIT_ON_WINDOW_CLOSE)#B_MODAL_WINDOW
 		bounds=self.Bounds()
 		self.bckgnd = BView(self.Bounds(), "background_View", 8, 20000000)
+		self.bckgnd.SetResizingMode(B_FOLLOW_ALL_SIDES)
 		bckgnd_bounds=self.bckgnd.Bounds()
 		self.AddChild(self.bckgnd,None)
 		self.bar = BMenuBar(bckgnd_bounds, 'Bar')
@@ -532,12 +539,13 @@ class GatorWindow(BWindow):
 		self.NewsList = NewsScrollView(BRect(8 + boxboundsw / 3 , 70, boxboundsw -28 , boxboundsh / 1.8 ), 'NewsListScrollView')
 		self.box.AddChild(self.NewsList.sv,None)
 		txtRect=BRect(8 + boxboundsw / 3, boxboundsh / 1.8 + 8,boxboundsw -8,boxboundsh - 38)
-		self.outbox_preview=BBox(txtRect,"previewframe",0x0202|0x0404,border_style.B_FANCY_BORDER)
+		self.outbox_preview=BBox(txtRect,"previewframe",B_FOLLOW_LEFT|B_FOLLOW_BOTTOM|B_FOLLOW_RIGHT,border_style.B_FANCY_BORDER)#
 		self.box.AddChild(self.outbox_preview,None)
 		innerRect= BRect(8,8,txtRect.Width()-30,txtRect.Height())
-		self.NewsPreView = BTextView(BRect(2,2, self.outbox_preview.Bounds().Width()-20,self.outbox_preview.Bounds().Height()-2), 'NewsTxTView', innerRect , B_FOLLOW_NONE)#,2000000)
+		self.NewsPreView = BTextView(BRect(2,2, self.outbox_preview.Bounds().Width()-20,self.outbox_preview.Bounds().Height()-2), 'NewsTxTView', innerRect,B_FOLLOW_ALL_SIDES)#, 0x0404|0x0202)#,2000000)
 		self.NewsPreView.MakeEditable(False)
 		self.NewsPreView.SetStylable(True)
+		#self.NewsPreView.SetResizingMode(B_FOLLOW_BOTTOM)
 		NewsPreView_bounds=self.outbox_preview.Bounds()
 		self.scroller=BScrollBar(BRect(NewsPreView_bounds.right-21,NewsPreView_bounds.top+1.2,NewsPreView_bounds.right-1.4,NewsPreView_bounds.bottom-1.6),'NewsPreView_ScrollBar',self.NewsPreView,0.0,0.0,orientation.B_VERTICAL)
 		self.outbox_preview.AddChild(self.scroller,None)
@@ -554,9 +562,9 @@ class GatorWindow(BWindow):
 		
 		btnswidth=round((boxboundsw - 8 - (8 + boxboundsw / 3) -8 - 8)/3,2)
 		markBounds=BRect(round(8 + boxboundsw / 3, 2),round(boxboundsh - 36, 2),round(8 + boxboundsw / 3 + btnswidth, 2) ,round(boxboundsh - 8,2))
-		self.markUnreadBtn = BButton(markBounds,'markUnreadButton','Mark as Unread',BMessage(9))
-		self.openBtn = BButton(BRect(round(boxboundsw-8-btnswidth, 2),round( boxboundsh - 36, 2),round(boxboundsw-8, 2),round(boxboundsh-8, 2)),'openButton','Open with browser',BMessage(self.NewsList.HiWhat))
-		self.markReadBtn = BButton(BRect(round(8 + boxboundsw / 3 + btnswidth + 8, 2),round( boxboundsh - 36, 2),round(boxboundsw-16-btnswidth, 2),round(boxboundsh-8, 2)),'markReadButton','Mark as Read',BMessage(10))
+		self.markUnreadBtn = BButton(markBounds,'markUnreadButton','Mark as Unread',BMessage(9),B_FOLLOW_BOTTOM)
+		self.openBtn = BButton(BRect(round(boxboundsw-8-btnswidth, 2),round( boxboundsh - 36, 2),round(boxboundsw-8, 2),round(boxboundsh-8, 2)),'openButton','Open with browser',BMessage(self.NewsList.HiWhat),B_FOLLOW_BOTTOM)
+		self.markReadBtn = BButton(BRect(round(8 + boxboundsw / 3 + btnswidth + 8, 2),round( boxboundsh - 36, 2),round(boxboundsw-16-btnswidth, 2),round(boxboundsh-8, 2)),'markReadButton','Mark as Read',BMessage(10),B_FOLLOW_BOTTOM)
 		self.outbox_preview.AddChild(self.NewsPreView,None)
 		self.box.AddChild(self.markUnreadBtn,None)
 		markUnreadBtn_bounds=self.markUnreadBtn.Frame()
@@ -1224,9 +1232,30 @@ class GatorWindow(BWindow):
 				be_app.WindowAt(0).PostMessage(1991)
 	
 	def FrameResized(self,x,y):
-		#self.ResizeToPreferred()
-		self.ResizeTo(974,650)
-
+		resiz=False
+		if x<974:
+			x=974
+			resiz=True
+		if y<650:
+			y=650
+			resiz=True
+		if resiz:
+			self.ResizeTo(x,y)
+		self.box.ResizeTo(x,y-29)
+		self.bar.ResizeTo(x,self.bar.Bounds().bottom)
+		self.progress.ResizeTo(x-self.progress.Bounds().left-340,self.progress.Bounds().bottom)
+		self.NewsList.sv.ResizeTo(x-self.NewsList.sv.Frame().left-8,self.box.Bounds().Height() / 1.8-68)
+		self.NewsList.lv.ResizeTo(self.NewsList.sv.Bounds().Width()-24,self.NewsList.sv.Bounds().Height()-5)# al posto di 24 usare scrollbar width
+		self.outbox_preview.MoveTo(self.NewsList.sv.Frame().left+2,self.NewsList.sv.Frame().bottom+5)
+		self.outbox_preview.ResizeTo(x-342,y-self.outbox_preview.Frame().top -self.markUnreadBtn.Bounds().Height()-40)
+		boxboundsw=self.box.Bounds().Width()
+		btnswidth=round((boxboundsw - 8 - (8 + self.Paperlist.sv.Bounds().right) -8 - 8)/3,2)
+		self.markUnreadBtn.ResizeTo(btnswidth,self.markUnreadBtn.Bounds().Height())
+		self.markReadBtn.MoveTo(self.markUnreadBtn.Frame().right+8,self.markReadBtn.Frame().top)
+		self.markReadBtn.ResizeTo(btnswidth,self.markReadBtn.Bounds().Height())
+		self.openBtn.MoveTo(self.markReadBtn.Frame().right+8,self.openBtn.Frame().top)
+		self.openBtn.ResizeTo(btnswidth-4,self.openBtn.Bounds().Height())
+		BWindow.FrameResized(self,x,y)
 
 	def QuitRequested(self):
 		wnum = be_app.CountWindows()
