@@ -1,7 +1,7 @@
 #!/boot/system/bin/python3
 from Be import BApplication, BWindow, BView, BMenu,BMenuBar, BMenuItem, BSeparatorItem, BMessage, window_type, B_NOT_RESIZABLE, B_CLOSE_ON_ESCAPE, B_QUIT_ON_WINDOW_CLOSE
 from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, BScrollView, BRect, BBox, BFont, InterfaceDefs, BPath, BDirectory, BEntry
-from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap
+from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap,BLocker
 from Be.GraphicsDefs import *
 from Be.View import *
 from Be.Menu import menu_info,get_menu_info
@@ -21,7 +21,7 @@ from Be.Entry import entry_ref, get_ref_for_path
 
 #webbrowser,
 import configparser,re, os, feedparser, struct, datetime, subprocess
-from threading import Thread
+from threading import Thread#,Semaphore
 
 Config=configparser.ConfigParser()
 def ConfigSectionMap(section):
@@ -233,8 +233,9 @@ class PBox(BBox):
 		
 class AboutWindow(BWindow):
 	def __init__(self):
-		BWindow.__init__(self, BRect(100, 100, 650, 620),"About",window_type.B_FLOATING_WINDOW,B_NOT_RESIZABLE)
+		BWindow.__init__(self, BRect(100, 100, 650, 620),"About",window_type.B_MODAL_WINDOW,B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)#FLOATING
 		self.bckgnd = BView(self.Bounds(), "backgroundView", 8, 20000000)#B_WILL_DRAW|B_NAVIGABLE|B_FULL_UPDATE_ON_RESIZE|B_FRAME_EVENTS)#20000000)
+		self.bckgnd.SetResizingMode(B_FOLLOW_V_CENTER|B_FOLLOW_H_CENTER)
 		bckgnd_bounds=self.bckgnd.Bounds()
 		self.AddChild(self.bckgnd,None)
 		self.bckgnd.SetFlags(B_WILL_DRAW|B_NAVIGABLE|B_FULL_UPDATE_ON_RESIZE|B_FRAME_EVENTS)
@@ -260,7 +261,7 @@ class AboutWindow(BWindow):
 		#else:
 		#	print("no there's no B_WILL_DRAW")
 		#self.AboutText.SetStylable(True)
-		stuff="FeedGator\n\nFeed our alligator with tasty newspapers!\n\nThis is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\nFeedGator is a reworked update of BGator.\n\n\nVersion 1.9.9-alpha\n\t\t\t\t\t\tby TmTFx"
+		stuff="FeedGator\n\nFeed our alligator with tasty newspapers!\n\nThis is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\nFeedGator is a reworked update of BGator.\n\nVersion 1.9.9-alpha\n\t\t\t\t\t\t\t\t\tby TmTFx\n\n\t\tpress ESC to close this window"
 		txtrun1=text_run()
 		txtrun1.offset=0
 		fon1=BFont(be_bold_font)
@@ -438,8 +439,10 @@ class GatorWindow(BWindow):
 	tmpWind=[]
 	papdetW=[]
 	shiftok=False
+	enabletimer=False
+	sem = BLocker()
 	Menus = (
-		('File', ((1, 'Add Paper'),(2, 'Remove Paper'),(None, None),(int(AppDefs.B_QUIT_REQUESTED), 'Quit'))),('News', ((6, 'Download News'),(4, 'All as read'),(5, 'Clear news'))),('Sort By', ((40, 'Title'),(41, 'Unread'),(42, 'Date'))),
+		('File', ((1, 'Add Paper'),(2, 'Remove Paper'),(None, None),(int(AppDefs.B_QUIT_REQUESTED), 'Quit'))),('News', ((66, 'Download News'),(4, 'All as read'),(5, 'Clear news'))),('Sort By', ((40, 'Title'),(41, 'Unread'),(42, 'Date'))),
 		('Help', ((8, 'Help'),(3, 'About')))
 		)
 	def __init__(self):
@@ -476,6 +479,31 @@ class GatorWindow(BWindow):
 				Config.write(cfgfile)
 				cfgfile.close()
 				Config.read(confile.Path())
+			try:
+				resu=ConfigSectionMap("Timer")['enabled']
+				if resu == "True":
+					self.enabletimer= True
+				else:
+					self.enabletimer=False
+			except:
+				cfgfile = open(confile.Path(),'w')
+				Config.add_section('Timer')
+				Config.set('Timer','enabled', "False")
+				self.enabletimer=False
+				Config.write(cfgfile)
+				cfgfile.close()
+				Config.read(confile.Path())
+			if self.enabletimer:
+				try:
+					self.timer=int(ConfigSectionMap("Timer")['timer'])
+				except:
+					cfgfile = open(confile.Path(),'w')
+					Config.set('Timer','timer', "300000000")
+					self.timer=300000000
+					Config.write(cfgfile)
+					cfgfile.close()
+					Config.read(confile.Path())
+				be_app.SetPulseRate(self.timer)
 		else:
 			#no file
 			cfgfile = open(confile.Path(),'w')
@@ -514,7 +542,7 @@ class GatorWindow(BWindow):
 			else:	
 				self.bar.AddItem(menu)
 		bf=BFont()
-		bf.PrintToStream()
+		#bf.PrintToStream()
 		oldSize=bf.Size()
 		bf.SetSize(32)
 		self.addBtn = BButton(BRect(8,8,68,58),'AddButton','⊕',BMessage(1))
@@ -525,7 +553,8 @@ class GatorWindow(BWindow):
 		self.box.AddChild(self.remBtn,None)
 		boxboundsw=self.box.Bounds().Width()
 		boxboundsh=self.box.Bounds().Height()
-		self.getBtn = BButton(BRect(136,8,boxboundsw / 3,58),'GetNewsButton','⇩',BMessage(6))
+		#self.getBtn = BButton(BRect(136,8,boxboundsw / 3,58),'GetNewsButton','⇩',BMessage(6))
+		self.getBtn = BButton(BRect(136,8,boxboundsw / 3,58),'GetNewsButton','⇩',BMessage(66))
 		self.getBtn.SetFont(bf)
 		self.progress = BStatusBar(BRect(boxboundsw / 3+6,8, boxboundsw - 12, 68),'progress',None, None)
 		self.infostring= BStringView(BRect(boxboundsw/3+6,8,boxboundsw-12,28),"info",None)
@@ -583,8 +612,8 @@ class GatorWindow(BWindow):
 		self.bckgnd.AddChild(self.box, None)
 		
 		self.UpdatePapers()
-		
-		
+
+
 	def ClearNewsList(self):
 			self.NewsList.lv.DeselectAll()
 			self.NewsList.lv.MakeEmpty()
@@ -715,7 +744,8 @@ class GatorWindow(BWindow):
 						itmEntry=BEntry()
 						rit=curpaper.datapath.GetNextEntry(itmEntry)
 						self.NewsItemConstructor(itmEntry)
-				
+			self.sem.Unlock()
+			print("sblocco 747")
 #				while not rit:
 #					itmEntry=BEntry()
 #					rit=curpaper.datapath.GetNextEntry(itmEntry)
@@ -1119,30 +1149,28 @@ class GatorWindow(BWindow):
 						if element[0] == "address":
 							tmpPitm.append(PaperItem(pirc,element[2][0]))
 							self.Paperlist.lv.AddItem(tmpPitm[-1])
-							be_app.WindowAt(0).PostMessage(6)
+							#be_app.WindowAt(0).PostMessage(6)
+							be_app.WindowAt(0).PostMessage(66)
 				#controlla se esiste cartella chiamata titul&
 				#se esiste ma gli attributi non corrispondono, chiedere cosa fare
 				#se esiste ma non ha tutti gli attributi scrivili
-				
-		elif msg.what == 6:
-			#be_app.WindowAt(0).PostMessage(BMessage(1992))
+
+		elif msg.what == 66:
 			self.infostring.SetText("Updating news, please wait...")
 			self.progress.SetMaxValue(self.Paperlist.lv.CountItems()*100+self.Paperlist.lv.CountItems())
 			self.cres=0
-			#parallel=[]
-			self.Paperlist.lv.DeselectAll()
-			#Download Papers News, and eventually update NewsList.lv
 			for item in self.Paperlist.lv.Items():
 				Thread(target=self.DownloadNews,args=(item,)).start()
-				#item.DrawItem(self.Paperlist.lv,self.Paperlist.lv.ItemFrame(self.Paperlist.lv.IndexOf(item)),False)
 			self.Paperlist.lv.Hide()
 			self.Paperlist.lv.Show()
-
+			
 		elif msg.what == 542:
 			# eventually remove this
 			#self.UpdatePapers()
 			self.Paperlist.lv.Hide()
 			self.Paperlist.lv.Show()
+			
+			
 		elif msg.what == 1990:
 			d = msg.FindFloat("delta")
 			self.progress.Update(d,None,None)
@@ -1151,6 +1179,7 @@ class GatorWindow(BWindow):
 			if self.cres == self.Paperlist.lv.CountItems():
 				self.progress.Reset(None,None)
 				self.infostring.SetText(None)
+					
 			
 		BWindow.MessageReceived(self, msg)
 
@@ -1158,9 +1187,11 @@ class GatorWindow(BWindow):
 		p = re.compile(r'<.*?>')
 		return p.sub('', data)
 		
+		
 	def DownloadNews(self,item):
 				# TODO inserire un lock per non sballare i valori di progress
 				#self.progress.Reset(None,None)
+				
 				perc=BPath()
 				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
 				dirpath=BPath(perc.Path()+"/BGator2/Papers/"+item.name,None,False)
@@ -1271,11 +1302,16 @@ class GatorWindow(BWindow):
 		return BWindow.QuitRequested(self)
 		
 class App(BApplication):
-    def __init__(self):
-        BApplication.__init__(self, "application/x-python-BGator2")
-    def ReadyToRun(self):
-        self.window = GatorWindow()
-        self.window.Show()
+	def __init__(self):
+		BApplication.__init__(self, "application/x-python-BGator2")
+	def ReadyToRun(self):
+		self.window = GatorWindow()
+		self.window.Show()
+#    def MessageReceived(self,msg):
+#    	BApplication.MessageReceived(self,msg)
+	def Pulse(self):
+		if self.window.enabletimer:
+			be_app.WindowAt(0).PostMessage(BMessage(66))
 
 def main():
     global be_app
