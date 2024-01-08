@@ -419,16 +419,13 @@ class BoolBox(BBox):
 		self.CheckBox=BCheckBox(BRect(4,rect.Height()/2-a.Size()/2,l+34,rect.Height()/2+a.Size()/2+4),"option_value","Boolean",BMessage(1600))
 		if value == "True":
 			self.CheckBox.SetValue(1)
-			#self.AddChild(self.CheckBox,None)
 		elif value == "False":
 			self.CheckBox.SetValue(0)
-			#self.CheckBox=BCheckBox(BRect(4,4,l+4,a.Size()+4),"option_value","Boolean",BMessage(1600))
 		self.AddChild(self.CheckBox,None)
 class StringBox(BBox):
 	def __init__(self,rect,name,res,flag,value):
 		BBox.__init__(self,rect,name,res,flag)
 		a=BFont()
-		#l=self.StringWidth(value)
 		self.labello=BStringView(BRect(8,rect.Height()-a.Size()*2,rect.Width()-8,rect.Height()-4),"suggest","Tip: Press Enter to confirm modifications")
 		self.AddChild(self.labello,None)
 		self.stringvalue=BTextControl(BRect(8,rect.Height()/2-a.Size()/2,rect.Width()-8,rect.Height()/2+a.Size()/2-4),"option_value", "String:",value,BMessage(1700))
@@ -460,12 +457,9 @@ class SectionView(BView):
 		self.Options = ScrollView(BRect(4 , 4, self.Bounds().Width()/2.5-4, self.Bounds().Height()-htabs ), 'OptionsScrollView')
 		self.AddChild(self.Options.sv,None)
 		Config.read(conpath)
-		#elem=Config[sezione]
 		for key in Config[sezione]:
 			self.Options.lv.AddItem(BStringItem(key))
 		self.valuebox=[]
-		#self.rbox=BBox(BRect(self.Bounds().Width()/2.5+20 , 4, self.Bounds().Width()-8, self.Bounds().Height()-8 ),"Values",0x0202|0x0404,border_style.B_FANCY_BORDER)
-		#self.AddChild(self.rbox,None)
 
 class SettingsWindow(BWindow):
 	def __init__(self):
@@ -492,16 +486,18 @@ class SettingsWindow(BWindow):
 			ent=BEntry(confile.Path())
 			if ent.Exists():
 				Config.read(confile.Path())
-				#try:
-				if True:
+				try:
 					sez=Config.sections()
 					print(sez)
 					for s in sez:
 						self.views.append(SectionView(tabrect,s,self.tabview.TabHeight(),confile.Path()))
 						self.tablabels.append(BTab(self.views[-1]))
 						self.tabview.AddTab(self.views[-1],self.tablabels[-1])
-				#except:
-				#	print("visualizza BView con informativa: \'nessuna sezione\'")
+				except:
+					saytxt="This should not happen: there's no section in config.ini!"
+					alert= BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
+					alert.Go()
+					self.Close()
 			else:
 				saytxt="This should not happen: there's no config.ini!"
 				alert= BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
@@ -510,7 +506,7 @@ class SettingsWindow(BWindow):
 			
 	def MessageReceived(self,msg):
 		if msg.what == 54:
-			#elimino tutti i box caricati
+			#elimino l'ultimo box caricato
 			tabsel=self.tabview.Selection()
 			theview=self.views[tabsel]
 			son=theview.CountChildren()
@@ -636,19 +632,7 @@ class SettingsWindow(BWindow):
 					except:
 						theview.valuebox[-1].stringvalue.MarkAsInvalid(True)
 		BWindow.MessageReceived(self,msg)
-		
-#		self.general=BView(tabrect, "General", 8, 20000000)
-#		self.generaltab=BTab(self.general)
-#		self.timer=BView(tabrect, "Timer", 8, 20000000)
-#		self.timertab=BTab(self.timer)
-#		self.tablabels.append(BTab())
-#		self.views.append(self.general)
-#		self.tablabels.append(BTab())
-#		self.views.append(self.timer)
-#		self.tabview.AddTab(self.tablabels[0],self.view[0])
-#		self.tabview.AddTab(self.tablabels[1],self.view[1])
-#		self.tabview.AddTab(self.general,self.generaltab)
-#		self.tabview.AddTab(self.timer,self.timertab)
+
 	def FrameResized(self,x,y):
 		self.ResizeTo(600,300)
 
