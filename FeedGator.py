@@ -1,7 +1,7 @@
 #!/boot/system/bin/python3
 from Be import BApplication, BWindow, BView, BMenu,BMenuBar, BMenuItem, BSeparatorItem, BMessage, window_type, B_NOT_RESIZABLE, B_CLOSE_ON_ESCAPE, B_QUIT_ON_WINDOW_CLOSE
-from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, BScrollView, BRect, BBox, BFont, InterfaceDefs, BPath, BDirectory, BEntry
-from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap,BLocker
+from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, BScrollView, BRect, BBox, BFont, InterfaceDefs, BPath, BDirectory, BEntry, BTabView, BTab
+from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap,BLocker,BCheckBox
 from Be.GraphicsDefs import *
 from Be.View import *
 from Be.Menu import menu_info,get_menu_info
@@ -219,6 +219,21 @@ class PapersScrollView:
 	def listview(self):
 		return self.lv
 
+class ScrollView:
+	HiWhat = 53 #Doppioclick
+	SectionSelection = 54
+
+	def __init__(self, rect, name):
+		#self.lv = PaperListView(rect, name, list_view_type.B_SINGLE_SELECTION_LIST)
+		self.lv = BListView(rect, name, list_view_type.B_SINGLE_SELECTION_LIST)
+		self.lv.SetResizingMode(B_FOLLOW_TOP_BOTTOM)
+		self.lv.SetSelectionMessage(BMessage(self.SectionSelection))
+		self.lv.SetInvocationMessage(BMessage(self.HiWhat))
+		self.sv = BScrollView(name, self.lv,B_FOLLOW_NONE,0,True,True,border_style.B_FANCY_BORDER)
+		self.sv.SetResizingMode(B_FOLLOW_TOP_BOTTOM)
+		#'NormalScrollView'
+
+
 
 class PBox(BBox):
 	def __init__(self,frame,name,immagine):
@@ -396,6 +411,247 @@ class PapDetails(BWindow):
 	def FrameResized(self,x,y):
 		self.ResizeTo(400,300)
 
+class BoolBox(BBox):
+	def __init__(self,rect,name,res,flag,value):
+		BBox.__init__(self,rect,name,res,flag)
+		a=BFont()
+		l=self.StringWidth("Boolean")
+		self.CheckBox=BCheckBox(BRect(4,rect.Height()/2-a.Size()/2,l+34,rect.Height()/2+a.Size()/2+4),"option_value","Boolean",BMessage(1600))
+		if value == "True":
+			self.CheckBox.SetValue(1)
+			#self.AddChild(self.CheckBox,None)
+		elif value == "False":
+			self.CheckBox.SetValue(0)
+			#self.CheckBox=BCheckBox(BRect(4,4,l+4,a.Size()+4),"option_value","Boolean",BMessage(1600))
+		self.AddChild(self.CheckBox,None)
+class StringBox(BBox):
+	def __init__(self,rect,name,res,flag,value):
+		BBox.__init__(self,rect,name,res,flag)
+		a=BFont()
+		#l=self.StringWidth(value)
+		self.labello=BStringView(BRect(8,rect.Height()-a.Size()*2,rect.Width()-8,rect.Height()-4),"suggest","Tip: Press Enter to confirm modifications")
+		self.AddChild(self.labello,None)
+		self.stringvalue=BTextControl(BRect(8,rect.Height()/2-a.Size()/2,rect.Width()-8,rect.Height()/2+a.Size()/2-4),"option_value", "String:",value,BMessage(1700))
+		self.stringvalue.SetDivider(self.StringWidth("String:"))
+		self.AddChild(self.stringvalue,None)
+class IntBox(BBox):
+	def __init__(self,rect,name,res,flag,value):
+		BBox.__init__(self,rect,name,res,flag)
+		a=BFont()
+		self.labello=BStringView(BRect(8,rect.Height()-a.Size()*2,rect.Width()-8,rect.Height()-4),"suggest","Tip: Press Enter to confirm modifications")
+		self.AddChild(self.labello,None)
+		self.stringvalue=BTextControl(BRect(8,rect.Height()/2-a.Size()/2,rect.Width()-8,rect.Height()/2+a.Size()/2-4),"option_value", "Int:",str(value),BMessage(1800))
+		self.stringvalue.SetDivider(self.StringWidth("Int:"))
+		self.AddChild(self.stringvalue,None)
+class FloatBox(BBox):
+	def __init__(self,rect,name,res,flag,value):
+		BBox.__init__(self,rect,name,res,flag)
+		a=BFont()
+		self.labello=BStringView(BRect(8,rect.Height()-a.Size()*2,rect.Width()-8,rect.Height()-4),"suggest","Tip: Press Enter to confirm modifications")
+		self.AddChild(self.labello,None)
+		self.stringvalue=BTextControl(BRect(8,rect.Height()/2-a.Size()/2,rect.Width()-8,rect.Height()/2+a.Size()/2-4),"option_value", "Float:",str(value),BMessage(1900))
+		self.stringvalue.SetDivider(self.StringWidth("Float:"))
+		self.AddChild(self.stringvalue,None)
+		
+class SectionView(BView):
+	def __init__(self,frame,sezione,htabs,conpath):
+		BView.__init__(self,frame,sezione,8,20000000)
+		self.sezione=sezione
+		self.Options = ScrollView(BRect(4 , 4, self.Bounds().Width()/2.5-4, self.Bounds().Height()-htabs ), 'OptionsScrollView')
+		self.AddChild(self.Options.sv,None)
+		Config.read(conpath)
+		#elem=Config[sezione]
+		for key in Config[sezione]:
+			self.Options.lv.AddItem(BStringItem(key))
+		self.valuebox=[]
+		#self.rbox=BBox(BRect(self.Bounds().Width()/2.5+20 , 4, self.Bounds().Width()-8, self.Bounds().Height()-8 ),"Values",0x0202|0x0404,border_style.B_FANCY_BORDER)
+		#self.AddChild(self.rbox,None)
+
+class SettingsWindow(BWindow):
+	def __init__(self):
+		BWindow.__init__(self, BRect(200,150,800,450), "Settings", window_type.B_FLOATING_WINDOW,  B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)
+		self.bckgnd = BView(self.Bounds(), "bckgnd_View", 8, 20000000)
+		self.AddChild(self.bckgnd,None)
+		self.bckgnd.SetResizingMode(B_FOLLOW_ALL_SIDES)
+		self.tabview=BTabView(self.bckgnd.Bounds(),"TabView")
+		self.bckgnd.AddChild(self.tabview,None)
+		self.tablabels=[]
+		self.views=[]
+		tabrect=BRect(0,0,self.Bounds().Width(),self.Bounds().Height()-self.tabview.TabHeight())
+		self.optionbox=[]
+		perc=BPath()
+		find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
+		datapath=BDirectory(perc.Path()+"/BGator2")
+		ent=BEntry(datapath,perc.Path()+"/BGator2")
+		if not ent.Exists():
+			self.Close()
+		else:
+			ent.GetPath(perc)
+			confile=BPath(perc.Path()+'/config.ini',None,False)
+			self.confile=confile
+			ent=BEntry(confile.Path())
+			if ent.Exists():
+				Config.read(confile.Path())
+				#try:
+				if True:
+					sez=Config.sections()
+					print(sez)
+					for s in sez:
+						self.views.append(SectionView(tabrect,s,self.tabview.TabHeight(),confile.Path()))
+						self.tablabels.append(BTab(self.views[-1]))
+						self.tabview.AddTab(self.views[-1],self.tablabels[-1])
+				#except:
+				#	print("visualizza BView con informativa: \'nessuna sezione\'")
+			else:
+				saytxt="This should not happen: there's no config.ini!"
+				alert= BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
+				alert.Go()
+				self.Close()
+			
+	def MessageReceived(self,msg):
+		if msg.what == 54:
+			#elimino tutti i box caricati
+			tabsel=self.tabview.Selection()
+			theview=self.views[tabsel]
+			son=theview.CountChildren()
+			if son>1:
+				rmView=theview.ChildAt(theview.CountChildren()-1)
+				rmView.Hide()
+				rmView.RemoveSelf()
+				del theview.valuebox[0]
+
+			if theview.Options.lv.CurrentSelection()>-1:
+				option=theview.Options.lv.ItemAt(theview.Options.lv.CurrentSelection()).Text()
+				Config.read(self.confile.Path())
+				value=ConfigSectionMap(self.views[tabsel].sezione)[option]
+				bondi=self.views[tabsel].Bounds()
+				if value == "True" or value == "False":
+					theview.valuebox.append(BoolBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,0x0202|0x0404,border_style.B_FANCY_BORDER,value))
+				else:
+					try:
+						entire=int(value)
+						theview.valuebox.append(IntBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,0x0202|0x0404,border_style.B_FANCY_BORDER,entire))
+					except:
+						try:
+							flt = float(value)
+							theview.valuebox.append(FloatBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,0x0202|0x0404,border_style.B_FANCY_BORDER,flt))
+						except:
+							theview.valuebox.append(StringBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,0x0202|0x0404,border_style.B_FANCY_BORDER,value))
+				theview.AddChild(theview.valuebox[-1],None)
+		elif msg.what == 1600:
+			#cambia valore booleano
+			tabsel=self.tabview.Selection()
+			theview=self.views[tabsel]
+			if theview.Options.lv.CurrentSelection()>-1:
+				option=theview.Options.lv.ItemAt(theview.Options.lv.CurrentSelection()).Text()
+				perc=BPath()
+				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
+				datapath=BDirectory(perc.Path()+"/BGator2")
+				ent=BEntry(datapath,perc.Path()+"/BGator2")
+				ent.GetPath(perc)
+				confile=BPath(perc.Path()+'/config.ini',None,False)
+				ent=BEntry(confile.Path())
+				if ent.Exists():
+					Config.read(confile.Path())
+					if theview.valuebox[-1].CheckBox.Value():
+						value="True"
+					else:
+						value="False"
+					cfgfile = open(confile.Path(),'w')
+					Config.set(theview.sezione,option, value)
+					Config.write(cfgfile)
+					cfgfile.close()
+					Config.read(confile.Path())
+		elif msg.what == 1700:
+			#cambia valore stringa
+			tabsel=self.tabview.Selection()
+			theview=self.views[tabsel]
+			if theview.Options.lv.CurrentSelection()>-1:
+				option=theview.Options.lv.ItemAt(theview.Options.lv.CurrentSelection()).Text()
+				perc=BPath()
+				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
+				datapath=BDirectory(perc.Path()+"/BGator2")
+				ent=BEntry(datapath,perc.Path()+"/BGator2")
+				ent.GetPath(perc)
+				confile=BPath(perc.Path()+'/config.ini',None,False)
+				ent=BEntry(confile.Path())
+				if ent.Exists():
+					Config.read(confile.Path())
+					cfgfile = open(confile.Path(),'w')
+					value=theview.valuebox[-1].stringvalue.Text()
+					Config.set(theview.sezione,option, value)
+					Config.write(cfgfile)
+					cfgfile.close()
+					Config.read(confile.Path())
+		elif msg.what == 1800:
+			#cambia valore intero
+			tabsel=self.tabview.Selection()
+			theview=self.views[tabsel]
+			if theview.Options.lv.CurrentSelection()>-1:
+				option=theview.Options.lv.ItemAt(theview.Options.lv.CurrentSelection()).Text()
+				perc=BPath()
+				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
+				datapath=BDirectory(perc.Path()+"/BGator2")
+				ent=BEntry(datapath,perc.Path()+"/BGator2")
+				ent.GetPath(perc)
+				confile=BPath(perc.Path()+'/config.ini',None,False)
+				ent=BEntry(confile.Path())
+				if ent.Exists():
+					Config.read(confile.Path())
+					val=theview.valuebox[-1].stringvalue.Text()
+					try:
+						value=int(val)
+						theview.valuebox[-1].stringvalue.MarkAsInvalid(False)
+						cfgfile = open(confile.Path(),'w')
+						Config.set(theview.sezione,option, val)
+						Config.write(cfgfile)
+						cfgfile.close()
+						Config.read(confile.Path())
+					except:
+						theview.valuebox[-1].stringvalue.MarkAsInvalid(True)
+		elif msg.what == 1900:
+			#cambia valore virgola mobile
+			tabsel=self.tabview.Selection()
+			theview=self.views[tabsel]
+			if theview.Options.lv.CurrentSelection()>-1:
+				option=theview.Options.lv.ItemAt(theview.Options.lv.CurrentSelection()).Text()
+				perc=BPath()
+				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
+				datapath=BDirectory(perc.Path()+"/BGator2")
+				ent=BEntry(datapath,perc.Path()+"/BGator2")
+				ent.GetPath(perc)
+				confile=BPath(perc.Path()+'/config.ini',None,False)
+				ent=BEntry(confile.Path())
+				if ent.Exists():
+					Config.read(confile.Path())
+					val=theview.valuebox[-1].stringvalue.Text()
+					try:
+						value=float(val)
+						theview.valuebox[-1].stringvalue.MarkAsInvalid(False)
+						cfgfile = open(confile.Path(),'w')
+						Config.set(theview.sezione,option, val)
+						Config.write(cfgfile)
+						cfgfile.close()
+						Config.read(confile.Path())
+					except:
+						theview.valuebox[-1].stringvalue.MarkAsInvalid(True)
+		BWindow.MessageReceived(self,msg)
+		
+#		self.general=BView(tabrect, "General", 8, 20000000)
+#		self.generaltab=BTab(self.general)
+#		self.timer=BView(tabrect, "Timer", 8, 20000000)
+#		self.timertab=BTab(self.timer)
+#		self.tablabels.append(BTab())
+#		self.views.append(self.general)
+#		self.tablabels.append(BTab())
+#		self.views.append(self.timer)
+#		self.tabview.AddTab(self.tablabels[0],self.view[0])
+#		self.tabview.AddTab(self.tablabels[1],self.view[1])
+#		self.tabview.AddTab(self.general,self.generaltab)
+#		self.tabview.AddTab(self.timer,self.timertab)
+	def FrameResized(self,x,y):
+		self.ResizeTo(600,300)
+
 class AddFeedWindow(BWindow):
 	def __init__(self):
 		BWindow.__init__(self, BRect(150,150,500,300), "Add Feed Address", window_type.B_FLOATING_WINDOW,  B_NOT_RESIZABLE | B_CLOSE_ON_ESCAPE)#B_QUIT_ON_WINDOW_CLOSE)#B_BORDERED_WINDOW B_FLOATING_WINDOW
@@ -442,7 +698,7 @@ class GatorWindow(BWindow):
 	enabletimer=False
 	sem = BLocker()
 	Menus = (
-		('File', ((1, 'Add Paper'),(2, 'Remove Paper'),(None, None),(int(AppDefs.B_QUIT_REQUESTED), 'Quit'))),('News', ((66, 'Download News'),(4, 'All as read'),(5, 'Clear news'))),('Sort By', ((40, 'Title'),(41, 'Unread'),(42, 'Date'))),
+		('File', ((1, 'Add Paper'),(2, 'Remove Paper'),(6, 'Settings'),(None, None),(int(AppDefs.B_QUIT_REQUESTED), 'Quit'))),('News', ((66, 'Download News'),(4, 'All as read'),(5, 'Clear news'))),('Sort By', ((40, 'Title'),(41, 'Unread'),(42, 'Date'))),
 		('Help', ((8, 'Help'),(3, 'About')))
 		)
 	def __init__(self):
@@ -480,6 +736,19 @@ class GatorWindow(BWindow):
 				cfgfile.close()
 				Config.read(confile.Path())
 			try:
+				min=ConfigSectionMap("General")['minimized']
+				if min == "True":
+					self.startmin=True
+				else:
+					self.startmin=False
+			except:
+				cfgfile = open(confile.Path(),'w')
+				Config.set('General','minimized', "False")
+				Config.write(cfgfile)
+				cfgfile.close()
+				Config.read(confile.Path())
+				self.startmin=False
+			try:
 				resu=ConfigSectionMap("Timer")['enabled']
 				if resu == "True":
 					self.enabletimer= True
@@ -489,6 +758,8 @@ class GatorWindow(BWindow):
 				cfgfile = open(confile.Path(),'w')
 				Config.add_section('Timer')
 				Config.set('Timer','enabled', "False")
+				Config.set('Timer','timer', "300000000")
+				self.timer=300000000
 				self.enabletimer=False
 				Config.write(cfgfile)
 				cfgfile.close()
@@ -509,7 +780,14 @@ class GatorWindow(BWindow):
 			cfgfile = open(confile.Path(),'w')
 			Config.add_section('General')
 			Config.set('General','sort', "1")
+			Config.set('General','minimized', "False")
+			Config.add_section('Timer')
+			Config.set('Timer','enabled', "False")
+			Config.set('Timer','timer', "300000000")
 			sort="1"
+			self.startmin=False
+			self.enabletimer=False
+			self.timer=300000000
 			Config.write(cfgfile)
 			cfgfile.close()
 			Config.read(confile.Path())
@@ -525,7 +803,7 @@ class GatorWindow(BWindow):
 				if k is None:
 						menu.AddItem(BSeparatorItem())
 				else:
-					if name == "Help" or name == "Quit" or name == "Clear news":
+					if name == "Help" or name == "Quit" or name == "Clear news" or name == "Settings":
 						mitm=BMenuItem(name, BMessage(k),name[0],0)
 					else:
 						mitm=BMenuItem(name, BMessage(k),name[1],0)
@@ -849,6 +1127,9 @@ class GatorWindow(BWindow):
 			about.Go()
 			about_window = AboutWindow()
 			about_window.Show()
+		elif msg.what == 6:
+			self.settings_window = SettingsWindow()
+			self.settings_window.Show()
 		elif msg.what == 2:
 			#remove feed and relative files and dir
 			cursel=self.Paperlist.lv.CurrentSelection()
@@ -1307,6 +1588,7 @@ class App(BApplication):
 	def ReadyToRun(self):
 		self.window = GatorWindow()
 		self.window.Show()
+		self.window.Minimize(self.window.startmin)
 #    def MessageReceived(self,msg):
 #    	BApplication.MessageReceived(self,msg)
 	def Pulse(self):
