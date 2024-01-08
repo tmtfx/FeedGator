@@ -42,7 +42,7 @@ def openlink(link):
 	osd=BUrl(link)
 	retu=osd.OpenWithPreferredApplication()
 	#webbrowser.get(name).open(link,tab,False)
-	print("risultato open with preferred application:",retu)
+	#print("risultato open with preferred application:",retu)
 
 def attr(node):
 	al = []
@@ -62,7 +62,6 @@ def attr(node):
 			type_string = get_type_string(nfo.type)
 			ritorno=node.ReadAttr(a, nfo.type, 0, None,nfo.size)
 			al.append((a,("Type:",type_string,"Size:",nfo.size),node.ReadAttr(a, nfo.type, 0, None,nfo.size)))
-			#node.RemoveAttr("Media:Width") <- works
 	return al
 
 def get_type_string(value):
@@ -89,7 +88,7 @@ class NewsItem(BListItem):
 			owner.SetLowColor(200,200,200,255)
 			owner.FillRect(frame)
 		owner.SetHighColor(0,0,0,0)
-		owner.MovePenTo(5,frame.bottom-self.font_height_value.descent)#frame.bottom-5)
+		owner.MovePenTo(5,frame.bottom-self.font_height_value.descent)
 		if self.unread:
 			owner.SetFont(be_bold_font)
 		else:
@@ -147,7 +146,6 @@ class PaperItem(BListItem):
 								self.newnews=True
 								break
 		if self.IsSelected() or complete:
-			#color = (200,200,200,255)
 			if self.newnews == True:
 				owner.SetHighColor(250,80,80,255)
 				owner.SetLowColor(200,200,200,255)
@@ -182,30 +180,12 @@ class NewsScrollView:
 
 	def listview(self):
 		return self.lv
-	
-#class PaperListView(BListView):
-#	def __init__(self, frame, name, type = list_view_type.B_SINGLE_SELECTION_LIST):#, resizingMode = B_FOLLOW_NONE , flags = 26000000):
-#		BListView.__init__(self, frame, name, type)#, resizingMode, flags)
-#	def KeyDown(self,bytes,numBytes):
-#		print("keydown")
-#		message=BMessage(B_KEY_DOWN)
-#		ads=bytes.encode('utf-8')
-#		message.AddData("bytes",TypeConstants.B_RAW_TYPE,ads,numBytes,True,1)
-#		modifiers=0
-#		message.PrintToStream()
-#		if message.FindUInt32("modifiers", modifiers) == 0:
-#			print("modifiers",modifiers)
-#			shiftPressed = (modifiers & B_SHIFT_KEY) != 0
-#			if shiftPressed:
-#				print("Shift è premuto")
-#		return BListView.KeyDown(self,bytes,numBytes)
 
 class PapersScrollView:
 	HiWhat = 33 #Doppioclick
 	PaperSelection = 101
 
 	def __init__(self, rect, name):
-		#self.lv = PaperListView(rect, name, list_view_type.B_SINGLE_SELECTION_LIST)
 		self.lv = BListView(rect, name, list_view_type.B_SINGLE_SELECTION_LIST)
 		self.lv.SetResizingMode(B_FOLLOW_TOP_BOTTOM)
 		self.lv.SetSelectionMessage(BMessage(self.PaperSelection))
@@ -224,7 +204,6 @@ class ScrollView:
 	SectionSelection = 54
 
 	def __init__(self, rect, name):
-		#self.lv = PaperListView(rect, name, list_view_type.B_SINGLE_SELECTION_LIST)
 		self.lv = BListView(rect, name, list_view_type.B_SINGLE_SELECTION_LIST)
 		self.lv.SetResizingMode(B_FOLLOW_TOP_BOTTOM)
 		self.lv.SetSelectionMessage(BMessage(self.SectionSelection))
@@ -263,18 +242,9 @@ class AboutWindow(BWindow):
 		mycolor.green=200
 		mycolor.blue=0
 		mycolor.alpha=0
-		self.AboutText = BTextView(abrect, 'aBOUTTxTView', inner_ab , B_FOLLOW_NONE)#,2000000)
+		self.AboutText = BTextView(abrect, 'aBOUTTxTView', inner_ab , B_FOLLOW_NONE)
 		self.AboutText.MakeEditable(False)
 		self.AboutText.MakeSelectable(False)
-		#flagghi=self.AboutText.Flags()
-		#if flagghi and B_WILL_DRAW:
-		#	print(flagghi)
-		#	print("yes there's B_WILL_DRAW")
-		#	a = B_WILL_DRAW#|B_NAVIGABLE|B_FULL_UPDATE_ON_RESIZE|B_FRAME_EVENTS
-		#	print(self.bckgnd.Flags())
-		#	print(a,B_PULSE_NEEDED)
-		#else:
-		#	print("no there's no B_WILL_DRAW")
 		#self.AboutText.SetStylable(True)
 		stuff="FeedGator\n\nFeed our alligator with tasty newspapers!\n\nThis is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\nFeedGator is a reworked update of BGator.\n\nVersion 1.9.9-alpha\n\t\t\t\t\t\t\t\t\tby TmTFx\n\n\t\tpress ESC to close this window"
 		txtrun1=text_run()
@@ -375,7 +345,6 @@ class PapDetails(BWindow):
 		desc2_bounds=self.desc2.Frame()
 		######
 		risp2=item.path.Path()
-		#self.risp2=BStringView(BRect(15,desc2_bounds.bottom+5,fon.StringWidth(risp2)+15,desc2_bounds.bottom+font_height_value.ascent+5),"risp2",risp2)
 		self.risp2=BTextControl(BRect(15,desc2_bounds.bottom+5,bckgnd_bounds.right-15,desc2_bounds.bottom+font_height_value.ascent+5),"risp2",None,risp2,BMessage(152))
 		# questo non funziona
 		#a=self.risp2.TextView()
@@ -392,7 +361,6 @@ class PapDetails(BWindow):
 		desc3_bounds=self.desc3.Frame()
 		######
 		risp3=item.address
-		#self.risp3=BStringView(BRect(15,desc3_bounds.bottom+5,fon.StringWidth(risp3)+15,desc3_bounds.bottom+font_height_value.ascent+5),"risp3",risp3)
 		self.risp3=BTextControl(BRect(15,desc3_bounds.bottom+5,bckgnd_bounds.right-15,desc3_bounds.bottom+font_height_value.ascent+5),"risp3",None,risp3,BMessage(153))
 		self.box.AddChild(self.risp3,None)
 		risp3_bounds=self.risp3.Frame()
@@ -405,7 +373,6 @@ class PapDetails(BWindow):
 		risp4=str(item.newscount)
 		self.risp4=BStringView(BRect(15,desc4_bounds.bottom+5,fon.StringWidth(risp4)+15,desc4_bounds.bottom+font_height_value.ascent+5),"risp4",risp4)
 		self.box.AddChild(self.risp4,None)
-		#risp4_bounds=self.risp4.Frame()
 		
 
 	def FrameResized(self,x,y):
@@ -804,7 +771,6 @@ class GatorWindow(BWindow):
 			else:	
 				self.bar.AddItem(menu)
 		bf=BFont()
-		#bf.PrintToStream()
 		oldSize=bf.Size()
 		bf.SetSize(32)
 		self.addBtn = BButton(BRect(8,8,68,58),'AddButton','⊕',BMessage(1))
@@ -815,7 +781,6 @@ class GatorWindow(BWindow):
 		self.box.AddChild(self.remBtn,None)
 		boxboundsw=self.box.Bounds().Width()
 		boxboundsh=self.box.Bounds().Height()
-		#self.getBtn = BButton(BRect(136,8,boxboundsw / 3,58),'GetNewsButton','⇩',BMessage(6))
 		self.getBtn = BButton(BRect(136,8,boxboundsw / 3,58),'GetNewsButton','⇩',BMessage(66))
 		self.getBtn.SetFont(bf)
 		self.progress = BStatusBar(BRect(boxboundsw / 3+6,8, boxboundsw - 12, 68),'progress',None, None)
@@ -823,7 +788,6 @@ class GatorWindow(BWindow):
 		self.box.AddChild(self.progress,None)
 		self.box.AddChild(self.infostring,None)
 		self.box.AddChild(self.getBtn,None)
-		#bf.SetSize(oldSize)
 		self.box.SetFont(bf)
 		self.Paperlist = PapersScrollView(BRect(8 , 70, boxboundsw / 3 -20, boxboundsh - 28 ), 'NewsPapersScrollView')
 		self.box.AddChild(self.Paperlist.topview(), None)
@@ -836,20 +800,9 @@ class GatorWindow(BWindow):
 		self.NewsPreView = BTextView(BRect(2,2, self.outbox_preview.Bounds().Width()-20,self.outbox_preview.Bounds().Height()-2), 'NewsTxTView', innerRect,B_FOLLOW_ALL_SIDES)#, 0x0404|0x0202)#,2000000)
 		self.NewsPreView.MakeEditable(False)
 		self.NewsPreView.SetStylable(True)
-		#self.NewsPreView.SetResizingMode(B_FOLLOW_BOTTOM)
 		NewsPreView_bounds=self.outbox_preview.Bounds()
 		self.scroller=BScrollBar(BRect(NewsPreView_bounds.right-21,NewsPreView_bounds.top+1.2,NewsPreView_bounds.right-1.4,NewsPreView_bounds.bottom-1.6),'NewsPreView_ScrollBar',self.NewsPreView,0.0,0.0,orientation.B_VERTICAL)
 		self.outbox_preview.AddChild(self.scroller,None)
-
-		#fon=BFont()
-		#sameProperties=0
-		#colore=rgb_color()
-		#sameColor=True
-		#self.NewsTextView.GetFontAndColor(fon,sameProperties,colore,sameColor)
-		#print("Rosso:",colore.red,"Verde:",colore.green,"Blu:",colore.blue,"Alfa:",colore.alpha)
-		#colore.set_to(255,255,255,255)
-		#print("Rosso:",colore.red,"Verde:",colore.green,"Blu:",colore.blue,"Alfa:",colore.alpha)
-		#self.NewsTextView.SetFontAndColor(fon,set_font_mask.B_FONT_ALL, colore)
 		
 		btnswidth=round((boxboundsw - 8 - (8 + boxboundsw / 3) -8 - 8)/3,2)
 		markBounds=BRect(round(8 + boxboundsw / 3, 2),round(boxboundsh - 36, 2),round(8 + boxboundsw / 3 + btnswidth, 2) ,round(boxboundsh - 8,2))
@@ -928,7 +881,6 @@ class GatorWindow(BWindow):
 				self.Paperlist.lv.AddItem(tmpPitm[-1])
 
 	def gjornaaltolet(self):
-			#self.NewsPreView.SetText("",None)
 			self.NewsList.lv.DeselectAll()
 			self.NewsList.lv.RemoveItems(0,self.NewsList.lv.CountItems()) #azzera newslist
 			self.NewsList.lv.ScrollToSelection()
@@ -991,7 +943,7 @@ class GatorWindow(BWindow):
 								if not rt:
 									st=os.stat(tmpPath.Path())
 									published=datetime.datetime.fromtimestamp(st.st_mtime)
-									#print(datetime_mtime)
+									
 								#st = stat()
 								#itmEntry.GetStat(st)
 								#print(st)
@@ -1007,21 +959,6 @@ class GatorWindow(BWindow):
 						rit=curpaper.datapath.GetNextEntry(itmEntry)
 						self.NewsItemConstructor(itmEntry)
 			self.sem.Unlock()
-			print("sblocco 747")
-#				while not rit:
-#					itmEntry=BEntry()
-#					rit=curpaper.datapath.GetNextEntry(itmEntry)
-#					if not rit:
-#						if self.set_savemenu:
-#							if marked == "By Name":
-#								self.NewsItemConstructor(itmEntry)
-#							if marked == "By Unread": #TODO
-#								self.NewsItemConstructor(itmEntry)
-#							if marked == "By Date": #TODO
-#								self.NewsItemConstructor(itmEntry)
-#						else:
-#							#this exist until menu changes its name to Sort without brackets
-#							self.NewsItemConstructor(itmEntry)
 
 	def NewsItemConstructor(self,entry):
 		if entry.Exists():
@@ -1085,7 +1022,6 @@ class GatorWindow(BWindow):
 				ask=BAlert('cle', stuff, 'Yes', "No",None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
 				ri=ask.Go()
 				if ri==0:
-					#self.Paperlist.lv.Select(-1)
 					self.Paperlist.lv.DeselectAll()
 					dirname=self.Paperlist.lv.ItemAt(cursel).path.Path()
 					datapath = BDirectory(dirname)
@@ -1122,7 +1058,6 @@ class GatorWindow(BWindow):
 				ask=BAlert('rem', stuff, 'Yes', "No",None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
 				ri=ask.Go()
 				if ri==0:
-					#self.Paperlist.lv.Select(-1)
 					self.Paperlist.lv.DeselectAll()
 					dirname=self.Paperlist.lv.ItemAt(cursel).path.Path()
 					datapath = BDirectory(dirname)
@@ -1231,13 +1166,10 @@ class GatorWindow(BWindow):
 			#Paper selection
 			self.NewsList.lv.MakeEmpty()
 			cursel=self.Paperlist.lv.CurrentSelection()
-			#self.NewsPreView.SelectAll()
-			#self.NewsPreView.Clear()
 			if len(tmpNitm)>0:
 				for item in tmpNitm:
 					del item
 				tmpNitm.clear()
-			#if self.Paperlist.lv.CurrentSelection()>-1:
 			if cursel>-1:
 				stuff = self.Paperlist.lv.ItemAt(cursel).name
 				ta=text_run_array()
@@ -1254,8 +1186,6 @@ class GatorWindow(BWindow):
 				txtrun1.color=col1
 				ta.count=1
 				ta.runs[0]=txtrun1
-				#print(txtrun1.offset,txtrun1.font.Size(),txtrun1.color.red,txtrun1.color.green,txtrun1.color.blue)
-				#print(ta)
 				self.NewsPreView.SetText(stuff,ta)
 				self.NewsPreView.SetRunArray(0,self.NewsPreView.TextLength(),ta)
 				self.gjornaaltolet()
@@ -1285,7 +1215,6 @@ class GatorWindow(BWindow):
 				else:
 					self.NewsPreView.SetText("There\'s no preview here",None)
 			else:
-				#self.NewsPreView.Delete()
 				self.NewsPreView.SelectAll()
 				self.NewsPreView.Clear()
 
@@ -1368,17 +1297,12 @@ class GatorWindow(BWindow):
 			curit=self.Paperlist.lv.CurrentSelection()
 			if curit>-1:
 				if self.shiftok:
-					print("apro finestra dettagli")
-					#global fin #<- this is needed because his FrameResized will not be executed
-					#fin=PapDetails()
-					#fin.Show()
 					self.papdetW.append(PapDetails(self.Paperlist.lv.ItemAt(curit)))
 					self.papdetW[-1].Show()
 				else:
 					ittp=self.Paperlist.lv.ItemAt(curit)
 					subprocess.run(["open",ittp.path.Path()])
-			#print("window with details and eventually per paper settings or open tracker at its path") #like pulse specified update 
-		
+
 		elif msg.what == 1:
 			#open add feed window
 			self.tmpWind.append(AddFeedWindow())
@@ -1386,9 +1310,7 @@ class GatorWindow(BWindow):
 
 		elif msg.what == 245:
 			# ADD FEED
-			#be_app.WindowAt(0).PostMessage(BMessage(1992))
 			feedaddr=msg.FindString("feed")
-			#TODO: externalize on a "def" and threadize this, Show() progress on a BStringView and on a BStatusBar then Hide() them
 			d=feedparser.parse(feedaddr)
 			if d.feed.has_key('title'):
 				dirname=d.feed.title
@@ -1414,7 +1336,6 @@ class GatorWindow(BWindow):
 						if element[0] == "address":
 							tmpPitm.append(PaperItem(pirc,element[2][0]))
 							self.Paperlist.lv.AddItem(tmpPitm[-1])
-							#be_app.WindowAt(0).PostMessage(6)
 							be_app.WindowAt(0).PostMessage(66)
 				#controlla se esiste cartella chiamata titul&
 				#se esiste ma gli attributi non corrispondono, chiedere cosa fare
@@ -1431,7 +1352,6 @@ class GatorWindow(BWindow):
 			
 		elif msg.what == 542:
 			# eventually remove this
-			#self.UpdatePapers()
 			self.Paperlist.lv.Hide()
 			self.Paperlist.lv.Show()
 			
@@ -1454,9 +1374,7 @@ class GatorWindow(BWindow):
 		
 		
 	def DownloadNews(self,item):
-				# TODO inserire un lock per non sballare i valori di progress
-				#self.progress.Reset(None,None)
-				
+				# TODO inserire un lock per non sballare i valori di progress				
 				perc=BPath()
 				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
 				dirpath=BPath(perc.Path()+"/BGator2/Papers/"+item.name,None,False)
@@ -1541,7 +1459,7 @@ class GatorWindow(BWindow):
 		self.bar.ResizeTo(x,self.bar.Bounds().bottom)
 		self.progress.ResizeTo(x-self.progress.Bounds().left-340,self.progress.Bounds().bottom)
 		self.NewsList.sv.ResizeTo(x-self.NewsList.sv.Frame().left-8,self.box.Bounds().Height() / 1.8-68)
-		self.NewsList.lv.ResizeTo(self.NewsList.sv.Bounds().Width()-24,self.NewsList.sv.Bounds().Height()-5)# al posto di 24 usare scrollbar width
+		self.NewsList.lv.ResizeTo(self.NewsList.sv.Bounds().Width()-24,self.NewsList.sv.Bounds().Height()-5)
 		self.outbox_preview.MoveTo(self.NewsList.sv.Frame().left+2,self.NewsList.sv.Frame().bottom+5)
 		self.outbox_preview.ResizeTo(x-342,y-self.outbox_preview.Frame().top -self.markUnreadBtn.Bounds().Height()-40)
 		boxboundsw=self.box.Bounds().Width()
@@ -1573,8 +1491,7 @@ class App(BApplication):
 		self.window = GatorWindow()
 		self.window.Show()
 		self.window.Minimize(self.window.startmin)
-#    def MessageReceived(self,msg):
-#    	BApplication.MessageReceived(self,msg)
+
 	def Pulse(self):
 		if self.window.enabletimer:
 			be_app.WindowAt(0).PostMessage(BMessage(66))
