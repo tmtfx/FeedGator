@@ -687,7 +687,6 @@ class GatorWindow(BWindow):
 	papdetW=[]
 	shiftok=False
 	enabletimer=False
-	sem = BLocker()
 	Menus = (
 		('File', ((1, 'Add Paper'),(2, 'Remove Paper'),(6, 'Settings'),(None, None),(int(AppDefs.B_QUIT_REQUESTED), 'Quit'))),('News', ((66, 'Download News'),(4, 'All as read'),(5, 'Clear news'))),('Sort By', ((40, 'Title'),(41, 'Unread'),(42, 'Date'))),
 		('Help', ((8, 'Help'),(3, 'About')))
@@ -998,7 +997,6 @@ class GatorWindow(BWindow):
 						itmEntry=BEntry()
 						rit=curpaper.datapath.GetNextEntry(itmEntry)
 						self.NewsItemConstructor(itmEntry)
-			self.sem.Unlock()
 
 	def NewsItemConstructor(self,entry):
 		if entry.Exists():
