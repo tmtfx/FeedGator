@@ -243,22 +243,41 @@ class ScrollView:
 		self.sv.SetResizingMode(B_FOLLOW_TOP_BOTTOM)
 		#'NormalScrollView'
 
+class PView(BView):
+	def __init__(self,frame,name,immagine):
+		self.immagine=immagine
+		self.frame=frame
+		BView.__init__(self,self.frame,name,8, 20000000)
+		
+	def UpdateImg(self,immagine):
+		self.Draw(self.frame)
+		self.immagine=immagine
+		rect=BRect(0,0,self.frame.Width(),self.frame.Height())
+		self.DrawBitmap(self.immagine,rect)
 
+	def Draw(self,rect):
+		BView.Draw(self,rect)
+		print("Disegno PView")
+		rect=BRect(0,0,self.frame.Width(),self.frame.Height())
+		self.DrawBitmap(self.immagine,rect)
 
 class PBox(BBox):
 	def __init__(self,frame,name,immagine):
 		self.immagine = immagine
 		self.frame = frame
-		BBox.__init__(self,frame,name,0x0202|0x0404,InterfaceDefs.border_style.B_FANCY_BORDER)
+		BBox.__init__(self,frame,name,0x0202|0x0404,InterfaceDefs.border_style.B_NO_BORDER)
+		
+	def DrawMe(self):
+		self.DrawBitmap(self.immagine,self.frame)
 		
 	def Draw(self,rect):
 		BBox.Draw(self, rect)
 		inset = BRect(4, 4, self.frame.Width()-4, self.frame.Height()-4)
-		self.DrawBitmap(self.immagine, inset)
+		self.DrawBitmap(self.immagine,inset)
 		
 class AboutWindow(BWindow):
 	def __init__(self):
-		BWindow.__init__(self, BRect(100, 100, 650, 620),"About",window_type.B_MODAL_WINDOW,B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)#FLOATING
+		BWindow.__init__(self, BRect(100, 100, 650, 725),"About",window_type.B_MODAL_WINDOW,B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)
 		self.bckgnd = BView(self.Bounds(), "backgroundView", 8, 20000000)#B_WILL_DRAW|B_NAVIGABLE|B_FULL_UPDATE_ON_RESIZE|B_FRAME_EVENTS)#20000000)
 		self.bckgnd.SetResizingMode(B_FOLLOW_V_CENTER|B_FOLLOW_H_CENTER)
 		bckgnd_bounds=self.bckgnd.Bounds()
@@ -266,7 +285,11 @@ class AboutWindow(BWindow):
 		self.bckgnd.SetFlags(B_WILL_DRAW|B_NAVIGABLE|B_FULL_UPDATE_ON_RESIZE|B_FRAME_EVENTS)
 		self.box = BBox(bckgnd_bounds,"Underbox",0x0202|0x0404,border_style.B_FANCY_BORDER)
 		self.bckgnd.AddChild(self.box,None)
-		abrect=BRect(2,142, self.box.Bounds().Width()-2,self.box.Bounds().Height()-2)
+		pbox_rect=BRect(0,0,self.box.Bounds().Width(),241)
+		img1=BTranslationUtils.GetBitmap("/boot/home/Apps/FeedGator/FeedGator/FeedGator1c.bmp",None)
+		self.pbox=PBox(pbox_rect,"PictureBox",img1)
+		self.box.AddChild(self.pbox,None)
+		abrect=BRect(2,242, self.box.Bounds().Width()-2,self.box.Bounds().Height()-2)
 		inner_ab=BRect(4,4,abrect.Width()-4,abrect.Height()-4)
 		mycolor=rgb_color()
 		mycolor.red=0
@@ -305,6 +328,7 @@ class AboutWindow(BWindow):
 		arra.runs[1]=txtrun2
 		self.AboutText.SetText(stuff,arra)
 		self.box.AddChild(self.AboutText,None)
+		
 #		img=BFile("/boot/home/Desktop/nuzgator5.bmp",0) #B_READ_ONLY
 #		offset=0
 #		offset_data,headdata,=img.ReadAt(10,4)
@@ -342,7 +366,7 @@ class AboutWindow(BWindow):
 
 	def FrameResized(self,x,y):
 		print("passing through here")
-		self.ResizeTo(550,520)
+		self.ResizeTo(550,625)
 
 	def QuitRequested(self):
 		self.Quit()
@@ -857,6 +881,12 @@ class GatorWindow(BWindow):
 		self.bckgnd.AddChild(self.box, None)
 		
 		self.UpdatePapers()
+		
+		pbox_rect=BRect(0,0,550,241)
+		img1=BTranslationUtils.GetBitmap("/boot/home/Apps/FeedGator/FeedGator/FeedGator1c.bmp",None)
+		self.pbox=PBox(pbox_rect,"PictureBox",img1)
+		self.pbox.SetFlags(B_WILL_DRAW)
+		self.box.AddChild(self.pbox,None)
 
 
 	def ClearNewsList(self):
@@ -1073,8 +1103,8 @@ class GatorWindow(BWindow):
 				risp = BAlert('lol', 'If you think so...', 'Poor me', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
 				risp.Go()
 		elif msg.what == 3:
-			about = BAlert('awin', 'BGator v. 1.9.9-alpha by TmTFx', 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
-			about.Go()
+			#about = BAlert('awin', 'BGator v. 1.9.9-alpha by TmTFx', 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
+			#about.Go()
 			about_window = AboutWindow()
 			about_window.Show()
 		elif msg.what == 6:
