@@ -2,6 +2,7 @@
 from Be import BApplication, BWindow, BView, BMenu,BMenuBar, BMenuItem, BSeparatorItem, BMessage, window_type, B_NOT_RESIZABLE, B_CLOSE_ON_ESCAPE, B_QUIT_ON_WINDOW_CLOSE
 from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, BScrollView, BRect, BBox, BFont, InterfaceDefs, BPath, BDirectory, BEntry, BTabView, BTab
 from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap,BLocker,BCheckBox,BQuery
+from Be import BTranslationUtils
 from Be.NodeMonitor import *
 from Be.Node import node_ref
 from Be.GraphicsDefs import *
@@ -122,9 +123,9 @@ class PaperItem(BListItem):
 		fon=BFont()
 		self.font_height_value=font_height()
 		fon.GetHeight(self.font_height_value)
-		perc=BPath()
 		self.newscount=self.datapath.CountEntries()
 		if self.newscount > 0:
+			perc=BPath()
 			self.datapath.Rewind()
 			ret=False
 			while not ret:
@@ -139,24 +140,14 @@ class PaperItem(BListItem):
 							unr=element[2][0]
 							if unr:
 								self.cnnews+=1
-		#FIX THIS
-		st=os.stat(perc.Path())
-		nref=node_ref(st.st_dev,st.st_ino)
-		watch_node(nref,B_WATCH_DIRECTORY,be_app_messenger)
-		##########
-		#self.q=BQuery()
-		##self.q.PushAttr("Unread")
-		#stuff = "( Unread = True)"
-		#r=self.q.SetPredicate(stuff)
-		#print("Risultato di SetPredicate",r)
-		#qent=BEntry()
-		#ret=self.q.GetNextEntry(qent)
-		#print("Ritorno di GetNextEntry",ret)
-		#print("Entry:",qent.GetName()[1])
-		#pat=BPath()
-		#if not ret:
-	#		qent.GetPath(pat)
-#			print(pat.Path())
+
+		n_ref=node_ref()
+		entu=BEntry(self.datapath,self.path.Path())
+		rr=entu.GetNodeRef(n_ref)
+		if not rr:
+			print("executing watch_node")
+			rdue=watch_node(n_ref,B_WATCH_DIRECTORY,be_app_messenger)#B_WATCH_ALL
+			print("risultato return watch_node:",rdue)
 		
 		#print(value.ascent,value.descent,value.leading,"is descending the useful value to place the string?")
 
