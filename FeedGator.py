@@ -1,7 +1,9 @@
 #!/boot/system/bin/python3
 from Be import BApplication, BWindow, BView, BMenu,BMenuBar, BMenuItem, BSeparatorItem, BMessage, window_type, B_NOT_RESIZABLE, B_CLOSE_ON_ESCAPE, B_QUIT_ON_WINDOW_CLOSE
 from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, BScrollView, BRect, BBox, BFont, InterfaceDefs, BPath, BDirectory, BEntry, BTabView, BTab
-from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap,BLocker,BCheckBox
+from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap,BLocker,BCheckBox,BQuery
+from Be.NodeMonitor import *
+from Be.Node import node_ref
 from Be.GraphicsDefs import *
 from Be.View import *
 from Be.Menu import menu_info,get_menu_info
@@ -15,6 +17,7 @@ from Be.Font import be_plain_font, be_bold_font
 from Be import AppDefs
 from Be.TextView import text_run, text_run_array
 #from Be.fs_attr import attr_info
+from Be.Application import *
 
 from Be import Entry
 from Be.Entry import entry_ref, get_ref_for_path
@@ -113,11 +116,48 @@ class PaperItem(BListItem):
 		self.address = address
 		self.color=self.nocolor
 		self.newnews=False
+		self.cnnews=0
 		self.datapath=BDirectory(path.Path())
 		self.newscount=self.datapath.CountEntries()
 		fon=BFont()
 		self.font_height_value=font_height()
 		fon.GetHeight(self.font_height_value)
+		perc=BPath()
+		self.newscount=self.datapath.CountEntries()
+		if self.newscount > 0:
+			self.datapath.Rewind()
+			ret=False
+			while not ret:
+				evalent=BEntry()
+				ret=self.datapath.GetNextEntry(evalent)
+				if not ret:
+					evalent.GetPath(perc)
+					nf=BNode(perc.Path())
+					attributes=attr(nf)
+					for element in attributes:
+						if element[0] == "Unread":
+							unr=element[2][0]
+							if unr:
+								self.cnnews+=1
+		#FIX THIS
+		st=os.stat(perc.Path())
+		nref=node_ref(st.st_dev,st.st_ino)
+		watch_node(nref,B_WATCH_DIRECTORY,be_app_messenger)
+		##########
+		#self.q=BQuery()
+		##self.q.PushAttr("Unread")
+		#stuff = "( Unread = True)"
+		#r=self.q.SetPredicate(stuff)
+		#print("Risultato di SetPredicate",r)
+		#qent=BEntry()
+		#ret=self.q.GetNextEntry(qent)
+		#print("Ritorno di GetNextEntry",ret)
+		#print("Entry:",qent.GetName()[1])
+		#pat=BPath()
+		#if not ret:
+	#		qent.GetPath(pat)
+#			print(pat.Path())
+		
 		#print(value.ascent,value.descent,value.leading,"is descending the useful value to place the string?")
 
 
@@ -1011,6 +1051,7 @@ class GatorWindow(BWindow):
 				self.NewsList.lv.AddItem(tmpNitm[-1])
 			
 	def MessageReceived(self, msg):
+		msg.PrintToStream()
 		if msg.what == system_message_code.B_MODIFIERS_CHANGED:
 			value=msg.FindInt32("modifiers")
 			self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
@@ -1491,6 +1532,9 @@ class App(BApplication):
 		self.window = GatorWindow()
 		self.window.Show()
 		self.window.Minimize(self.window.startmin)
+	def MessageReceived(self,msg):
+		msg.PrintToStream()
+		BApplication.MessageReceived(self,msg)
 
 	def Pulse(self):
 		if self.window.enabletimer:
