@@ -121,20 +121,15 @@ class PaperItem(BListItem):
 		fon.GetHeight(self.font_height_value)
 		self.newscount=self.datapath.CountEntries()
 
-
-		n_ref=node_ref()
-		entu=BEntry(self.datapath,self.path.Path())
-		rr=entu.GetNodeRef(n_ref)
-		if not rr:
-			#nubidir=BDirectory(n_ref)
-			#tmpent=BEntry()
-			#nubidir.GetEntry(tmpent)
-			#tmpPath=BPath()
-			#tmpent.GetPath(tmpPath)
-			#print(tmpPath.Path())
-			rdue=watch_node(n_ref,B_WATCH_DIRECTORY,be_app_messenger)#B_WATCH_ALL
-			print("risultato return watch_node:",rdue)
-		
+####### watch_node not working ##################
+####### commented while waiting for a fix #######
+#		n_ref=node_ref()
+#		entu=BEntry(self.datapath,self.path.Path())
+#		rr=entu.GetNodeRef(n_ref)
+#		if not rr:
+#			rdue=watch_node(n_ref,B_WATCH_DIRECTORY,be_app_messenger)#B_WATCH_ALL
+#			print("risultato return watch_node:",rdue)
+##################################################		
 		#print(value.ascent,value.descent,value.leading,"is descending the useful value to place the string?")
 
 
@@ -270,17 +265,8 @@ class PBox(BBox):
 		self.immagine = immagine
 		self.frame = frame
 		BBox.__init__(self,frame,name,0x0202|0x0404,InterfaceDefs.border_style.B_NO_BORDER)
-#	def MouseDown(self, where):
-#		print("Click in PBox:")
-#		where.PrintToStream()
-#		BView.MouseDown(self,where)
-#	def DrawMe(self):
-#		print("Eseguo DrawMe")
-#		self.DrawBitmap(self.immagine,self.frame)
-#		#self.DrawBitmap(self.immagine,BPoint(0,0))
-#		#self.DrawBitmapAsync(self.immagine,self.frame)
+
 	def Draw(self,rect):
-		print("eseguo disegno PBox")
 		BBox.Draw(self, rect)
 		inset = BRect(2, 2, self.frame.Width()-1, self.frame.Height()-2)
 		self.DrawBitmap(self.immagine,inset)
@@ -497,7 +483,6 @@ class SettingsWindow(BWindow):
 				Config.read(confile.Path())
 				try:
 					sez=Config.sections()
-					print(sez)
 					for s in sez:
 						self.views.append(SectionView(tabrect,s,self.tabview.TabHeight(),confile.Path()))
 						self.tablabels.append(BTab(self.views[-1]))
