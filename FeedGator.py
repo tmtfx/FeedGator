@@ -122,22 +122,7 @@ class PaperItem(BListItem):
 		self.font_height_value=font_height()
 		fon.GetHeight(self.font_height_value)
 		self.newscount=self.datapath.CountEntries()
-		if self.newscount > 0:
-			perc=BPath()
-			self.datapath.Rewind()
-			ret=False
-			while not ret:
-				evalent=BEntry()
-				ret=self.datapath.GetNextEntry(evalent)
-				if not ret:
-					evalent.GetPath(perc)
-					nf=BNode(perc.Path())
-					attributes=attr(nf)
-					for element in attributes:
-						if element[0] == "Unread":
-							unr=element[2][0]
-							if unr:
-								self.cnnews+=1
+
 
 		n_ref=node_ref()
 		entu=BEntry(self.datapath,self.path.Path())
@@ -156,7 +141,25 @@ class PaperItem(BListItem):
 
 
 		BListItem.__init__(self)
-		
+
+	def Statistics(self):
+		self.newscount=self.datapath.CountEntries()
+		if self.newscount > 0:
+			perc=BPath()
+			self.datapath.Rewind()
+			ret=False
+			while not ret:
+				evalent=BEntry()
+				ret=self.datapath.GetNextEntry(evalent)
+				if not ret:
+					evalent.GetPath(perc)
+					nf=BNode(perc.Path())
+					attributes=attr(nf)
+					for element in attributes:
+						if element[0] == "Unread":
+							unr=element[2][0]
+							if unr:
+								self.cnnews+=1
 
 	def DrawItem(self, owner, frame, complete):
 		self.newnews=False
@@ -246,7 +249,7 @@ class ScrollView:
 		self.sv.SetResizingMode(B_FOLLOW_TOP_BOTTOM)
 		#'NormalScrollView'
 
-#class PView(BView):
+# class PView(BView):
 #	def __init__(self,frame,name,immagine):
 #		self.immagine=immagine
 #		self.frame=frame
@@ -941,13 +944,16 @@ class GatorWindow(BWindow):
 				rit = False
 				if self.set_savemenu:
 					if marked == "Title":
+						self.tr=[]
 						while not rit:
 							itmEntry=BEntry()
 							rit=curpaper.datapath.GetNextEntry(itmEntry)
-							self.NewsItemConstructor(itmEntry)
+							#self.NewsItemConstructor(itmEntry)
+							self.tr.append(itmEntry)
+						be_app.WindowAt(0).PostMessage(444)
 					if marked == "Unread":
-						listunread=[]
-						listread=[]
+						self.listunread=[]
+						self.listread=[]
 						while not rit:
 							itmEntry=BEntry()
 							rit=curpaper.datapath.GetNextEntry(itmEntry)
@@ -960,18 +966,22 @@ class GatorWindow(BWindow):
 									if unread == True:
 										gotounread = True
 							if gotounread==True:
-								listunread.append(itmEntry)
+								self.listunread.append(itmEntry)
 							else:
-								listread.append(itmEntry)
-						for item in listunread:
-							self.NewsItemConstructor(item)
-						for item in listread:
-							self.NewsItemConstructor(item)
+								self.listread.append(itmEntry)
+						self.totallist=[]
+						self.totallist+=self.listunread
+						self.totallist+=self.listread
+						be_app.WindowAt(0).PostMessage(455)
+						#for item in listunread:
+						#	self.NewsItemConstructor(item)
+						#for item in listread:
+						#	self.NewsItemConstructor(item)
 						
 					if marked == "Date": # TODO
 						from Be import stat
 						getlist=[]
-						orderedlist=[]
+						self.orderedlist=[]
 						
 						while not rit:
 							itmEntry=BEntry()
@@ -990,16 +1000,11 @@ class GatorWindow(BWindow):
 								if not rt:
 									st=os.stat(tmpPath.Path())
 									published=datetime.datetime.fromtimestamp(st.st_mtime)
-									
-								#st = stat()
-								#itmEntry.GetStat(st)
-								#print(st)
-								#published=datetime.datetime.now()
-								#TODO
 							getlist.append((itmEntry, published))
-						orderedlist = sorted(getlist, key=lambda x: x[1], reverse=True)
-						for item in orderedlist:
-							self.NewsItemConstructor(item[0])
+						self.orderedlist = sorted(getlist, key=lambda x: x[1], reverse=True)
+						be_app.WindowAt(0).PostMessage(465)
+						#for item in self.orderedlist:
+						#	self.NewsItemConstructor(item[0])
 				else:
 					while not rit:
 						itmEntry=BEntry()
@@ -1061,6 +1066,43 @@ class GatorWindow(BWindow):
 		if msg.what == system_message_code.B_MODIFIERS_CHANGED: #shif pressed
 			value=msg.FindInt32("modifiers")
 			self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
+		elif msg.what == 444:
+			en=len(self.tr)
+			i=0
+			while i<en:
+				#self.NewsItemConstructor(self.tr[i])
+				mxg=BMessage(445)
+				mxg.AddInt32("index",i)
+				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
+				thr.start()
+				i+=1
+		elif msg.what == 445:
+			value=msg.FindInt32("index")
+			self.NewsItemConstructor(self.tr[value])
+		elif msg.what == 455:
+			en = len(self.totallist)
+			i=0
+			while i<en:
+				mxg=BMessage(456)
+				mxg.AddInt32("index",i)
+				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
+				thr.start()
+				i+=1
+		elif msg.what == 456:
+			value=msg.FindInt32("index")
+			self.NewsItemConstructor(self.totallist[value])
+		elif msg.what == 465:
+			en = len(self.orderedlist)
+			i=0
+			while i<en:
+				mxg=BMessage(466)
+				mxg.AddInt32("index",i)
+				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
+				thr.start()
+				i+=1
+		elif msg.what == 466:
+			value=msg.FindInt32("index")
+			self.NewsItemConstructor(self.orderedlist[value][0])
 		elif msg.what == 5: #clear paper news
 			cursel=self.Paperlist.lv.CurrentSelection()
 			if cursel>-1:
@@ -1212,24 +1254,26 @@ class GatorWindow(BWindow):
 				for item in tmpNitm:
 					del item
 				tmpNitm.clear()
+			self.Paperlist.lv.ItemAt(cursel).Statistics()
 			if cursel>-1:
-				stuff = self.Paperlist.lv.ItemAt(cursel).name
-				ta=text_run_array()
-				txtrun1=text_run()
-				txtrun1.offset=0
-				fon1=BFont(be_bold_font)
-				fon1.SetSize(48.0)
-				txtrun1.font=fon1
-				col1=rgb_color()
-				col1.red=0
-				col1.green=200
-				col1.blue=0
-				col1.alpha=255
-				txtrun1.color=col1
-				ta.count=1
-				ta.runs[0]=txtrun1
-				self.NewsPreView.SetText(stuff,ta)
-				self.NewsPreView.SetRunArray(0,self.NewsPreView.TextLength(),ta)
+				stuff = self.Paperlist.lv.ItemAt(cursel).name+"\n\nTotal news: "+str(self.Paperlist.lv.ItemAt(cursel).newscount)+"\nNew news: "+str(self.Paperlist.lv.ItemAt(cursel).cnnews)
+				#ta=text_run_array()
+				#txtrun1=text_run()
+				#txtrun1.offset=0
+				#fon1=BFont(be_bold_font)
+				#fon1.SetSize(48.0)
+				#txtrun1.font=fon1
+				#col1=rgb_color()
+				#col1.red=0
+				#col1.green=200
+				#col1.blue=0
+				#col1.alpha=255
+				#txtrun1.color=col1
+				#ta.count=1
+				#ta.runs[0]=txtrun1
+				#self.NewsPreView.SetText(stuff,ta)
+				self.NewsPreView.SetText(stuff,None)
+				#self.NewsPreView.SetRunArray(0,self.NewsPreView.TextLength(),ta)
 				self.gjornaaltolet()
 			else:
 				self.NewsPreView.SelectAll()
