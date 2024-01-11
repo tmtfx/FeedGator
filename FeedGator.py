@@ -243,24 +243,24 @@ class ScrollView:
 		self.sv.SetResizingMode(B_FOLLOW_TOP_BOTTOM)
 		#'NormalScrollView'
 
-class PView(BView):
-	def __init__(self,frame,name,immagine):
-		self.immagine=immagine
-		self.frame=frame
-		BView.__init__(self,self.frame,name,8, 20000000)
-		
-	def UpdateImg(self,immagine):
-		self.Draw(self.frame)
-		self.immagine=immagine
-		rect=BRect(0,0,self.frame.Width(),self.frame.Height())
-		self.DrawBitmap(self.immagine,rect)
-
-	def Draw(self,rect):
-		BView.Draw(self,rect)
-		print("Disegno PView")
-		rect=BRect(0,0,self.frame.Width(),self.frame.Height())
-		self.DrawBitmap(self.immagine,rect)
-
+#class PView(BView):
+#	def __init__(self,frame,name,immagine):
+#		self.immagine=immagine
+#		self.frame=frame
+#		BView.__init__(self,self.frame,name,8, 20000000)
+#		
+#	def UpdateImg(self,immagine):
+#		self.Draw(self.frame)
+#		self.immagine=immagine
+#		rect=BRect(0,0,self.frame.Width(),self.frame.Height())
+#		self.DrawBitmap(self.immagine,rect)
+#
+#	def Draw(self,rect):
+#		BView.Draw(self,rect)
+#		print("Disegno PView")
+#		rect=BRect(0,0,self.frame.Width(),self.frame.Height())
+#		self.DrawBitmap(self.immagine,rect)
+#
 class PBox(BBox):
 	def __init__(self,frame,name,immagine):
 		self.immagine = immagine
@@ -268,8 +268,9 @@ class PBox(BBox):
 		BBox.__init__(self,frame,name,0x0202|0x0404,InterfaceDefs.border_style.B_NO_BORDER)
 		
 	def DrawMe(self):
-		self.DrawBitmap(self.immagine,self.frame)
-		
+		#self.DrawBitmap(self.immagine,self.frame)
+		#self.DrawBitmap(self.immagine,BPoint(0,0))
+		self.DrawBitmapAsync(self.immagine,self.frame)
 	def Draw(self,rect):
 		BBox.Draw(self, rect)
 		inset = BRect(4, 4, self.frame.Width()-4, self.frame.Height()-4)
@@ -282,13 +283,15 @@ class AboutWindow(BWindow):
 		self.bckgnd.SetResizingMode(B_FOLLOW_V_CENTER|B_FOLLOW_H_CENTER)
 		bckgnd_bounds=self.bckgnd.Bounds()
 		self.AddChild(self.bckgnd,None)
-		self.bckgnd.SetFlags(B_WILL_DRAW|B_NAVIGABLE|B_FULL_UPDATE_ON_RESIZE|B_FRAME_EVENTS)
+		#self.bckgnd.SetFlags(B_WILL_DRAW|B_NAVIGABLE|B_FULL_UPDATE_ON_RESIZE|B_FRAME_EVENTS)
 		self.box = BBox(bckgnd_bounds,"Underbox",0x0202|0x0404,border_style.B_FANCY_BORDER)
 		self.bckgnd.AddChild(self.box,None)
 		pbox_rect=BRect(0,0,self.box.Bounds().Width(),241)
-		img1=BTranslationUtils.GetBitmap("/boot/home/Apps/FeedGator/FeedGator/FeedGator1c.bmp",None)
+		patty=os.getcwd()+"/FeedGator1c.bmp"
+		img1=BTranslationUtils.GetBitmap(patty,None)
 		self.pbox=PBox(pbox_rect,"PictureBox",img1)
 		self.box.AddChild(self.pbox,None)
+		self.pbox.DrawMe()
 		abrect=BRect(2,242, self.box.Bounds().Width()-2,self.box.Bounds().Height()-2)
 		inner_ab=BRect(4,4,abrect.Width()-4,abrect.Height()-4)
 		mycolor=rgb_color()
@@ -328,44 +331,12 @@ class AboutWindow(BWindow):
 		arra.runs[1]=txtrun2
 		self.AboutText.SetText(stuff,arra)
 		self.box.AddChild(self.AboutText,None)
-		
-#		img=BFile("/boot/home/Desktop/nuzgator5.bmp",0) #B_READ_ONLY
-#		offset=0
-#		offset_data,headdata,=img.ReadAt(10,4)
-#		offset=struct.unpack("<I", offset_data)[0]
-#		#img.Seek(10,SEEK_SET);
-#		img.Seek(14,0)
-#		img.Seek(offset,0)
-#		v,b = img.GetSize()
-#		imgdata,sizeimg=img.Read(b-offset)
-#		#print(f"Offset dati immagine: {offset}")
-#		#print(f"Dati immagine: {imgdata}")
-#		#print(sizeimg)
-#		#img.Read(offset,sizeof(uint32_t))
-#		#img.Seek(offset,SEEK_SET
-#		#bitmhead=img.ReadAt(10,4)
-#		#print(bitmhead)
-#		a=BBitmap(self.box.Bounds(),color_space.B_RGBA32)
-#		#k=a.Bits()
-#		#l=a.BitsLength()
-#		#print(len(imgdata),a.BitsLength())
-#		#print(sizeimg)
-#		#a.SetBits(imgdata,sizeimg,0,color_space.B_RGBA32)
-#		#print(a.Bits())
-#		if len(imgdata)> a.BitsLength():
-#			img_data=imgdata[:a.BitsLength()]
-#			print(len(img_data),a.BitsLength())
-#			a.SetBits(img_data,a.BitsLength(),0,color_space.B_RGBA32)
-#		else:
-#			a.SetBits(imgdata,a.BitsLength(),0,color_space.B_RGBA32)
-#		#print(k)
-#		pictview=PBox(bckgnd_bounds,"mybitmap",a)
-#		self.bckgnd.AddChild(pictview,None)
+
 	def MessageReceived(self, msg):
+		msg.PrintToStream()
 		BWindow.MessageReceived(self, msg)
 
 	def FrameResized(self,x,y):
-		print("passing through here")
 		self.ResizeTo(550,625)
 
 	def QuitRequested(self):
@@ -883,7 +854,8 @@ class GatorWindow(BWindow):
 		self.UpdatePapers()
 		
 		pbox_rect=BRect(0,0,550,241)
-		img1=BTranslationUtils.GetBitmap("/boot/home/Apps/FeedGator/FeedGator/FeedGator1c.bmp",None)
+		patty=os.getcwd()+"/FeedGator1c.bmp"
+		img1=BTranslationUtils.GetBitmap(patty,None)
 		self.pbox=PBox(pbox_rect,"PictureBox",img1)
 		self.pbox.SetFlags(B_WILL_DRAW)
 		self.box.AddChild(self.pbox,None)
@@ -1070,12 +1042,11 @@ class GatorWindow(BWindow):
 				self.NewsList.lv.AddItem(tmpNitm[-1])
 			
 	def MessageReceived(self, msg):
-		msg.PrintToStream()
-		if msg.what == system_message_code.B_MODIFIERS_CHANGED:
+		#msg.PrintToStream()
+		if msg.what == system_message_code.B_MODIFIERS_CHANGED: #shif pressed
 			value=msg.FindInt32("modifiers")
 			self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
-		elif msg.what == 5:
-			#clear paper news
+		elif msg.what == 5: #clear paper news
 			cursel=self.Paperlist.lv.CurrentSelection()
 			if cursel>-1:
 				stuff="You are going to remove all "+self.Paperlist.lv.ItemAt(cursel).name+"'s feeds. Proceed?"
@@ -1102,16 +1073,13 @@ class GatorWindow(BWindow):
 			else:
 				risp = BAlert('lol', 'If you think so...', 'Poor me', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
 				risp.Go()
-		elif msg.what == 3:
-			#about = BAlert('awin', 'BGator v. 1.9.9-alpha by TmTFx', 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
-			#about.Go()
+		elif msg.what == 3: #open aboutWindow
 			about_window = AboutWindow()
 			about_window.Show()
-		elif msg.what == 6:
+		elif msg.what == 6: #open settings window
 			self.settings_window = SettingsWindow()
 			self.settings_window.Show()
-		elif msg.what == 2:
-			#remove feed and relative files and dir
+		elif msg.what == 2: #remove feed and relative files and dir
 			cursel=self.Paperlist.lv.CurrentSelection()
 			if cursel>-1:
 				stuff="You are going to remove "+self.Paperlist.lv.ItemAt(cursel).name+". Proceed?"
@@ -1222,8 +1190,7 @@ class GatorWindow(BWindow):
 			tmpindex=self.Paperlist.lv.CurrentSelection()
 			self.Paperlist.lv.DeselectAll()
 			self.Paperlist.lv.Select(tmpindex)
-		elif msg.what == self.Paperlist.PaperSelection:
-			#Paper selection
+		elif msg.what == self.Paperlist.PaperSelection: #Paper selection
 			self.NewsList.lv.MakeEmpty()
 			cursel=self.Paperlist.lv.CurrentSelection()
 			if len(tmpNitm)>0:
@@ -1253,8 +1220,7 @@ class GatorWindow(BWindow):
 				self.NewsPreView.SelectAll()
 				self.NewsPreView.Clear()
 
-		elif msg.what == self.NewsList.NewsSelection:
-			#News selection
+		elif msg.what == self.NewsList.NewsSelection: #News selection
 			curit = self.NewsList.lv.CurrentSelection()
 			if curit>-1:
 				Nitm = self.NewsList.lv.ItemAt(curit)
@@ -1278,22 +1244,21 @@ class GatorWindow(BWindow):
 				self.NewsPreView.SelectAll()
 				self.NewsPreView.Clear()
 
-		elif msg.what == 4:
-			#mark all read
+		elif msg.what == 4: #mark all read
 			if self.NewsList.lv.CountItems()>0:
 				for item in self.NewsList.lv.Items():
-					item.unread = False
-					msg=BMessage(83)
-					pth=BPath()
-					item.entry.GetPath(pth)
-					msg.AddString("path",pth.Path())
-					msg.AddBool("unreadValue",False)
-					msg.AddInt32("selected",self.NewsList.lv.IndexOf(item))
-					msg.AddInt32("selectedP",self.Paperlist.lv.CurrentSelection())
-					be_app.WindowAt(0).PostMessage(msg)
+					if item.unread:
+						item.unread = False
+						msg=BMessage(83)
+						pth=BPath()
+						item.entry.GetPath(pth)
+						msg.AddString("path",pth.Path())
+						msg.AddBool("unreadValue",False)
+						msg.AddInt32("selected",self.NewsList.lv.IndexOf(item))
+						msg.AddInt32("selectedP",self.Paperlist.lv.CurrentSelection())
+						be_app.WindowAt(0).PostMessage(msg)
 
-		elif msg.what == 9:
-			#mark unread btn
+		elif msg.what == 9: #mark unread btn
 			curit = self.NewsList.lv.CurrentSelection()
 			if curit>-1:
 				Nitm = self.NewsList.lv.ItemAt(curit)
@@ -1308,8 +1273,7 @@ class GatorWindow(BWindow):
 					msg.AddInt32("selectedP",self.Paperlist.lv.CurrentSelection())
 					be_app.WindowAt(0).PostMessage(msg)
 
-		elif msg.what == 10:
-			#mark read btn
+		elif msg.what == 10: #mark read btn
 			curit = self.NewsList.lv.CurrentSelection()
 			if curit>-1:
 				Nitm = self.NewsList.lv.ItemAt(curit)
@@ -1337,14 +1301,12 @@ class GatorWindow(BWindow):
 				nd.WriteAttr("Unread",ninfo.type,0,givevalue)
 				itto=self.NewsList.lv.ItemAt(msg.FindInt32("selected"))
 				itto.DrawItem(self.NewsList.lv,self.NewsList.lv.ItemFrame(msg.FindInt32("selected")),True)
-				
 				itto=self.Paperlist.lv.ItemAt(msg.FindInt32("selectedP"))
 				itto.DrawItem(self.Paperlist.lv,self.Paperlist.lv.ItemFrame(msg.FindInt32("selectedP")),False)
 			self.NewsList.lv.Hide()
 			self.NewsList.lv.Show()
 
-		elif msg.what == self.NewsList.HiWhat:
-			#open link
+		elif msg.what == self.NewsList.HiWhat: #open link
 			curit=self.NewsList.lv.CurrentSelection()
 			if curit>-1:
 				itto=self.NewsList.lv.ItemAt(curit)
@@ -1352,8 +1314,7 @@ class GatorWindow(BWindow):
 					t = Thread(target=openlink,args=(itto.link,))
 					t.run()
 			
-		elif msg.what == self.Paperlist.HiWhat: #TODO
-			#open paper folder or details
+		elif msg.what == self.Paperlist.HiWhat: #open paper folder or details
 			curit=self.Paperlist.lv.CurrentSelection()
 			if curit>-1:
 				if self.shiftok:
@@ -1363,13 +1324,11 @@ class GatorWindow(BWindow):
 					ittp=self.Paperlist.lv.ItemAt(curit)
 					subprocess.run(["open",ittp.path.Path()])
 
-		elif msg.what == 1:
-			#open add feed window
+		elif msg.what == 1: #open add feed window
 			self.tmpWind.append(AddFeedWindow())
 			self.tmpWind[-1].Show()
 
-		elif msg.what == 245:
-			# ADD FEED
+		elif msg.what == 245: # ADD FEED
 			feedaddr=msg.FindString("feed")
 			d=feedparser.parse(feedaddr)
 			if d.feed.has_key('title'):
@@ -1401,7 +1360,7 @@ class GatorWindow(BWindow):
 				#se esiste ma gli attributi non corrispondono, chiedere cosa fare
 				#se esiste ma non ha tutti gli attributi scrivili
 
-		elif msg.what == 66:
+		elif msg.what == 66: #Parallel Update news
 			self.infostring.SetText("Updating news, please wait...")
 			self.progress.SetMaxValue(self.Paperlist.lv.CountItems()*100+self.Paperlist.lv.CountItems())
 			self.cres=0
