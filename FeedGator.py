@@ -23,9 +23,8 @@ from Be.Application import *
 from Be import Entry
 from Be.Entry import entry_ref, get_ref_for_path
 
-#webbrowser,
 import configparser,re, os, feedparser, struct, datetime, subprocess
-from threading import Thread#,Semaphore
+from threading import Thread
 
 Config=configparser.ConfigParser()
 def ConfigSectionMap(section):
@@ -44,7 +43,6 @@ def ConfigSectionMap(section):
 def openlink(link):
 	osd=BUrl(link)
 	retu=osd.OpenWithPreferredApplication()
-	#print("risultato open with preferred application:",retu)
 
 def attr(node):
 	al = []
@@ -1066,20 +1064,19 @@ class GatorWindow(BWindow):
 		if msg.what == system_message_code.B_MODIFIERS_CHANGED: #shif pressed
 			value=msg.FindInt32("modifiers")
 			self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
-		elif msg.what == 444:
+		elif msg.what == 444: #manage newslist ordered by title
 			en=len(self.tr)
 			i=0
 			while i<en:
-				#self.NewsItemConstructor(self.tr[i])
 				mxg=BMessage(445)
 				mxg.AddInt32("index",i)
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
 				i+=1
-		elif msg.what == 445:
+		elif msg.what == 445: #construct and add newsitem
 			value=msg.FindInt32("index")
 			self.NewsItemConstructor(self.tr[value])
-		elif msg.what == 455:
+		elif msg.what == 455: #manage newslist ordered by Unread
 			en = len(self.totallist)
 			i=0
 			while i<en:
@@ -1088,10 +1085,10 @@ class GatorWindow(BWindow):
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
 				i+=1
-		elif msg.what == 456:
+		elif msg.what == 456: #construct and add newsitem
 			value=msg.FindInt32("index")
 			self.NewsItemConstructor(self.totallist[value])
-		elif msg.what == 465:
+		elif msg.what == 465: #manage newslist ordered by datetime
 			en = len(self.orderedlist)
 			i=0
 			while i<en:
@@ -1100,7 +1097,7 @@ class GatorWindow(BWindow):
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
 				i+=1
-		elif msg.what == 466:
+		elif msg.what == 466: #construct and add newsitem
 			value=msg.FindInt32("index")
 			self.NewsItemConstructor(self.orderedlist[value][0])
 		elif msg.what == 5: #clear paper news
