@@ -343,9 +343,9 @@ class AboutWindow(BWindow):
 		self.AboutText.SetText(stuff,arra)
 		self.box.AddChild(self.AboutText,None)
 
-	def MessageReceived(self, msg):
-		msg.PrintToStream()
-		BWindow.MessageReceived(self, msg)
+#	def MessageReceived(self, msg):
+		#msg.PrintToStream()
+		#BWindow.MessageReceived(self, msg)
 
 	def FrameResized(self,x,y):
 		self.ResizeTo(550,625)
@@ -1060,7 +1060,7 @@ class GatorWindow(BWindow):
 				self.NewsList.lv.AddItem(tmpNitm[-1])
 			
 	def MessageReceived(self, msg):
-		msg.PrintToStream()
+		#msg.PrintToStream()
 		if msg.what == system_message_code.B_MODIFIERS_CHANGED: #shif pressed
 			value=msg.FindInt32("modifiers")
 			self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
