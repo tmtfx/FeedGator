@@ -2,7 +2,7 @@
 from Be import BApplication, BWindow, BView, BMenu,BMenuBar, BMenuItem, BSeparatorItem, BMessage, window_type, B_NOT_RESIZABLE, B_CLOSE_ON_ESCAPE, B_QUIT_ON_WINDOW_CLOSE
 from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, BScrollView, BRect, BBox, BFont, InterfaceDefs, BPath, BDirectory, BEntry, BTabView, BTab
 from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap,BLocker,BCheckBox,BQuery
-from Be import BTranslationUtils
+from Be import BTranslationUtils,BScreen
 from Be.NodeMonitor import *
 from Be.Node import node_ref
 from Be.GraphicsDefs import *
@@ -71,12 +71,13 @@ def get_type_string(value):
 
 
 class NewsItem(BListItem):
-	def __init__(self, title, entry, link, unread,consist):
+	def __init__(self, title, entry, link, unread,published,consist):
 		self.name=title
 		self.consistent=consist
 		self.entry = entry
 		self.link = link
 		self.unread = unread
+		self.published = published
 		fon=BFont()
 		self.font_height_value=font_height()
 		fon.GetHeight(self.font_height_value)
@@ -129,7 +130,7 @@ class PaperItem(BListItem):
 #		if not rr:
 #			rdue=watch_node(n_ref,B_WATCH_DIRECTORY,be_app_messenger)#B_WATCH_ALL
 #			print("risultato return watch_node:",rdue)
-##################################################		
+##################################################
 		#print(value.ascent,value.descent,value.leading,"is descending the useful value to place the string?")
 
 
@@ -273,7 +274,11 @@ class PBox(BBox):
 		
 class AboutWindow(BWindow):
 	def __init__(self):
-		BWindow.__init__(self, BRect(100, 100, 650, 725),"About",window_type.B_FLOATING_WINDOW, B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)#MODAL
+		scr=BScreen()
+		scrfrm=scr.Frame()
+		x=(scrfrm.right+1)/2-550/2
+		y=(scrfrm.bottom+1)/2-625/2
+		BWindow.__init__(self, BRect(x, y, x+550, y+625),"About",window_type.B_MODAL_WINDOW, B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)#MODAL
 		self.bckgnd = BView(self.Bounds(), "backgroundView", 8, 20000000)#B_WILL_DRAW|B_NAVIGABLE|B_FULL_UPDATE_ON_RESIZE|B_FRAME_EVENTS)#20000000)
 		self.bckgnd.SetResizingMode(B_FOLLOW_V_CENTER|B_FOLLOW_H_CENTER)
 		bckgnd_bounds=self.bckgnd.Bounds()
@@ -283,10 +288,17 @@ class AboutWindow(BWindow):
 		self.bckgnd.AddChild(self.box,None)
 		################## PBOX ###############################
 		pbox_rect=BRect(0,0,self.box.Bounds().Width(),241)
-		patty=os.getcwd()+"/FeedGator1c.bmp"
-		img1=BTranslationUtils.GetBitmap(patty,None)
-		self.pbox=PBox(pbox_rect,"PictureBox",img1)
-		self.box.AddChild(self.pbox,None)
+		perc=BPath()
+		find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
+		datapath=BDirectory(perc.Path()+"/BGator2/Data")
+		ent=BEntry(datapath,perc.Path()+"/BGator2/Data")
+		if ent.Exists():
+			ent.GetPath(perc)
+			patty=perc.Path()+"/FeedGator1c.png"
+			#patty=os.getcwd()+"/FeedGator1c.bmp"
+			img1=BTranslationUtils.GetBitmap(patty,None)
+			self.pbox=PBox(pbox_rect,"PictureBox",img1)
+			self.box.AddChild(self.pbox,None)
 		#pbox.DrawMe()
 		#######################################################
 		abrect=BRect(2,242, self.box.Bounds().Width()-2,self.box.Bounds().Height()-2)
@@ -342,6 +354,7 @@ class AboutWindow(BWindow):
 		#print(a,a.Name())
 		#r=self.RemoveChild(a)
 		#print(r)
+		#self.Lock()
 		self.Quit()
 		
 class PapDetails(BWindow):
@@ -1003,6 +1016,7 @@ class GatorWindow(BWindow):
 			blink = False
 			bunread = False
 			btitle = False
+			bpub = False
 			for element in attributes:
 				if element[0] == "link":
 						link = element[2][0]
@@ -1013,22 +1027,29 @@ class GatorWindow(BWindow):
 				if element[0] == "title":
 						title = element[2][0]
 						btitle = True
+				if element[0] == "published":
+						published = element[2][0]
+						bpub = True
 			try:
 				type(link)
 				type(unread)
 				type(title)			
 				addnews=True
 			except:
-				print("provo getname")
 				stato,charro=entry.GetName()
 				if stato:
 					print("stato true unconsistent news for "+charro)
 				else:
 					print("stato false unconsistent news for "+charro)
-		
+			if not bpub:
+				tmpPath=BPath()
+				rt = entry.GetPath(tmpPath)
+				if not rt:
+					st=os.stat(tmpPath.Path())
+					published=datetime.datetime.fromtimestamp(st.st_mtime)
 			if addnews:
 				consist=True
-				tmpNitm.append(NewsItem(title,entry,link,unread,consist))
+				tmpNitm.append(NewsItem(title,entry,link,unread,published,consist))
 				self.NewsList.lv.AddItem(tmpNitm[-1])
 			else:
 				consist=False
@@ -1279,6 +1300,9 @@ class GatorWindow(BWindow):
 				r,s=NFile.GetSize()
 				if not r:
 					self.NewsPreView.SetText(NFile,0,s,None)
+					txtnfile=self.NewsPreView.Text()
+					newtxt="Published or stored (Y-m-d, H:M):\t\t\t\t\t"+Nitm.published.strftime("%Y-%m-%d, at %H:%M")+"\n\n"+txtnfile
+					self.NewsPreView.SetText(newtxt,None)
 				else:
 					self.NewsPreView.SetText("There\'s no preview here",None)
 			else:
