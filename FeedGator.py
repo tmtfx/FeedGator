@@ -42,10 +42,8 @@ def ConfigSectionMap(section):
     return dict1
 
 def openlink(link):
-	global tab,name
 	osd=BUrl(link)
 	retu=osd.OpenWithPreferredApplication()
-	#webbrowser.get(name).open(link,tab,False)
 	#print("risultato open with preferred application:",retu)
 
 def attr(node):
@@ -145,7 +143,12 @@ class PaperItem(BListItem):
 		entu=BEntry(self.datapath,self.path.Path())
 		rr=entu.GetNodeRef(n_ref)
 		if not rr:
-			print("executing watch_node")
+			#nubidir=BDirectory(n_ref)
+			#tmpent=BEntry()
+			#nubidir.GetEntry(tmpent)
+			#tmpPath=BPath()
+			#tmpent.GetPath(tmpPath)
+			#print(tmpPath.Path())
 			rdue=watch_node(n_ref,B_WATCH_DIRECTORY,be_app_messenger)#B_WATCH_ALL
 			print("risultato return watch_node:",rdue)
 		
@@ -257,28 +260,33 @@ class ScrollView:
 #
 #	def Draw(self,rect):
 #		BView.Draw(self,rect)
-#		print("Disegno PView")
+##		print("Disegno PView")
 #		rect=BRect(0,0,self.frame.Width(),self.frame.Height())
 #		self.DrawBitmap(self.immagine,rect)
-#
+
 class PBox(BBox):
 	def __init__(self,frame,name,immagine):
 		self.immagine = immagine
 		self.frame = frame
 		BBox.__init__(self,frame,name,0x0202|0x0404,InterfaceDefs.border_style.B_NO_BORDER)
-		
-	def DrawMe(self):
-		#self.DrawBitmap(self.immagine,self.frame)
-		#self.DrawBitmap(self.immagine,BPoint(0,0))
-		self.DrawBitmapAsync(self.immagine,self.frame)
+#	def MouseDown(self, where):
+#		print("Click in PBox:")
+#		where.PrintToStream()
+#		BView.MouseDown(self,where)
+#	def DrawMe(self):
+#		print("Eseguo DrawMe")
+#		self.DrawBitmap(self.immagine,self.frame)
+#		#self.DrawBitmap(self.immagine,BPoint(0,0))
+#		#self.DrawBitmapAsync(self.immagine,self.frame)
 	def Draw(self,rect):
+		print("eseguo disegno PBox")
 		BBox.Draw(self, rect)
-		inset = BRect(4, 4, self.frame.Width()-4, self.frame.Height()-4)
+		inset = BRect(2, 2, self.frame.Width()-1, self.frame.Height()-2)
 		self.DrawBitmap(self.immagine,inset)
 		
 class AboutWindow(BWindow):
 	def __init__(self):
-		BWindow.__init__(self, BRect(100, 100, 650, 725),"About",window_type.B_MODAL_WINDOW,B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)
+		BWindow.__init__(self, BRect(100, 100, 650, 725),"About",window_type.B_FLOATING_WINDOW, B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)#MODAL
 		self.bckgnd = BView(self.Bounds(), "backgroundView", 8, 20000000)#B_WILL_DRAW|B_NAVIGABLE|B_FULL_UPDATE_ON_RESIZE|B_FRAME_EVENTS)#20000000)
 		self.bckgnd.SetResizingMode(B_FOLLOW_V_CENTER|B_FOLLOW_H_CENTER)
 		bckgnd_bounds=self.bckgnd.Bounds()
@@ -286,12 +294,15 @@ class AboutWindow(BWindow):
 		#self.bckgnd.SetFlags(B_WILL_DRAW|B_NAVIGABLE|B_FULL_UPDATE_ON_RESIZE|B_FRAME_EVENTS)
 		self.box = BBox(bckgnd_bounds,"Underbox",0x0202|0x0404,border_style.B_FANCY_BORDER)
 		self.bckgnd.AddChild(self.box,None)
+		################## PBOX ###############################
 		pbox_rect=BRect(0,0,self.box.Bounds().Width(),241)
 		patty=os.getcwd()+"/FeedGator1c.bmp"
 		img1=BTranslationUtils.GetBitmap(patty,None)
-		self.pbox=PBox(pbox_rect,"PictureBox",img1)
-		self.box.AddChild(self.pbox,None)
-		self.pbox.DrawMe()
+		global pbox
+		pbox=PBox(pbox_rect,"PictureBox",img1)
+		self.box.AddChild(pbox,None)
+		#pbox.DrawMe()
+		#######################################################
 		abrect=BRect(2,242, self.box.Bounds().Width()-2,self.box.Bounds().Height()-2)
 		inner_ab=BRect(4,4,abrect.Width()-4,abrect.Height()-4)
 		mycolor=rgb_color()
@@ -340,6 +351,11 @@ class AboutWindow(BWindow):
 		self.ResizeTo(550,625)
 
 	def QuitRequested(self):
+		print("In AboutWindow Quit Requested")
+		a=self.FindView("PictureBox")
+		print(a,a.Name())
+		r=self.RemoveChild(a)
+		print(r)
 		self.Quit()
 		
 class PapDetails(BWindow):
@@ -853,12 +869,12 @@ class GatorWindow(BWindow):
 		
 		self.UpdatePapers()
 		
-		pbox_rect=BRect(0,0,550,241)
-		patty=os.getcwd()+"/FeedGator1c.bmp"
-		img1=BTranslationUtils.GetBitmap(patty,None)
-		self.pbox=PBox(pbox_rect,"PictureBox",img1)
-		self.pbox.SetFlags(B_WILL_DRAW)
-		self.box.AddChild(self.pbox,None)
+		#pbox_rect=BRect(0,0,550,241)
+		#patty=os.getcwd()+"/FeedGator1c.bmp"
+		#img1=BTranslationUtils.GetBitmap(patty,None)
+		#self.pbox=PBox(pbox_rect,"PictureBox",img1)
+		#self.pbox.SetFlags(B_WILL_DRAW)
+		#self.box.AddChild(self.pbox,None)
 
 
 	def ClearNewsList(self):
@@ -1042,7 +1058,7 @@ class GatorWindow(BWindow):
 				self.NewsList.lv.AddItem(tmpNitm[-1])
 			
 	def MessageReceived(self, msg):
-		#msg.PrintToStream()
+		msg.PrintToStream()
 		if msg.what == system_message_code.B_MODIFIERS_CHANGED: #shif pressed
 			value=msg.FindInt32("modifiers")
 			self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
@@ -1522,6 +1538,7 @@ def main():
     global be_app
     be_app = App()
     be_app.Run()
+	
  
 if __name__ == "__main__":
     main()
