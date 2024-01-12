@@ -298,9 +298,8 @@ class AboutWindow(BWindow):
 		pbox_rect=BRect(0,0,self.box.Bounds().Width(),241)
 		patty=os.getcwd()+"/FeedGator1c.bmp"
 		img1=BTranslationUtils.GetBitmap(patty,None)
-		global pbox
-		pbox=PBox(pbox_rect,"PictureBox",img1)
-		self.box.AddChild(pbox,None)
+		self.pbox=PBox(pbox_rect,"PictureBox",img1)
+		self.box.AddChild(self.pbox,None)
 		#pbox.DrawMe()
 		#######################################################
 		abrect=BRect(2,242, self.box.Bounds().Width()-2,self.box.Bounds().Height()-2)
@@ -351,11 +350,11 @@ class AboutWindow(BWindow):
 		self.ResizeTo(550,625)
 
 	def QuitRequested(self):
-		print("In AboutWindow Quit Requested")
-		a=self.FindView("PictureBox")
-		print(a,a.Name())
-		r=self.RemoveChild(a)
-		print(r)
+		#print("In AboutWindow Quit Requested")
+		#a=self.FindView("PictureBox")
+		#print(a,a.Name())
+		#r=self.RemoveChild(a)
+		#print(r)
 		self.Quit()
 		
 class PapDetails(BWindow):
@@ -1090,8 +1089,8 @@ class GatorWindow(BWindow):
 				risp = BAlert('lol', 'If you think so...', 'Poor me', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
 				risp.Go()
 		elif msg.what == 3: #open aboutWindow
-			about_window = AboutWindow()
-			about_window.Show()
+			self.about_window = AboutWindow()
+			self.about_window.Show()
 		elif msg.what == 6: #open settings window
 			self.settings_window = SettingsWindow()
 			self.settings_window.Show()
