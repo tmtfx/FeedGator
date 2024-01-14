@@ -295,7 +295,6 @@ class AboutWindow(BWindow):
 		if ent.Exists():
 			ent.GetPath(perc)
 			patty=perc.Path()+"/FeedGator1c.png"
-			#patty=os.getcwd()+"/FeedGator1c.bmp"
 			img1=BTranslationUtils.GetBitmap(patty,None)
 			self.pbox=PBox(pbox_rect,"PictureBox",img1)
 			self.box.AddChild(self.pbox,None)
