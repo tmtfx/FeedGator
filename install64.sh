@@ -27,11 +27,21 @@ fi
 echo
 if [ -e FeedGator.py ]
 then
-	mkdir /boot/home/config/non-packaged/data/BGator2
+	if ![ -e /boot/home/config/non-packaged/data/BGator2 ]; then
+		mkdir /boot/home/config/non-packaged/data/BGator2
+	fi
 	cp FeedGator.py /boot/home/config/non-packaged/data/BGator2
 	ret4=$?
+	if [ -e /boot/home/config/non-packaged/bin/FeedGator ]; then
+		rm -f /boot/home/config/non-packaged/bin/FeedGator
+	fi
 	ln -s /boot/home/config/non-packaged/data/BGator2/FeedGator.py /boot/home/config/non-packaged/bin/FeedGator
-	mkdir /boot/home/config/settings/deskbar/menu/Applications/
+	if ![ -e /boot/home/config/settings/deskbar/menu/Applications/ ]; then
+		mkdir /boot/home/config/settings/deskbar/menu/Applications/
+	fi
+	if [ -e /boot/home/config/settings/deskbar/menu/Applications/FeedGator ]; then
+		rm -f /boot/home/config/settings/deskbar/menu/Applications/FeedGator
+	fi
 	ln -s /boot/home/config/non-packaged/bin/FeedGator /boot/home/config/settings/deskbar/menu/Applications/FeedGator
 	ret5=$?
 else
