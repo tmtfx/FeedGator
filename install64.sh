@@ -19,6 +19,13 @@ git clone https://github.com/coolcoder613eb/Haiku-PyAPI.git
 cd Haiku-PyAPI
 jam -j$(nproc)
 ret2=$?
+if [ $ret2 -lt 1 ]
+then
+	if ! [[ -e /boot/system/non-packaged/lib/python3.10/site-packages/Be ]]; then
+		mkdir /boot/system/non-packaged/lib/python3.10/site-packages/Be
+	fi
+	cd bin/x86_64/python3.10 && cp * /boot/system/non-packaged/lib/python3.10/site-packages/Be
+fi
 cd ..
 else
 echo "Proceeding..."
