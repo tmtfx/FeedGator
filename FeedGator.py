@@ -1271,8 +1271,8 @@ class GatorWindow(BWindow):
 				for item in tmpNitm:
 					del item
 				tmpNitm.clear()
-			self.Paperlist.lv.ItemAt(cursel).Statistics()
 			if cursel>-1:
+				self.Paperlist.lv.ItemAt(cursel).Statistics()
 				stuff = self.Paperlist.lv.ItemAt(cursel).name+"\n\nTotal news: "+str(self.Paperlist.lv.ItemAt(cursel).newscount)+"\nNew news: "+str(self.Paperlist.lv.ItemAt(cursel).cnnews)
 				#ta=text_run_array()
 				#txtrun1=text_run()
