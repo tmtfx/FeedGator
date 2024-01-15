@@ -25,7 +25,7 @@ then
 		mkdir /boot/system/non-packaged/lib/python3.10/site-packages/Be
 	fi
 	echo "copying compiled data to system folder..."
-	cd bin/x86_64/python3.10 && cp * /boot/system/non-packaged/lib/python3.10/site-packages/Be
+	cd bin/x86_64/python3.10 && cp -v * /boot/system/non-packaged/lib/python3.10/site-packages/Be
 	ret7=$?
 	cd ../../..
 fi
