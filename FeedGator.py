@@ -243,23 +243,6 @@ class ScrollView:
 		self.sv.SetResizingMode(B_FOLLOW_TOP_BOTTOM)
 		#'NormalScrollView'
 
-# class PView(BView):
-#	def __init__(self,frame,name,immagine):
-#		self.immagine=immagine
-#		self.frame=frame
-#		BView.__init__(self,self.frame,name,8, 20000000)
-#		
-#	def UpdateImg(self,immagine):
-#		self.Draw(self.frame)
-#		self.immagine=immagine
-#		rect=BRect(0,0,self.frame.Width(),self.frame.Height())
-#		self.DrawBitmap(self.immagine,rect)
-#
-#	def Draw(self,rect):
-#		BView.Draw(self,rect)
-##		print("Disegno PView")
-#		rect=BRect(0,0,self.frame.Width(),self.frame.Height())
-#		self.DrawBitmap(self.immagine,rect)
 
 class PBox(BBox):
 	def __init__(self,frame,name,immagine):
@@ -278,28 +261,35 @@ class AboutWindow(BWindow):
 		scrfrm=scr.Frame()
 		x=(scrfrm.right+1)/2-550/2
 		y=(scrfrm.bottom+1)/2-625/2
-		BWindow.__init__(self, BRect(x, y, x+550, y+625),"About",window_type.B_MODAL_WINDOW, B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)#MODAL
-		self.bckgnd = BView(self.Bounds(), "backgroundView", 8, 20000000)#B_WILL_DRAW|B_NAVIGABLE|B_FULL_UPDATE_ON_RESIZE|B_FRAME_EVENTS)#20000000)
+		BWindow.__init__(self, BRect(x, y, x+550, y+625),"About",window_type.B_MODAL_WINDOW, B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)
+		self.bckgnd = BView(self.Bounds(), "backgroundView", 8, 20000000)
 		self.bckgnd.SetResizingMode(B_FOLLOW_V_CENTER|B_FOLLOW_H_CENTER)
 		bckgnd_bounds=self.bckgnd.Bounds()
 		self.AddChild(self.bckgnd,None)
-		#self.bckgnd.SetFlags(B_WILL_DRAW|B_NAVIGABLE|B_FULL_UPDATE_ON_RESIZE|B_FRAME_EVENTS)
 		self.box = BBox(bckgnd_bounds,"Underbox",0x0202|0x0404,border_style.B_FANCY_BORDER)
 		self.bckgnd.AddChild(self.box,None)
 		################## PBOX ###############################
 		pbox_rect=BRect(0,0,self.box.Bounds().Width(),241)
 		perc=BPath()
-		find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-		#datapath=BDirectory(perc.Path()+"/BGator2/Data")
-		#ent=BEntry(datapath,perc.Path()+"/BGator2/Data")
-		ent=BEntry(perc.Path()+"/BGator2/Data")
+		find_directory(directory_which.B_SYSTEM_DATA_DIRECTORY,perc,False,None)
+		ent=BEntry(perc.Path()+"/BGator2/Data/FeedGator1c.png")
 		if ent.Exists():
+			print("system installed mascot")
 			ent.GetPath(perc)
-			patty=perc.Path()+"/FeedGator1c.png"
-			img1=BTranslationUtils.GetBitmap(patty,None)
+			img1=BTranslationUtils.GetBitmap(perc.Path(),None)
 			self.pbox=PBox(pbox_rect,"PictureBox",img1)
 			self.box.AddChild(self.pbox,None)
-		#pbox.DrawMe()
+		else:
+			find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
+			ent=BEntry(perc.Path()+"/BGator2/Data/FeedGator1c.png")
+			if ent.Exists():
+				print("user installed mascot")
+				ent.GetPath(perc)
+				img1=BTranslationUtils.GetBitmap(perc.Path(),None)
+				self.pbox=PBox(pbox_rect,"PictureBox",img1)
+				self.box.AddChild(self.pbox,None)
+			else:
+				print("no mascot installed")
 		#######################################################
 		abrect=BRect(2,242, self.box.Bounds().Width()-2,self.box.Bounds().Height()-2)
 		inner_ab=BRect(4,4,abrect.Width()-4,abrect.Height()-4)
@@ -483,8 +473,6 @@ class SettingsWindow(BWindow):
 		self.optionbox=[]
 		perc=BPath()
 		find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-		#datapath=BDirectory(perc.Path()+"/BGator2")
-		#ent=BEntry(datapath,perc.Path()+"/BGator2")
 		ent=BEntry(perc.Path()+"/BGator2")
 		if not ent.Exists():
 			self.Close()
@@ -550,8 +538,6 @@ class SettingsWindow(BWindow):
 				option=theview.Options.lv.ItemAt(theview.Options.lv.CurrentSelection()).Text()
 				perc=BPath()
 				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-				#datapath=BDirectory(perc.Path()+"/BGator2")
-				#ent=BEntry(datapath,perc.Path()+"/BGator2")
 				ent=BEntry(perc.Path()+"/BGator2")
 				ent.GetPath(perc)
 				confile=BPath(perc.Path()+'/config.ini',None,False)
@@ -575,8 +561,6 @@ class SettingsWindow(BWindow):
 				option=theview.Options.lv.ItemAt(theview.Options.lv.CurrentSelection()).Text()
 				perc=BPath()
 				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-				#datapath=BDirectory(perc.Path()+"/BGator2")
-				#ent=BEntry(datapath,perc.Path()+"/BGator2")
 				ent=BEntry(perc.Path()+"/BGator2")
 				ent.GetPath(perc)
 				confile=BPath(perc.Path()+'/config.ini',None,False)
@@ -597,8 +581,6 @@ class SettingsWindow(BWindow):
 				option=theview.Options.lv.ItemAt(theview.Options.lv.CurrentSelection()).Text()
 				perc=BPath()
 				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-				#datapath=BDirectory(perc.Path()+"/BGator2")
-				#ent=BEntry(datapath,perc.Path()+"/BGator2")
 				ent=BEntry(perc.Path()+"/BGator2")
 				ent.GetPath(perc)
 				confile=BPath(perc.Path()+'/config.ini',None,False)
@@ -624,8 +606,6 @@ class SettingsWindow(BWindow):
 				option=theview.Options.lv.ItemAt(theview.Options.lv.CurrentSelection()).Text()
 				perc=BPath()
 				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-				#datapath=BDirectory(perc.Path()+"/BGator2")
-				#ent=BEntry(datapath,perc.Path()+"/BGator2")
 				ent=BEntry(perc.Path()+"/BGator2")
 				ent.GetPath(perc)
 				confile=BPath(perc.Path()+'/config.ini',None,False)
@@ -1131,22 +1111,26 @@ class GatorWindow(BWindow):
 								ret_status=evalent.Remove()
 		elif msg.what == 8:
 			perc=BPath()
-			find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
+			find_directory(directory_which.B_SYSTEM_DATA_DIRECTORY,perc,False,None)
 			link=perc.Path()+"/BGator2/Data/help/index.html"
-			cmd = "open "+link
 			ent=BEntry(link)
 			if ent.Exists():
-				print("eseguo thread openlink")
+				print("opening system help")
+				cmd = "open "+link
 				t = Thread(target=os.system,args=(cmd,))
 				t.run()
-			#ask = BAlert('Whoa!', 'Are you sure you need help?', 'Yes','No', None, InterfaceDefs.B_WIDTH_AS_USUAL, alert_type.B_IDEA_ALERT)
-			#answ=ask.Go()
-			#if answ==0:
-			#	risp = BAlert('lol', 'Well there\'s no help manual here', 'Bummer', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
-			#	risp.Go()
-			#else:
-			#	risp = BAlert('lol', 'If you think so...', 'Poor me', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
-			#	risp.Go()
+			else:
+				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
+				link=perc.Path()+"/BGator2/Data/help/index.html"
+				ent=BEntry(link)
+				if ent.Exists():
+					print("opening user installed help")
+					cmd = "open "+link
+					t = Thread(target=os.system,args=(cmd,))
+					t.run()
+				else:
+					wa=BAlert('noo', 'No help pages installed', 'Poor me', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
+					wa.Go()
 		elif msg.what == 3: #open aboutWindow
 			self.about_window = AboutWindow()
 			self.about_window.Show()
