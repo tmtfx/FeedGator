@@ -272,9 +272,9 @@ class AboutWindow(BWindow):
 		pbox_rect=BRect(0,0,self.box.Bounds().Width(),241)
 		perc=BPath()
 		find_directory(directory_which.B_SYSTEM_DATA_DIRECTORY,perc,False,None)
-		ent=BEntry(perc.Path()+"/BGator2/Data/FeedGator1c.png")
+		ent=BEntry(perc.Path()+"/BGator2/FeedGator1c.png")
 		if ent.Exists():
-			print("system installed mascot")
+			#use mascot installed in system data folder
 			ent.GetPath(perc)
 			img1=BTranslationUtils.GetBitmap(perc.Path(),None)
 			self.pbox=PBox(pbox_rect,"PictureBox",img1)
@@ -283,7 +283,7 @@ class AboutWindow(BWindow):
 			find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
 			ent=BEntry(perc.Path()+"/BGator2/Data/FeedGator1c.png")
 			if ent.Exists():
-				print("user installed mascot")
+				#use mascot installed in user data folder
 				ent.GetPath(perc)
 				img1=BTranslationUtils.GetBitmap(perc.Path(),None)
 				self.pbox=PBox(pbox_rect,"PictureBox",img1)
@@ -292,7 +292,7 @@ class AboutWindow(BWindow):
 				cwd = os.getcwd()
 				ent=BEntry(cwd+"/Data/FeedGator1c.png")
 				if ent.Exists():
-					print("git downloaded mascot")
+					#use mascot downloaded with git
 					ent.GetPath(perc)
 					img1=BTranslationUtils.GetBitmap(perc.Path(),None)
 					self.pbox=PBox(pbox_rect,"PictureBox",img1)
@@ -1119,11 +1119,11 @@ class GatorWindow(BWindow):
 								ret_status=evalent.Remove()
 		elif msg.what == 8:
 			perc=BPath()
-			find_directory(directory_which.B_SYSTEM_DATA_DIRECTORY,perc,False,None)
-			link=perc.Path()+"/BGator2/Data/help/index.html"
+			find_directory(directory_which.B_SYSTEM_DOCUMENTATION_DIRECTORY,perc,False,None)
+			link=perc.Path()+"/BGator2/index.html"
 			ent=BEntry(link)
 			if ent.Exists():
-				print("opening system help")
+				# open system documentation help
 				cmd = "open "+link
 				t = Thread(target=os.system,args=(cmd,))
 				t.run()
@@ -1132,7 +1132,7 @@ class GatorWindow(BWindow):
 				link=perc.Path()+"/BGator2/Data/help/index.html"
 				ent=BEntry(link)
 				if ent.Exists():
-					print("opening user installed help")
+					#open user installed help
 					cmd = "open "+link
 					t = Thread(target=os.system,args=(cmd,))
 					t.run()
@@ -1141,7 +1141,7 @@ class GatorWindow(BWindow):
 					link=cwd+"/Data/help/index.html"
 					ent=BEntry(link)
 					if ent.Exists():
-						print("opening git downloaded help")
+						#open git downloaded help
 						cmd = "open "+link
 						t = Thread(target=os.system,args=(cmd,))
 						t.run()
