@@ -289,7 +289,16 @@ class AboutWindow(BWindow):
 				self.pbox=PBox(pbox_rect,"PictureBox",img1)
 				self.box.AddChild(self.pbox,None)
 			else:
-				print("no mascot installed")
+				cwd = os.getcwd()
+				ent=BEntry(cwd+"/Data/FeedGator1c.png")
+				if ent.Exists():
+					print("git downloaded mascot")
+					ent.GetPath(perc)
+					img1=BTranslationUtils.GetBitmap(perc.Path(),None)
+					self.pbox=PBox(pbox_rect,"PictureBox",img1)
+					self.box.AddChild(self.pbox,None)
+				else:
+					print("no mascot found")
 		#######################################################
 		abrect=BRect(2,242, self.box.Bounds().Width()-2,self.box.Bounds().Height()-2)
 		inner_ab=BRect(4,4,abrect.Width()-4,abrect.Height()-4)
@@ -885,7 +894,6 @@ class GatorWindow(BWindow):
 		
 		perc=BPath()
 		find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-		#perc.Path()
 		datapath=BDirectory(perc.Path()+"/BGator2/Papers")
 		ent=BEntry(datapath,perc.Path()+"/BGator2/Papers")
 		if not ent.Exists():
@@ -1129,8 +1137,17 @@ class GatorWindow(BWindow):
 					t = Thread(target=os.system,args=(cmd,))
 					t.run()
 				else:
-					wa=BAlert('noo', 'No help pages installed', 'Poor me', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
-					wa.Go()
+					cwd = os.getcwd()
+					link=cwd+"/Data/help/index.html"
+					ent=BEntry(link)
+					if ent.Exists():
+						print("opening git downloaded help")
+						cmd = "open "+link
+						t = Thread(target=os.system,args=(cmd,))
+						t.run()
+					else:
+						wa=BAlert('noo', 'No help pages installed', 'Poor me', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
+						wa.Go()
 		elif msg.what == 3: #open aboutWindow
 			self.about_window = AboutWindow()
 			self.about_window.Show()
