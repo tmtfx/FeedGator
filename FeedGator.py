@@ -23,7 +23,7 @@ from Be.Application import *
 from Be import Entry
 from Be.Entry import entry_ref, get_ref_for_path
 
-import configparser,re, os, feedparser, struct, datetime, subprocess
+import configparser,re, os, sys, feedparser, struct, datetime, subprocess
 from threading import Thread
 
 Config=configparser.ConfigParser()
@@ -289,15 +289,29 @@ class AboutWindow(BWindow):
 				self.pbox=PBox(pbox_rect,"PictureBox",img1)
 				self.box.AddChild(self.pbox,None)
 			else:
+				nopages=True
 				cwd = os.getcwd()
 				ent=BEntry(cwd+"/Data/FeedGator1c.png")
 				if ent.Exists():
-					#use mascot downloaded with git
+					#use mascot downloaded with git by cmdline
 					ent.GetPath(perc)
 					img1=BTranslationUtils.GetBitmap(perc.Path(),None)
 					self.pbox=PBox(pbox_rect,"PictureBox",img1)
 					self.box.AddChild(self.pbox,None)
+					nopages=False
 				else:
+					alt="".join(sys.argv)
+					mydir=os.path.dirname(alt)
+					link=mydir+"/Data/FeedGator1c.png"
+					ent=BEntry(link)
+					if ent.Exists():
+						#use mascot downloaded with git by graphical launc
+						ent.GetPath(perc)
+						img1=BTranslationUtils.GetBitmap(perc.Path(),None)
+						self.pbox=PBox(pbox_rect,"PictureBox",img1)
+						self.box.AddChild(self.pbox,None)
+						nopages=False
+				if nopages:
 					print("no mascot found")
 		#######################################################
 		abrect=BRect(2,242, self.box.Bounds().Width()-2,self.box.Bounds().Height()-2)
@@ -1137,6 +1151,7 @@ class GatorWindow(BWindow):
 					t = Thread(target=os.system,args=(cmd,))
 					t.run()
 				else:
+					nopages=True
 					cwd = os.getcwd()
 					link=cwd+"/Data/help/index.html"
 					ent=BEntry(link)
@@ -1145,7 +1160,18 @@ class GatorWindow(BWindow):
 						cmd = "open "+link
 						t = Thread(target=os.system,args=(cmd,))
 						t.run()
+						nopages=False
 					else:
+						alt="".join(sys.argv)
+						mydir=os.path.dirname(alt)
+						link=mydir+"/Data/help/index.html"
+						ent=BEntry(link)
+						if ent.Exists():
+							cmd = "open "+link
+							t = Thread(target=os.system,args=(cmd,))
+							t.run()
+							nopages=False
+					if nopages:
 						wa=BAlert('noo', 'No help pages installed', 'Poor me', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
 						wa.Go()
 		elif msg.what == 3: #open aboutWindow
