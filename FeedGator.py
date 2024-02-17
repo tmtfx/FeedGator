@@ -2,7 +2,7 @@
 from Be import BApplication, BWindow, BView, BMenu,BMenuBar, BMenuItem, BSeparatorItem, BMessage, window_type, B_NOT_RESIZABLE, B_CLOSE_ON_ESCAPE, B_QUIT_ON_WINDOW_CLOSE
 from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, BScrollView, BRect, BBox, BFont, InterfaceDefs, BPath, BDirectory, BEntry, BTabView, BTab
 from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap,BLocker,BCheckBox,BQuery
-from Be import BTranslationUtils,BScreen
+from Be import BTranslationUtils,BScreen,BAppFileInfo#,BQuery
 from Be.NodeMonitor import *
 from Be.Node import node_ref
 from Be.GraphicsDefs import *
@@ -17,7 +17,7 @@ from Be.AppDefs import *
 from Be.Font import be_plain_font, be_bold_font
 from Be import AppDefs
 from Be.TextView import text_run, text_run_array
-#from Be.fs_attr import attr_info
+# from Be.fs_attr import attr_info
 from Be.Application import *
 
 from Be import Entry
@@ -105,6 +105,30 @@ class NewsItem(BListItem):
 
 from Be.Font import font_height
 
+class NewsItemBtn(BListItem):
+	def __init__(self):
+		self.fon=BFont()
+		self.font_height_value=font_height()
+		self.fon.GetHeight(self.font_height_value)
+		self.ch="Click here to load the remaining news"
+		self.widdo=self.fon.StringWidth(self.ch)
+		BListItem.__init__(self)
+		
+	def DrawItem(self, owner, frame, complete):
+		owner.SetHighColor(200,200,200,255)
+		owner.SetLowColor(200,200,200,255)
+		owner.FillRect(frame)
+		owner.SetHighColor(100,100,100,255)
+		owner.SetLowColor(100,100,100,255)
+		myrect=BRect(frame.left+1,frame.top+1,frame.right-1,frame.bottom-1)
+		owner.StrokeRect(myrect)
+		owner.SetHighColor(0,100,0,255)
+		owner.SetLowColor(0,100,0,255)
+		owner.MovePenTo(frame.Width()/2-self.widdo/2,frame.bottom-self.font_height_value.descent)
+		owner.SetFont(be_plain_font)
+		owner.DrawString("Click here to load the remaining news",None)
+		
+		
 class PaperItem(BListItem):
 	nocolor = (0, 0, 0, 0)
 
@@ -923,7 +947,10 @@ class GatorWindow(BWindow):
 					porc=BPath()
 					evalent.GetPath(porc)
 					self.PaperItemConstructor(porc)
-					
+
+	# def NewsItemLoadMore(self):
+		# tmpNitm.append(NewsItemBtn())
+		# self.Paperlist.lv.AddItem(tmpNitm[-1])
 					
 	def PaperItemConstructor(self, perc):
 		nf=BNode(perc.Path())
@@ -933,7 +960,7 @@ class GatorWindow(BWindow):
 				tmpPitm.append(PaperItem(perc,element[2][0]))
 				self.Paperlist.lv.AddItem(tmpPitm[-1])
 
-	def gjornaaltolet(self):
+	def gjornaaltolet(self,firstload):
 			self.NewsList.lv.DeselectAll()
 			self.NewsList.lv.RemoveItems(0,self.NewsList.lv.CountItems()) #azzera newslist
 			self.NewsList.lv.ScrollToSelection()
@@ -944,6 +971,7 @@ class GatorWindow(BWindow):
 			x=curpaper.datapath.CountEntries()
 			if x>0:
 				curpaper.datapath.Rewind()
+				loaded = 0
 				rit = False
 				if self.set_savemenu:
 					if marked == "Title":
@@ -953,7 +981,9 @@ class GatorWindow(BWindow):
 							rit=curpaper.datapath.GetNextEntry(itmEntry)
 							#self.NewsItemConstructor(itmEntry)
 							self.tr.append(itmEntry)
-						be_app.WindowAt(0).PostMessage(444)
+						tmsg=BMessage(444)
+						tmsg.AddBool("fl",firstload)
+						be_app.WindowAt(0).PostMessage(tmsg)
 					if marked == "Unread":
 						self.listunread=[]
 						self.listread=[]
@@ -975,7 +1005,9 @@ class GatorWindow(BWindow):
 						self.totallist=[]
 						self.totallist+=self.listunread
 						self.totallist+=self.listread
-						be_app.WindowAt(0).PostMessage(455)
+						tmsg=BMessage(455)
+						tmsg.AddBool("fl",firstload)
+						be_app.WindowAt(0).PostMessage(tmsg)
 						#for item in listunread:
 						#	self.NewsItemConstructor(item)
 						#for item in listread:
@@ -1005,7 +1037,9 @@ class GatorWindow(BWindow):
 									published=datetime.datetime.fromtimestamp(st.st_mtime)
 							getlist.append((itmEntry, published))
 						self.orderedlist = sorted(getlist, key=lambda x: x[1], reverse=True)
-						be_app.WindowAt(0).PostMessage(465)
+						tmsg=BMessage(465)
+						tmsg.AddBool("fl",firstload)
+						be_app.WindowAt(0).PostMessage(tmsg)
 						#for item in self.orderedlist:
 						#	self.NewsItemConstructor(item[0])
 				else:
@@ -1071,14 +1105,30 @@ class GatorWindow(BWindow):
 						title = link
 				tmpNitm.append(NewsItem(title,entry,link,unread,consist))
 				self.NewsList.lv.AddItem(tmpNitm[-1])
-			
+				
+	def BtnItemConstructor(self):
+		tmpNitm.append(NewsItemBtn())
+		self.NewsList.lv.AddItem(tmpNitm[-1])
+# se è il primo caricamento carica solo 99 elementi, atrimenti li carica tutti
+					#if firstload:
+					#	loaded+=1
+					#	if loaded == 99:
+					#		ret = True
+					#		self.PaperItemLoadMore()
+					#		print("interrompo caricamento")
+
 	def MessageReceived(self, msg):
 		#msg.PrintToStream()
 		if msg.what == system_message_code.B_MODIFIERS_CHANGED: #shif pressed
 			value=msg.FindInt32("modifiers")
 			self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
 		elif msg.what == 444: #manage newslist ordered by title
-			en=len(self.tr)
+			vfl=msg.FindBool("fl")
+			if vfl:
+				en=100
+			else:
+				en=len(self.tr)
+			print(en)
 			i=0
 			while i<en:
 				mxg=BMessage(445)
@@ -1086,11 +1136,24 @@ class GatorWindow(BWindow):
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
 				i+=1
+			if vfl:
+				mxg=BMessage(446)
+				# mxg.AddInt32("index",100)
+				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
+				thr.start()
 		elif msg.what == 445: #construct and add newsitem
 			value=msg.FindInt32("index")
 			self.NewsItemConstructor(self.tr[value])
+		elif msg.what == 446: #construct Button-Blistitem
+			# value=msg.FindInt32("index")
+			self.BtnItemConstructor()
 		elif msg.what == 455: #manage newslist ordered by Unread
-			en = len(self.totallist)
+			vfl=msg.FindBool("fl")
+			if vfl:
+				en=100
+			else:
+				en = len(self.totallist)
+			print(en)
 			i=0
 			while i<en:
 				mxg=BMessage(456)
@@ -1098,11 +1161,21 @@ class GatorWindow(BWindow):
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
 				i+=1
+			if vfl:
+				mxg=BMessage(446)
+				# mxg.AddInt32("index",100)
+				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
+				thr.start()
 		elif msg.what == 456: #construct and add newsitem
 			value=msg.FindInt32("index")
 			self.NewsItemConstructor(self.totallist[value])
 		elif msg.what == 465: #manage newslist ordered by datetime
-			en = len(self.orderedlist)
+			vfl=msg.FindBool("fl")
+			if vfl:
+				en=100
+			else:
+				en = len(self.orderedlist)
+			print(en)
 			i=0
 			while i<en:
 				mxg=BMessage(466)
@@ -1110,6 +1183,11 @@ class GatorWindow(BWindow):
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
 				i+=1
+			if vfl:
+				mxg=BMessage(446)
+				# mxg.AddInt32("index",100)
+				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
+				thr.start()
 		elif msg.what == 466: #construct and add newsitem
 			value=msg.FindInt32("index")
 			self.NewsItemConstructor(self.orderedlist[value][0])
@@ -1237,6 +1315,7 @@ class GatorWindow(BWindow):
 			menuitm=self.savemenu.FindItem(42)
 			menuitm.SetMarked(0)
 			tmpindex=self.Paperlist.lv.CurrentSelection()
+			#TODO crash on changing
 			self.Paperlist.lv.DeselectAll()
 			self.Paperlist.lv.Select(tmpindex)
 		elif msg.what == 41:
@@ -1263,6 +1342,7 @@ class GatorWindow(BWindow):
 			menuitm=self.savemenu.FindItem(42)
 			menuitm.SetMarked(0)
 			tmpindex=self.Paperlist.lv.CurrentSelection()
+			#TODO: crash on changing
 			self.Paperlist.lv.DeselectAll()
 			self.Paperlist.lv.Select(tmpindex)
 		elif msg.what == 42:
@@ -1289,6 +1369,7 @@ class GatorWindow(BWindow):
 			menuitm=self.savemenu.FindItem(42)
 			menuitm.SetMarked(1)
 			tmpindex=self.Paperlist.lv.CurrentSelection()
+			#TODO: crash on changing
 			self.Paperlist.lv.DeselectAll()
 			self.Paperlist.lv.Select(tmpindex)
 		elif msg.what == self.Paperlist.PaperSelection: #Paper selection
@@ -1318,7 +1399,7 @@ class GatorWindow(BWindow):
 				#self.NewsPreView.SetText(stuff,ta)
 				self.NewsPreView.SetText(stuff,None)
 				#self.NewsPreView.SetRunArray(0,self.NewsPreView.TextLength(),ta)
-				self.gjornaaltolet()
+				self.gjornaaltolet(True)
 			else:
 				self.NewsPreView.SelectAll()
 				self.NewsPreView.Clear()
@@ -1327,25 +1408,29 @@ class GatorWindow(BWindow):
 			curit = self.NewsList.lv.CurrentSelection()
 			if curit>-1:
 				Nitm = self.NewsList.lv.ItemAt(curit)
-				if Nitm.unread:
-					Nitm.unread=False
-					msg=BMessage(83)
-					pth=BPath()
-					Nitm.entry.GetPath(pth)
-					msg.AddString("path",pth.Path())
-					msg.AddBool("unreadValue",False)
-					msg.AddInt32("selected",curit)
-					msg.AddInt32("selectedP",self.Paperlist.lv.CurrentSelection())
-					be_app.WindowAt(0).PostMessage(msg)
-				NFile=BFile(Nitm.entry,0)
-				r,s=NFile.GetSize()
-				if not r:
-					self.NewsPreView.SetText(NFile,0,s,None)
-					txtnfile=self.NewsPreView.Text()
-					newtxt="Published or stored (Y-m-d, H:M):\t\t\t\t\t"+Nitm.published.strftime("%Y-%m-%d, at %H:%M")+"\n\n"+txtnfile
-					self.NewsPreView.SetText(newtxt,None)
+				print(type(Nitm))
+				if type(Nitm)==NewsItemBtn:
+					self.gjornaaltolet(False)
 				else:
-					self.NewsPreView.SetText("There\'s no preview here",None)
+					if Nitm.unread:
+						Nitm.unread=False
+						msg=BMessage(83)
+						pth=BPath()
+						Nitm.entry.GetPath(pth)
+						msg.AddString("path",pth.Path())
+						msg.AddBool("unreadValue",False)
+						msg.AddInt32("selected",curit)
+						msg.AddInt32("selectedP",self.Paperlist.lv.CurrentSelection())
+						be_app.WindowAt(0).PostMessage(msg)
+					NFile=BFile(Nitm.entry,0)
+					r,s=NFile.GetSize()
+					if not r:
+						self.NewsPreView.SetText(NFile,0,s,None)
+						txtnfile=self.NewsPreView.Text()
+						newtxt="Published or stored (Y-m-d, H:M):\t\t\t\t\t"+Nitm.published.strftime("%Y-%m-%d, at %H:%M")+"\n\n"+txtnfile
+						self.NewsPreView.SetText(newtxt,None)
+					else:
+						self.NewsPreView.SetText("There\'s no preview here",None)
 			else:
 				self.NewsPreView.SelectAll()
 				self.NewsPreView.Clear()
