@@ -11,6 +11,18 @@ else
 	echo "Proceeding..."
 	ret3=1
 fi
+echo "This will download and install pybind11 for python 3.10 to your system, continue? (type y or n)"
+read text
+if [ $text == "y" ]
+then
+echo
+pkgman install pybind11_python310
+ret7=$?
+echo
+else
+	echo "Proceeding..."
+	ret7=1
+fi
 echo "Do you wish to git clone & compile Haiku-PyAPI to your system? (type y or n)"
 read text
 if [ $text == "y" ]
@@ -71,7 +83,12 @@ else
 fi
 echo
 
-
+if [ $ret7 -lt 1 ]
+then
+	echo Installation of pybind11 for python3.10 OK
+else
+	echo Installation of pybind11 for python3.10 FAILED
+fi
 if [ $ret2 -lt 1 ]
 then
 	echo Installation of Haiku-PyAPI OK
