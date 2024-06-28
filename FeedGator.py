@@ -1124,44 +1124,61 @@ class GatorWindow(BWindow):
 			self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
 		elif msg.what == 444: #manage newslist ordered by title
 			vfl=msg.FindBool("fl")
+			print(vfl)
 			if vfl:
-				en=100
+				try:
+					lx=len(self.tr)
+					if lx<100:
+						en=lx
+					else:
+						en=100
+				except:
+					en=100
 			else:
 				en=len(self.tr)
 			print(en)
 			i=0
-			while i<en:
+			while i<en-1:
 				mxg=BMessage(445)
 				mxg.AddInt32("index",i)
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
 				i+=1
-			if vfl:
+			if vfl and (len(self.tr)>99):
 				mxg=BMessage(446)
 				# mxg.AddInt32("index",100)
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
 		elif msg.what == 445: #construct and add newsitem
 			value=msg.FindInt32("index")
+			print("valore",value)
 			self.NewsItemConstructor(self.tr[value])
 		elif msg.what == 446: #construct Button-Blistitem
 			# value=msg.FindInt32("index")
 			self.BtnItemConstructor()
 		elif msg.what == 455: #manage newslist ordered by Unread
 			vfl=msg.FindBool("fl")
+			print("vfl",vfl)
 			if vfl:
-				en=100
+				try:
+					lx=len(self.totallist)
+					if lx<100:
+						en=lx
+					else:
+						en=100
+				except:
+					en=100
 			else:
 				en = len(self.totallist)
 			print(en)
 			i=0
-			while i<en:
+			while i<en-1:
 				mxg=BMessage(456)
 				mxg.AddInt32("index",i)
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
 				i+=1
-			if vfl:
+			if vfl and (len(self.totallist)>99):
 				mxg=BMessage(446)
 				# mxg.AddInt32("index",100)
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
@@ -1172,7 +1189,14 @@ class GatorWindow(BWindow):
 		elif msg.what == 465: #manage newslist ordered by datetime
 			vfl=msg.FindBool("fl")
 			if vfl:
-				en=100
+				try:
+					lx=len(self.orderedlist)
+					if lx<100:
+						en=lx
+					else:
+						en=100
+				except:
+					en=100
 			else:
 				en = len(self.orderedlist)
 			print(en)
@@ -1183,7 +1207,7 @@ class GatorWindow(BWindow):
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
 				i+=1
-			if vfl:
+			if vfl and (len(self.orderedlist)>99):
 				mxg=BMessage(446)
 				# mxg.AddInt32("index",100)
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
