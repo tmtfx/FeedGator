@@ -11,23 +11,23 @@ else
 	echo "Proceeding..."
 	ret3=1
 fi
-echo "This will download and install pybind11 for python 3.10 to your system, continue? (type y or n)"
-read text
-if [ $text == "y" ]
-then
-echo
-pkgman install pybind11_python310
-ret7=$?
-echo
-else
-	echo "Proceeding..."
-	ret7=1
-fi
+#echo "This will download and install pybind11 for python 3.10 to your system, continue? (type y or n)"
+#read text
+#if [ $text == "y" ]
+#then
+#echo
+#pkgman install pybind11_python310
+#ret7=$?
+#echo
+#else
+#	echo "Proceeding..."
+#	ret7=1
+#fi
 echo "Do you wish to git clone & compile Haiku-PyAPI to your system? (type y or n)"
 read text
 if [ $text == "y" ]
 then
-git clone https://github.com/coolcoder613eb/Haiku-PyAPI.git
+git clone --recurse-submodules https://github.com/coolcoder613eb/Haiku-PyAPI.git
 cd Haiku-PyAPI
 jam -j$(nproc)
 ret2=$?
@@ -37,13 +37,15 @@ then
 		mkdir /boot/system/non-packaged/lib/python3.10/site-packages/Be
 	fi
 	echo "copying compiled data to system folder..."
-	cd bin/x86_64/python3.10 && cp -v * /boot/system/non-packaged/lib/python3.10/site-packages/Be
+#	cd bin/x86_64/python3.10 && cp -v * /boot/system/non-packaged/lib/python3.10/site-packages/Be
+	cd build/python3.10_release && cp -v * /boot/system/non-packaged/lib/python3.10/site-packages/Be
 	ret7=$?
 	cd ../../..
 fi
 cd ..
 else
 echo "Proceeding..."
+ret7=1
 ret2=1
 fi
 echo
@@ -83,17 +85,18 @@ else
 fi
 echo
 
-if [ $ret7 -lt 1 ]
-then
-	echo Installation of pybind11 for python3.10 OK
-else
-	echo Installation of pybind11 for python3.10 FAILED
-fi
+
 if [ $ret2 -lt 1 ]
 then
-	echo Installation of Haiku-PyAPI OK
+	echo Compilation of Haiku-PyAPI OK
 else
-	echo Installation of Haiku-PyAPI FAILED
+	echo Compilation of Haiku-PyAPI FAILED
+fi
+if [ $ret7 -lt 1 ]
+then
+	echo Installation of Haiku-PyAPI for python3.10 OK
+else
+	echo Installation of Haiku-PyAPI for python3.10 FAILED
 fi
 if [ $ret3 -lt 1 ]
 then
