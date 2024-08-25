@@ -1236,7 +1236,7 @@ class GatorWindow(BWindow):
 		elif msg.what == 8:
 			perc=BPath()
 			find_directory(directory_which.B_SYSTEM_DOCUMENTATION_DIRECTORY,perc,False,None)
-			link=perc.Path()+"/BGator2/index.html"
+			link=perc.Path()+"packages/feedgator/BGator2/index.html"
 			ent=BEntry(link)
 			if ent.Exists():
 				# open system documentation help
