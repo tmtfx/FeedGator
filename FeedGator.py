@@ -69,6 +69,25 @@ def get_type_string(value):
 	type_string = struct.pack('>I', value).decode('utf-8')
 	return type_string
 
+def byte_count(stringa, encoding='utf-8'):
+		byte_counts = []
+		start = 0
+		total = 0
+		for char in stringa:
+			end = start + len(char.encode(encoding))
+			total+=(end- start)
+			byte_counts.append((char,end - start))
+			start = end
+		return (total,byte_counts)
+
+def find_byte(lookf,looka,offset=0):
+	#note offset is not byte-offset but char-offset
+	retc=looka.find(lookf,offset)
+	if retc>-1:
+		trunc=looka[:retc]
+		return byte_count(trunc)[0]
+	else:
+		return -1
 
 class NewsItem(BListItem):
 	def __init__(self, title, entry, link, unread,published,consist):
@@ -346,10 +365,11 @@ class AboutWindow(BWindow):
 		mycolor.blue=0
 		mycolor.alpha=0
 		self.AboutText = BTextView(abrect, 'aBOUTTxTView', inner_ab , B_FOLLOW_NONE)
+		
 		self.AboutText.MakeEditable(False)
 		self.AboutText.MakeSelectable(False)
-		#self.AboutText.SetStylable(True)
-		stuff="FeedGator\n\nFeed our alligator with tasty newspapers!\n\nThis is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\nFeedGator is a reworked update of BGator.\n\nVersion 2.1-beta\n\t\t\t\t\t\t\t\t\tby TmTFx\n\n\t\tpress ESC to close this window"
+		self.AboutText.SetStylable(True)
+		stuff="FeedGator\nFeed our alligator with tasty newspapers!\n\nThis is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\nFeedGator is a reworked update of BGator.\n\nVersion 2.1-beta\n\t\t\t\t\t\t\t\t\tby TmTFx\n\n\t\tpress ESC to close this window"
 		txtrun1=text_run()
 		print("dopo inizializzazione text_run")
 		txtrun1.offset=0
@@ -362,7 +382,7 @@ class AboutWindow(BWindow):
 		col1.blue=0
 		col1.alpha=200
 		txtrun1.color=col1
-		n=stuff.find("Feed our") # meglio usare qualcosa tipo find_byte in HaiPO
+		n=find_byte("Feed our",stuff) # meglio usare qualcosa tipo find_byte in HaiPO
 		txtrun2=text_run()
 		txtrun2.offset=n
 		txtrun2.font=be_plain_font
