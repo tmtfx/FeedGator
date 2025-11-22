@@ -997,7 +997,11 @@ class GatorWindow(BWindow):
 		self.curtain=False
 		self.event= Event()
 		bsound=self.esbox.Bounds()
+		#self.slidermsg=struct.unpack('<I', "slcv".encode('ascii'))[0]#BMessage(1224)
+		#print(self.slidermsg)
 		self.slider=BSlider(BRect(4,4,bsound.Width()-8,bsound.Height()-8),"zoom_sldr",None,BMessage(1224),6,50,thumb_style.B_BLOCK_THUMB,B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP)#
+		self.slider.SetModificationMessage(BMessage(1224))
+		#self.slider.SetModificationMessage(BMessage())
 		self.esbox.AddChild(self.slider,None)
 		#pbox_rect=BRect(0,0,550,241)
 		#patty=os.getcwd()+"/FeedGator1c.bmp"
@@ -1770,7 +1774,13 @@ class GatorWindow(BWindow):
 				self.NewsPreView.ResizeBy(0,1)
 				self.scroller.MoveBy(0,-1)
 				self.scroller.ResizeBy(0,1)
-			
+		elif msg.what == 1224:#self.slidermsg:
+			fnt=BFont()
+			clr=rgb_color()
+			self.NewsPreView.GetFontAndColor(0,fnt,clr)
+			fnt.SetSize(self.slider.Value())
+			self.NewsPreView.SetFontAndColor(0,self.NewsPreView.TextLength(),fnt,set_font_mask.B_FONT_ALL,clr)
+			self.NewsPreView.Invalidate()
 		BWindow.MessageReceived(self, msg)
 
 	def remove_html_tags(self,data):
