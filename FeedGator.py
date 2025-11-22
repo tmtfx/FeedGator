@@ -25,6 +25,7 @@ from Be.Entry import entry_ref, get_ref_for_path
 
 import configparser,re, os, sys, feedparser, struct, datetime, subprocess
 from threading import Thread
+from random import randrange
 
 Config=configparser.ConfigParser()
 def ConfigSectionMap(section):
@@ -370,17 +371,23 @@ class AboutWindow(BWindow):
 		self.AboutText.MakeSelectable(False)
 		self.AboutText.SetStylable(True)
 		stuff="FeedGator\nFeed our alligator with tasty newspapers!\n\nThis is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\nFeedGator is a reworked update of BGator.\n\nVersion 2.2-beta\n\t\t\t\t\t\t\t\t\tby TmTFx\n\n\t\tpress ESC to close this window"
-		txtrun1=text_run()
-		txtrun1.offset=0
+		arra=[]
+		i = len("FeedGator")
+		c=0
 		fon1=BFont(be_bold_font)
 		fon1.SetSize(48.0)
-		txtrun1.font=fon1
-		col1=rgb_color()
-		col1.red=0
-		col1.green=200
-		col1.blue=0
-		col1.alpha=200
-		txtrun1.color=col1
+		while c<i:
+			arra.append(text_run())
+			arra[-1].offset=c
+			arra[-1].font=fon1
+			col=rgb_color()
+			col.red=0
+			col.green=randrange(50,200)
+			col.blue=0
+			col.alpha=200
+			arra[-1].color=col
+			c+=1
+		
 		n=find_byte("Feed our",stuff)
 		txtrun2=text_run()
 		txtrun2.offset=n
@@ -391,29 +398,14 @@ class AboutWindow(BWindow):
 		col2.blue=0
 		col2.alpha=0
 		txtrun2.color=col2
-		arra=[txtrun1,txtrun2]
-		#arra=text_run_array()
-		#print("inizializzato text_run_array")
-		#arra.count=2
-		#arra.runs[0]=txtrun1
-		#arra.runs[1]=txtrun2
+		arra.append(txtrun2)
 		self.AboutText.SetText(stuff,arra)
 		self.box.AddChild(self.AboutText,None)
-
-#	def MessageReceived(self, msg):
-		#msg.PrintToStream()
-		#BWindow.MessageReceived(self, msg)
 
 	def FrameResized(self,x,y):
 		self.ResizeTo(550,625)
 
 	def QuitRequested(self):
-		#print("In AboutWindow Quit Requested")
-		#a=self.FindView("PictureBox")
-		#print(a,a.Name())
-		#r=self.RemoveChild(a)
-		#print(r)
-		#self.Lock()
 		self.Quit()
 		
 class PapDetails(BWindow):
@@ -732,7 +724,57 @@ class AddFeedWindow(BWindow):
 		self.Hide()
 #		self.Quit()
 #		#return BWindow.QuitRequested(self)
-
+class AddBtn(BButton):
+	def __init__(self,frame,name,label,message):
+		#self.bf=BFont(be_bold_font)
+		#self.bf.SetSize(34)
+		self.pf=BFont(be_plain_font)
+		self.pf.SetSize(32)
+		BButton.__init__(self,frame,name,label,message)
+	def MouseMoved(self, point, transit, message):
+		if transit == B_ENTERED_VIEW or transit == B_INSIDE_VIEW:
+			self.pf.SetSize(35)
+			self.SetFont(self.pf)
+			self.SetHighColor(0,200,0,255)
+		elif transit == B_EXITED_VIEW or transit == B_OUTSIDE_VIEW:
+			self.pf.SetSize(32)
+			self.SetFont(self.pf)
+			self.SetHighColor(0,0,0,255)
+		BButton.MouseMoved(self,point,transit,message)
+class DelBtn(BButton):
+	def __init__(self,frame,name,label,message):
+		#self.bf=BFont(be_bold_font)
+		#self.bf.SetSize(34)
+		self.pf=BFont(be_plain_font)
+		self.pf.SetSize(32)
+		BButton.__init__(self,frame,name,label,message)
+	def MouseMoved(self, point, transit, message):
+		if transit == B_ENTERED_VIEW or transit == B_INSIDE_VIEW:
+			self.pf.SetSize(35)
+			self.SetFont(self.pf)
+			self.SetHighColor(200,0,0,255)
+		elif transit == B_EXITED_VIEW or transit == B_OUTSIDE_VIEW:
+			self.pf.SetSize(32)
+			self.SetFont(self.pf)
+			self.SetHighColor(0,0,0,255)
+		BButton.MouseMoved(self,point,transit,message)
+class DownBtn(BButton):
+	def __init__(self,frame,name,label,message):
+		#self.bf=BFont(be_bold_font)
+		#self.bf.SetSize(35)
+		self.pf=BFont(be_plain_font)
+		self.pf.SetSize(32)
+		BButton.__init__(self,frame,name,label,message)
+	def MouseMoved(self, point, transit, message):
+		if transit == B_ENTERED_VIEW or transit == B_INSIDE_VIEW:
+			self.pf.SetSize(35)
+			self.SetFont(self.pf)
+			self.SetHighColor(0,0,200,255)
+		elif transit == B_EXITED_VIEW or transit == B_OUTSIDE_VIEW:
+			self.pf.SetSize(32)
+			self.SetFont(self.pf)
+			self.SetHighColor(0,0,0,255)
+		BButton.MouseMoved(self,point,transit,message)
 class GatorWindow(BWindow):
 	global tmpNitm,tmpPitm
 	tmpPitm=[]
@@ -866,15 +908,15 @@ class GatorWindow(BWindow):
 		bf=BFont()
 		oldSize=bf.Size()
 		bf.SetSize(32)
-		self.addBtn = BButton(BRect(8,8,68,58),'AddButton','⊕',BMessage(1))
+		self.addBtn = AddBtn(BRect(8,8,68,58),'AddButton','⊕',BMessage(1))#BButton
 		self.addBtn.SetFont(bf)
 		self.box.AddChild(self.addBtn,None)
-		self.remBtn = BButton(BRect(72,8,132,58),'RemoveButton','⊖',BMessage(2))
+		self.remBtn = DelBtn(BRect(72,8,132,58),'RemoveButton','⊖',BMessage(2))
 		self.remBtn.SetFont(bf)
 		self.box.AddChild(self.remBtn,None)
 		boxboundsw=self.box.Bounds().Width()
 		boxboundsh=self.box.Bounds().Height()
-		self.getBtn = BButton(BRect(136,8,boxboundsw / 3,58),'GetNewsButton','⇩',BMessage(66))
+		self.getBtn = DownBtn(BRect(136,8,boxboundsw / 3,58),'GetNewsButton','⇩',BMessage(66))
 		self.getBtn.SetFont(bf)
 		self.progress = BStatusBar(BRect(boxboundsw / 3+6,8, boxboundsw - 12, 68),'progress',None, None)
 		self.infostring= BStringView(BRect(boxboundsw/3+6,8,boxboundsw-12,28),"info",None)
@@ -1146,7 +1188,7 @@ class GatorWindow(BWindow):
 			self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
 		elif msg.what == 444: #manage newslist ordered by title
 			vfl=msg.FindBool("fl")
-			print(vfl)
+			#print(vfl)
 			if vfl:
 				try:
 					lx=len(self.tr)
@@ -1158,7 +1200,7 @@ class GatorWindow(BWindow):
 					en=100
 			else:
 				en=len(self.tr)
-			print(en)
+			#print(en)
 			i=0
 			while i<en-1:
 				mxg=BMessage(445)
@@ -1173,14 +1215,14 @@ class GatorWindow(BWindow):
 				thr.start()
 		elif msg.what == 445: #construct and add newsitem
 			value=msg.FindInt32("index")
-			print("valore",value)
+			#print("valore",value)
 			self.NewsItemConstructor(self.tr[value])
 		elif msg.what == 446: #construct Button-Blistitem
 			# value=msg.FindInt32("index")
 			self.BtnItemConstructor()
 		elif msg.what == 455: #manage newslist ordered by Unread
 			vfl=msg.FindBool("fl")
-			print("vfl",vfl)
+			#print("vfl",vfl)
 			if vfl:
 				try:
 					lx=len(self.totallist)
@@ -1192,7 +1234,7 @@ class GatorWindow(BWindow):
 					en=100
 			else:
 				en = len(self.totallist)
-			print(en)
+			#print(en)
 			i=0
 			while i<en-1:
 				mxg=BMessage(456)
@@ -1221,7 +1263,7 @@ class GatorWindow(BWindow):
 					en=100
 			else:
 				en = len(self.orderedlist)
-			print(en)
+			#print(en)
 			i=0
 			while i<en:
 				mxg=BMessage(466)
@@ -1259,7 +1301,7 @@ class GatorWindow(BWindow):
 			perc=BPath()
 			find_directory(directory_which.B_SYSTEM_DOCUMENTATION_DIRECTORY,perc,False,None)
 			link=perc.Path()+"/packages/feedgator/BGator2/index.html"
-			print(link)
+			#print(link)
 			ent=BEntry(link)
 			if ent.Exists():
 				# open system documentation help
@@ -1455,7 +1497,7 @@ class GatorWindow(BWindow):
 			curit = self.NewsList.lv.CurrentSelection()
 			if curit>-1:
 				Nitm = self.NewsList.lv.ItemAt(curit)
-				print(type(Nitm))
+				#print(type(Nitm))
 				if type(Nitm)==NewsItemBtn:
 					self.gjornaaltolet(False)
 				else:
