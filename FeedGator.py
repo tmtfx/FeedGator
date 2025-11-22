@@ -9,7 +9,7 @@ from Be.GraphicsDefs import *
 from Be.View import *
 from Be.Menu import menu_info,get_menu_info
 from Be.FindDirectory import *
-from Be.View import B_FOLLOW_NONE,set_font_mask,B_WILL_DRAW,B_NAVIGABLE,B_FULL_UPDATE_ON_RESIZE,B_FRAME_EVENTS,B_PULSE_NEEDED
+from Be.View import B_FOLLOW_NONE,B_FOLLOW_LEFT_RIGHT,set_font_mask,B_WILL_DRAW,B_NAVIGABLE,B_FULL_UPDATE_ON_RESIZE,B_FRAME_EVENTS,B_PULSE_NEEDED
 from Be.Alert import alert_type
 from Be.InterfaceDefs import border_style,orientation
 from Be.ListView import list_view_type
@@ -17,6 +17,7 @@ from Be.AppDefs import *
 from Be.Font import be_plain_font, be_bold_font
 from Be import AppDefs
 from Be.TextView import text_run, text_run_array
+from Be.Slider import thumb_style
 # from Be.fs_attr import attr_info
 from Be.Application import *
 
@@ -989,13 +990,14 @@ class GatorWindow(BWindow):
 		self.UpdatePapers()
 		self.ongoing=Semaphore()
 		self.esb_rect=BRect(0,0, self.outbox_preview.Bounds().Width(),40)
-		self.esbox=BBox(self.esb_rect,"extend_sight_box",B_FOLLOW_RIGHT,border_style.B_PLAIN_BORDER)
+		self.esbox=BBox(self.esb_rect,"extend_sight_box",B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP,border_style.B_PLAIN_BORDER)
 		#aggiungere slider
 		self.outbox_preview.AddChild(self.esbox,None)
 		self.esbox.ResizeTo(self.esb_rect.Width(),0)
 		self.curtain=False
 		self.event= Event()
-		self.slider=BSlider(self.esbox.Bounds(),"zoom_sldr",None,BMessage(1224),6,50)#"Zoom:"
+		bsound=self.esbox.Bounds()
+		self.slider=BSlider(BRect(4,4,bsound.Width()-8,bsound.Height()-8),"zoom_sldr",None,BMessage(1224),6,50,thumb_style.B_BLOCK_THUMB,B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP)#
 		self.esbox.AddChild(self.slider,None)
 		#pbox_rect=BRect(0,0,550,241)
 		#patty=os.getcwd()+"/FeedGator1c.bmp"
@@ -1599,6 +1601,10 @@ class GatorWindow(BWindow):
 					r,s=NFile.GetSize()
 					if not r:
 						self.NewsPreView.SetText(NFile,0,s,[text_run()])
+						fnt=BFont()
+						clr=rgb_color()
+						self.NewsPreView.GetFontAndColor(0,fnt,clr)
+						self.slider.SetValue(int(round(fnt.Size())))
 						txtnfile=self.NewsPreView.Text()
 						newtxt="Published or stored (Y-m-d, H:M):\t\t\t\t\t"+Nitm.published.strftime("%Y-%m-%d, at %H:%M")+"\n\n"+txtnfile
 						self.NewsPreView.SetText(newtxt,None)
@@ -1756,10 +1762,14 @@ class GatorWindow(BWindow):
 				self.esbox.ResizeBy(0,1)
 				self.NewsPreView.MoveBy(0,1)
 				self.NewsPreView.ResizeBy(0,-1)
+				self.scroller.MoveBy(0,1)
+				self.scroller.ResizeBy(0,-1)
 			else:
 				self.esbox.ResizeBy(0,-1)
 				self.NewsPreView.MoveBy(0,-1)
 				self.NewsPreView.ResizeBy(0,1)
+				self.scroller.MoveBy(0,-1)
+				self.scroller.ResizeBy(0,1)
 			
 		BWindow.MessageReceived(self, msg)
 
