@@ -24,7 +24,7 @@ from Be.Application import *
 from Be import Entry
 from Be.Entry import entry_ref, get_ref_for_path
 
-import configparser,re, os, sys, feedparser, struct, datetime, subprocess
+import configparser,re,html, os, sys, feedparser, struct, datetime, subprocess
 from threading import Thread,Semaphore,Event
 from random import randrange
 
@@ -1745,6 +1745,7 @@ class GatorWindow(BWindow):
 		BWindow.MessageReceived(self, msg)
 
 	def remove_html_tags(self,data):
+		data = html.unescape(data)
 		p = re.compile(r'<.*?>')
 		return p.sub('', data)
 		
