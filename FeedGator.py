@@ -181,6 +181,7 @@ class PaperItem(BListItem):
 		BListItem.__init__(self)
 
 	def Statistics(self):
+		self.cnnews=0
 		self.newscount=self.datapath.CountEntries()
 		if self.newscount > 0:
 			perc=BPath()
@@ -1471,22 +1472,56 @@ class GatorWindow(BWindow):
 			if cursel>-1:
 				self.Paperlist.lv.ItemAt(cursel).Statistics()
 				stuff = self.Paperlist.lv.ItemAt(cursel).name+"\n\nTotal news: "+str(self.Paperlist.lv.ItemAt(cursel).newscount)+"\nNew news: "+str(self.Paperlist.lv.ItemAt(cursel).cnnews)
+				ta=[text_run()]
 				#ta=text_run_array()
-				#txtrun1=text_run()
-				#txtrun1.offset=0
-				#fon1=BFont(be_bold_font)
-				#fon1.SetSize(48.0)
-				#txtrun1.font=fon1
-				#col1=rgb_color()
-				#col1.red=0
-				#col1.green=200
-				#col1.blue=0
-				#col1.alpha=255
-				#txtrun1.color=col1
+				ta[-1]=text_run()
+				ta[-1].offset=0
+				fon1=BFont(be_bold_font)
+				fon1.SetSize(36.0)
+				ta[-1].font=fon1
+				col1=rgb_color()
+				col1.red=0
+				col1.green=200
+				col1.blue=0
+				col1.alpha=255
+				ta[-1].color=col1
+				n=find_byte("Total news:",stuff)
+				ta.append(text_run())
+				ta[-1].offset=n
+				fon1=BFont(be_plain_font)
+				fon1.SetSize(20.0)
+				ta[-1].font=fon1
+				col1=rgb_color()
+				col1.red=0
+				col1.green=0
+				col1.blue=0
+				col1.alpha=255
+				ta[-1].color=col1
+				n=find_byte("New news:",stuff)
+				ta.append(text_run())
+				ta[-1].offset=n
+				if self.Paperlist.lv.ItemAt(cursel).cnnews!=0:
+					fon1=BFont(be_bold_font)
+					fon1.SetSize(20.0)
+					col1=rgb_color()
+					col1.red=200
+					col1.green=0
+					col1.blue=0
+					col1.alpha=255
+				else:
+					fon1=BFont(be_plain_font)
+					fon1.SetSize(20.0)
+					col1=rgb_color()
+					col1.red=0
+					col1.green=0
+					col1.blue=0
+					col1.alpha=255
+				ta[-1].font=fon1	
+				ta[-1].color=col1
 				#ta.count=1
 				#ta.runs[0]=txtrun1
 				#self.NewsPreView.SetText(stuff,ta)
-				self.NewsPreView.SetText(stuff,None)
+				self.NewsPreView.SetText(stuff,ta)
 				#self.NewsPreView.SetRunArray(0,self.NewsPreView.TextLength(),ta)
 				self.gjornaaltolet(True)
 			else:
@@ -1663,6 +1698,8 @@ class GatorWindow(BWindow):
 			if self.cres == self.Paperlist.lv.CountItems():
 				self.progress.Reset(None,None)
 				self.infostring.SetText(None)
+		elif msg.what == 31013123:
+			self.Minimize(True)
 					
 			
 		BWindow.MessageReceived(self, msg)
@@ -1789,7 +1826,10 @@ class App(BApplication):
 	def ReadyToRun(self):
 		self.window = GatorWindow()
 		self.window.Show()
-		self.window.Minimize(self.window.startmin)
+		#self.window.Minimize(self.window.startmin)
+		if self.window.startmin:
+			be_app.WindowAt(0).PostMessage(31013123) #Posticipate hiding
+			#self.window.Minimize(True)
 	def MessageReceived(self,msg):
 		msg.PrintToStream()
 		BApplication.MessageReceived(self,msg)
