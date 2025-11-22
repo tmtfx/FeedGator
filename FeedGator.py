@@ -372,7 +372,7 @@ class AboutWindow(BWindow):
 		self.AboutText.MakeEditable(False)
 		self.AboutText.MakeSelectable(False)
 		self.AboutText.SetStylable(True)
-		stuff="FeedGator\nFeed our alligator with tasty newspapers!\n\nThis is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\nFeedGator is a reworked update of BGator.\n\nVersion 2.2-beta\n\t\t\t\t\t\t\t\t\tby TmTFx\n\n\t\tpress ESC to close this window"
+		stuff="FeedGator\nFeed our alligator with tasty newspapers!\n\nThis is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\nFeedGator is a reworked update of BGator.\n\nVersion 2.3-beta\n\t\t\t\t\t\t\t\t\tby TmTFx\n\n\t\tpress ESC to close this window"
 		arra=[]
 		i = len("FeedGator")
 		c=0
@@ -731,8 +731,6 @@ class AddFeedWindow(BWindow):
 #		#return BWindow.QuitRequested(self)
 class AddBtn(BButton):
 	def __init__(self,frame,name,label,message):
-		#self.bf=BFont(be_bold_font)
-		#self.bf.SetSize(34)
 		self.pf=BFont(be_plain_font)
 		self.pf.SetSize(32)
 		BButton.__init__(self,frame,name,label,message)
@@ -748,8 +746,6 @@ class AddBtn(BButton):
 		BButton.MouseMoved(self,point,transit,message)
 class DelBtn(BButton):
 	def __init__(self,frame,name,label,message):
-		#self.bf=BFont(be_bold_font)
-		#self.bf.SetSize(34)
 		self.pf=BFont(be_plain_font)
 		self.pf.SetSize(32)
 		BButton.__init__(self,frame,name,label,message)
@@ -765,8 +761,6 @@ class DelBtn(BButton):
 		BButton.MouseMoved(self,point,transit,message)
 class DownBtn(BButton):
 	def __init__(self,frame,name,label,message):
-		#self.bf=BFont(be_bold_font)
-		#self.bf.SetSize(35)
 		self.pf=BFont(be_plain_font)
 		self.pf.SetSize(32)
 		BButton.__init__(self,frame,name,label,message)
@@ -788,7 +782,6 @@ class PreviewTextView(BTextView):
 	def KeyDown(self,char,bytes):
 		try:
 			ochar=ord(char)
-			#print(ochar)
 			if ochar == 26:
 			#apri
 				if self.superself.controlok:
@@ -991,24 +984,14 @@ class GatorWindow(BWindow):
 		self.ongoing=Semaphore()
 		self.esb_rect=BRect(0,0, self.outbox_preview.Bounds().Width(),40)
 		self.esbox=BBox(self.esb_rect,"extend_sight_box",B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP,border_style.B_PLAIN_BORDER)
-		#aggiungere slider
 		self.outbox_preview.AddChild(self.esbox,None)
 		self.esbox.ResizeTo(self.esb_rect.Width(),0)
 		self.curtain=False
 		self.event= Event()
 		bsound=self.esbox.Bounds()
-		#self.slidermsg=struct.unpack('<I', "slcv".encode('ascii'))[0]#BMessage(1224)
-		#print(self.slidermsg)
-		self.slider=BSlider(BRect(4,4,bsound.Width()-8,bsound.Height()-8),"zoom_sldr",None,BMessage(1224),6,50,thumb_style.B_BLOCK_THUMB,B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP)#
+		self.slider=BSlider(BRect(4,4,bsound.Width()-8,bsound.Height()-8),"zoom_sldr",None,BMessage(1224),6,50,thumb_style.B_BLOCK_THUMB,B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP)
 		self.slider.SetModificationMessage(BMessage(1224))
-		#self.slider.SetModificationMessage(BMessage())
 		self.esbox.AddChild(self.slider,None)
-		#pbox_rect=BRect(0,0,550,241)
-		#patty=os.getcwd()+"/FeedGator1c.bmp"
-		#img1=BTranslationUtils.GetBitmap(patty,None)
-		#self.pbox=PBox(pbox_rect,"PictureBox",img1)
-		#self.pbox.SetFlags(B_WILL_DRAW)
-		#self.box.AddChild(self.pbox,None)
 
 
 	def ClearNewsList(self):
@@ -1229,7 +1212,6 @@ class GatorWindow(BWindow):
 			self.controlok= (value & InterfaceDefs.B_CONTROL_KEY) != 0
 		elif msg.what == 444: #manage newslist ordered by title
 			vfl=msg.FindBool("fl")
-			#print(vfl)
 			if vfl:
 				try:
 					lx=len(self.tr)
@@ -1241,7 +1223,6 @@ class GatorWindow(BWindow):
 					en=100
 			else:
 				en=len(self.tr)
-			#print(en)
 			i=0
 			while i<en-1:
 				mxg=BMessage(445)
@@ -1256,14 +1237,11 @@ class GatorWindow(BWindow):
 				thr.start()
 		elif msg.what == 445: #construct and add newsitem
 			value=msg.FindInt32("index")
-			#print("valore",value)
 			self.NewsItemConstructor(self.tr[value])
 		elif msg.what == 446: #construct Button-Blistitem
-			# value=msg.FindInt32("index")
 			self.BtnItemConstructor()
 		elif msg.what == 455: #manage newslist ordered by Unread
 			vfl=msg.FindBool("fl")
-			#print("vfl",vfl)
 			if vfl:
 				try:
 					lx=len(self.totallist)
@@ -1275,7 +1253,6 @@ class GatorWindow(BWindow):
 					en=100
 			else:
 				en = len(self.totallist)
-			#print(en)
 			i=0
 			while i<en-1:
 				mxg=BMessage(456)
@@ -1304,7 +1281,6 @@ class GatorWindow(BWindow):
 					en=100
 			else:
 				en = len(self.orderedlist)
-			#print(en)
 			i=0
 			while i<en:
 				mxg=BMessage(466)
@@ -1343,7 +1319,6 @@ class GatorWindow(BWindow):
 			perc=BPath()
 			find_directory(directory_which.B_SYSTEM_DOCUMENTATION_DIRECTORY,perc,False,None)
 			link=perc.Path()+"/packages/feedgator/BGator2/index.html"
-			#print(link)
 			ent=BEntry(link)
 			if ent.Exists():
 				# open system documentation help
@@ -1561,23 +1536,7 @@ class GatorWindow(BWindow):
 					col1.alpha=255
 				ta[-1].font=fon1	
 				ta[-1].color=col1
-				#ta.append(text_run())
-				#ta[-1].offset=len(stuff)
-				#fon1=BFont(be_plain_font)
-				#fon1.SetSize(oldsize)
-				#ta[-1].font=fon1
-				#col1=rgb_color()
-				#col1.red=0
-				#col1.green=0
-				#col1.blue=0
-				#col1.alpha=255
-				#ta[-1].color=col1
-				
-				#ta.count=1
-				#ta.runs[0]=txtrun1
-				#self.NewsPreView.SetText(stuff,ta)
 				self.NewsPreView.SetText(stuff,ta)
-				#self.NewsPreView.SetRunArray(0,self.NewsPreView.TextLength(),ta)
 				self.gjornaaltolet(True)
 			else:
 				self.NewsPreView.SelectAll()
@@ -1587,7 +1546,6 @@ class GatorWindow(BWindow):
 			curit = self.NewsList.lv.CurrentSelection()
 			if curit>-1:
 				Nitm = self.NewsList.lv.ItemAt(curit)
-				#print(type(Nitm))
 				if type(Nitm)==NewsItemBtn:
 					self.gjornaaltolet(False)
 				else:
@@ -1610,7 +1568,7 @@ class GatorWindow(BWindow):
 						self.NewsPreView.GetFontAndColor(0,fnt,clr)
 						self.slider.SetValue(int(round(fnt.Size())))
 						txtnfile=self.NewsPreView.Text()
-						newtxt="Published or stored (Y-m-d, H:M):\t\t\t\t\t"+Nitm.published.strftime("%Y-%m-%d, at %H:%M")+"\n\n"+txtnfile
+						newtxt="Published or stored (Y-m-d, H:M):\t\t\t\t\t"+Nitm.published.strftime("%Y-%m-%d, at %H:%M")+"\n - - - - - - - - - - - - - - - - - - - - - - - - - - - \n"+txtnfile
 						self.NewsPreView.SetText(newtxt,None)
 					else:
 						self.NewsPreView.SetText("There\'s no preview here",None)
@@ -1774,12 +1732,15 @@ class GatorWindow(BWindow):
 				self.NewsPreView.ResizeBy(0,1)
 				self.scroller.MoveBy(0,-1)
 				self.scroller.ResizeBy(0,1)
-		elif msg.what == 1224:#self.slidermsg:
+		elif msg.what == 1224:
 			fnt=BFont()
 			clr=rgb_color()
 			self.NewsPreView.GetFontAndColor(0,fnt,clr)
 			fnt.SetSize(self.slider.Value())
-			self.NewsPreView.SetFontAndColor(0,self.NewsPreView.TextLength(),fnt,set_font_mask.B_FONT_ALL,clr)
+			tst=self.NewsPreView.Text()
+			n=find_byte("\n - - - - - - - - - - - - - - - - - - - - - - - - - - - \n",tst)
+			m=byte_count("\n - - - - - - - - - - - - - - - - - - - - - - - - - - - \n")[0]
+			self.NewsPreView.SetFontAndColor(n+m,self.NewsPreView.TextLength(),fnt,set_font_mask.B_FONT_ALL,clr)
 			self.NewsPreView.Invalidate()
 		BWindow.MessageReceived(self, msg)
 
@@ -1802,7 +1763,6 @@ class GatorWindow(BWindow):
 			#close curtain
 			self.slider.Hide()
 			self.curtain=False
-			#self.esbox.ResizeTo(self.esb_rect.Width(),0)
 			Thread(target=self.curtain_roller,args=(self.curtain,)).start()
 		elif dir and not self.curtain:
 			#show curtain
@@ -1862,7 +1822,6 @@ class GatorWindow(BWindow):
 							#print(published)# TODO There's a difference of 1 hour between time parsed from feedrss and what is written and read in the filesystem attribute
 							################## does this means I didn't care of timezone? or something else? legal hour?
 							asd=datetime.datetime(published.tm_year,published.tm_mon,published.tm_mday,published.tm_hour,published.tm_min,published.tm_sec)
-							#print(rss.entries[x].title,asd)
 							asd_sec = round((asd - datetime.datetime(1970, 1, 1,0,0,0)).total_seconds()) 
 							pass_time = struct.pack('q',asd_sec)
 							nd.WriteAttr("published",TypeConstants.B_TIME_TYPE,0,pass_time)
@@ -1932,9 +1891,8 @@ class App(BApplication):
 		#self.window.Minimize(self.window.startmin)
 		if self.window.startmin:
 			be_app.WindowAt(0).PostMessage(31013123) #Posticipate hiding
-			#self.window.Minimize(True)
 	def MessageReceived(self,msg):
-		msg.PrintToStream()
+		#msg.PrintToStream()
 		BApplication.MessageReceived(self,msg)
 
 	def Pulse(self):
