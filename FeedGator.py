@@ -511,6 +511,7 @@ class FloatBox(BBox):
 		self.AddChild(self.stringvalue,None)
 		
 class SectionView(BView):
+	alerts=[]
 	def __init__(self,frame,sezione,htabs,conpath):
 		BView.__init__(self,frame,sezione,8,20000000)
 		self.sezione=sezione
@@ -554,11 +555,13 @@ class SettingsWindow(BWindow):
 				except:
 					saytxt="This should not happen: there's no section in config.ini!"
 					alert= BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
+					self.alerts.append(alert)
 					alert.Go()
 					self.Close()
 			else:
 				saytxt="This should not happen: there's no config.ini!"
 				alert= BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
+				self.alerts.append(alert)
 				alert.Go()
 				self.Close()
 			
@@ -782,6 +785,7 @@ class GatorWindow(BWindow):
 	tmpNitm=[]
 	tmpWind=[]
 	papdetW=[]
+	alerts=[]
 	shiftok=False
 	enabletimer=False
 	Menus = (
@@ -1285,6 +1289,7 @@ class GatorWindow(BWindow):
 			if cursel>-1:
 				stuff="You are going to remove all "+self.Paperlist.lv.ItemAt(cursel).name+"'s feeds. Proceed?"
 				ask=BAlert('cle', stuff, 'Yes', "No",None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
+				self.alerts.append(ask)
 				ri=ask.Go()
 				if ri==0:
 					self.Paperlist.lv.DeselectAll()
@@ -1341,6 +1346,7 @@ class GatorWindow(BWindow):
 							nopages=False
 					if nopages:
 						wa=BAlert('noo', 'No help pages installed', 'Poor me', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
+						self.alerts.append(wa)
 						wa.Go()
 		elif msg.what == 3: #open aboutWindow
 			self.about_window = AboutWindow()
@@ -1353,6 +1359,7 @@ class GatorWindow(BWindow):
 			if cursel>-1:
 				stuff="You are going to remove "+self.Paperlist.lv.ItemAt(cursel).name+". Proceed?"
 				ask=BAlert('rem', stuff, 'Yes', "No",None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
+				self.alerts.append(ask)
 				ri=ask.Go()
 				if ri==0:
 					self.Paperlist.lv.DeselectAll()
@@ -1668,6 +1675,7 @@ class GatorWindow(BWindow):
 				if entr.Exists():
 					saytxt="The folder "+folder+" is present, please remove it and add the feed again"
 					about = BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
+					self.alerts.append(about)
 					about.Go()
 				else:
 					datapath.CreateDirectory(perc.Path()+"/BGator2/Papers/"+dirname,datapath)
