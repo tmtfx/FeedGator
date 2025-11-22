@@ -1474,9 +1474,9 @@ class GatorWindow(BWindow):
 				stuff = self.Paperlist.lv.ItemAt(cursel).name+"\n\nTotal news: "+str(self.Paperlist.lv.ItemAt(cursel).newscount)+"\nNew news: "+str(self.Paperlist.lv.ItemAt(cursel).cnnews)
 				ta=[text_run()]
 				#ta=text_run_array()
-				ta[-1]=text_run()
 				ta[-1].offset=0
 				fon1=BFont(be_bold_font)
+				#oldsize=fon1.Size()
 				fon1.SetSize(36.0)
 				ta[-1].font=fon1
 				col1=rgb_color()
@@ -1518,6 +1518,18 @@ class GatorWindow(BWindow):
 					col1.alpha=255
 				ta[-1].font=fon1	
 				ta[-1].color=col1
+				#ta.append(text_run())
+				#ta[-1].offset=len(stuff)
+				#fon1=BFont(be_plain_font)
+				#fon1.SetSize(oldsize)
+				#ta[-1].font=fon1
+				#col1=rgb_color()
+				#col1.red=0
+				#col1.green=0
+				#col1.blue=0
+				#col1.alpha=255
+				#ta[-1].color=col1
+				
 				#ta.count=1
 				#ta.runs[0]=txtrun1
 				#self.NewsPreView.SetText(stuff,ta)
@@ -1549,7 +1561,7 @@ class GatorWindow(BWindow):
 					NFile=BFile(Nitm.entry,0)
 					r,s=NFile.GetSize()
 					if not r:
-						self.NewsPreView.SetText(NFile,0,s,None)
+						self.NewsPreView.SetText(NFile,0,s,[text_run()])
 						txtnfile=self.NewsPreView.Text()
 						newtxt="Published or stored (Y-m-d, H:M):\t\t\t\t\t"+Nitm.published.strftime("%Y-%m-%d, at %H:%M")+"\n\n"+txtnfile
 						self.NewsPreView.SetText(newtxt,None)
