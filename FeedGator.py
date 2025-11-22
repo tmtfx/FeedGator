@@ -1,6 +1,6 @@
 #!/boot/system/bin/python3
 from Be import BApplication, BWindow, BView, BMenu,BMenuBar, BMenuItem, BSeparatorItem, BMessage, window_type, B_NOT_RESIZABLE, B_CLOSE_ON_ESCAPE, B_QUIT_ON_WINDOW_CLOSE
-from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, BScrollView, BRect, BBox, BFont, InterfaceDefs, BPath, BDirectory, BEntry, BTabView, BTab
+from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, BScrollView, BRect, BBox, BFont, InterfaceDefs, BPath, BDirectory, BEntry, BTabView, BTab, BSlider
 from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap,BLocker,BCheckBox,BQuery
 from Be import BTranslationUtils,BScreen#,BAppFileInfo#,BQuery
 from Be.NodeMonitor import *
@@ -24,7 +24,7 @@ from Be import Entry
 from Be.Entry import entry_ref, get_ref_for_path
 
 import configparser,re, os, sys, feedparser, struct, datetime, subprocess
-from threading import Thread
+from threading import Thread,Semaphore,Event
 from random import randrange
 
 Config=configparser.ConfigParser()
@@ -779,6 +779,26 @@ class DownBtn(BButton):
 			self.SetFont(self.pf)
 			self.SetHighColor(0,0,0,255)
 		BButton.MouseMoved(self,point,transit,message)
+class PreviewTextView(BTextView):
+	def __init__(self,superself,frame,name,textRect,resizingMode):
+		self.modifier=False
+		self.superself=superself
+		BTextView.__init__(self,frame,name,textRect,resizingMode)
+	def KeyDown(self,char,bytes):
+		try:
+			ochar=ord(char)
+			#print(ochar)
+			if ochar == 26:
+			#apri
+				if self.superself.controlok:
+					self.superself.switcher(True)
+			elif ochar == 122:
+			#chiudi
+				if self.superself.controlok:
+					self.superself.switcher(False)
+		except:
+			pass
+
 class GatorWindow(BWindow):
 	global tmpNitm,tmpPitm
 	tmpPitm=[]
@@ -937,11 +957,11 @@ class GatorWindow(BWindow):
 		self.outbox_preview=BBox(txtRect,"previewframe",B_FOLLOW_LEFT|B_FOLLOW_BOTTOM|B_FOLLOW_RIGHT,border_style.B_FANCY_BORDER)#
 		self.box.AddChild(self.outbox_preview,None)
 		innerRect= BRect(8,8,txtRect.Width()-30,txtRect.Height())
-		self.NewsPreView = BTextView(BRect(2,2, self.outbox_preview.Bounds().Width()-20,self.outbox_preview.Bounds().Height()-2), 'NewsTxTView', innerRect,B_FOLLOW_ALL_SIDES)#, 0x0404|0x0202)#,2000000)
+		self.NewsPreView = PreviewTextView(self,BRect(2,2, self.outbox_preview.Bounds().Width()-20,self.outbox_preview.Bounds().Height()-2), 'NewsTxTView', innerRect,B_FOLLOW_ALL_SIDES)#, 0x0404|0x0202)#,2000000)
 		self.NewsPreView.MakeEditable(False)
 		self.NewsPreView.SetStylable(True)
 		NewsPreView_bounds=self.outbox_preview.Bounds()
-		self.scroller=BScrollBar(BRect(NewsPreView_bounds.right-21,NewsPreView_bounds.top+1.2,NewsPreView_bounds.right-1.4,NewsPreView_bounds.bottom-1.6),'NewsPreView_ScrollBar',self.NewsPreView,0.0,0.0,orientation.B_VERTICAL)
+		self.scroller=BScrollBar(BRect(NewsPreView_bounds.right-18,NewsPreView_bounds.top+1.2,NewsPreView_bounds.right-1.4,NewsPreView_bounds.bottom-1.6),'NewsPreView_ScrollBar',self.NewsPreView,0.0,0.0,orientation.B_VERTICAL)
 		self.outbox_preview.AddChild(self.scroller,None)
 		
 		btnswidth=round((boxboundsw - 8 - (8 + boxboundsw / 3) -8 - 8)/3,2)
@@ -967,7 +987,16 @@ class GatorWindow(BWindow):
 		self.bckgnd.AddChild(self.box, None)
 		
 		self.UpdatePapers()
-		
+		self.ongoing=Semaphore()
+		self.esb_rect=BRect(0,0, self.outbox_preview.Bounds().Width(),40)
+		self.esbox=BBox(self.esb_rect,"extend_sight_box",B_FOLLOW_RIGHT,border_style.B_PLAIN_BORDER)
+		#aggiungere slider
+		self.outbox_preview.AddChild(self.esbox,None)
+		self.esbox.ResizeTo(self.esb_rect.Width(),0)
+		self.curtain=False
+		self.event= Event()
+		self.slider=BSlider(self.esbox.Bounds(),"zoom_sldr",None,BMessage(1224),6,50)#"Zoom:"
+		self.esbox.AddChild(self.slider,None)
 		#pbox_rect=BRect(0,0,550,241)
 		#patty=os.getcwd()+"/FeedGator1c.bmp"
 		#img1=BTranslationUtils.GetBitmap(patty,None)
@@ -1191,6 +1220,7 @@ class GatorWindow(BWindow):
 		if msg.what == system_message_code.B_MODIFIERS_CHANGED: #shif pressed
 			value=msg.FindInt32("modifiers")
 			self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
+			self.controlok= (value & InterfaceDefs.B_CONTROL_KEY) != 0
 		elif msg.what == 444: #manage newslist ordered by title
 			vfl=msg.FindBool("fl")
 			#print(vfl)
@@ -1720,7 +1750,16 @@ class GatorWindow(BWindow):
 				self.infostring.SetText(None)
 		elif msg.what == 31013123:
 			self.Minimize(True)
-					
+		elif msg.what == 2363:
+			direction=msg.FindBool("dir")
+			if direction:
+				self.esbox.ResizeBy(0,1)
+				self.NewsPreView.MoveBy(0,1)
+				self.NewsPreView.ResizeBy(0,-1)
+			else:
+				self.esbox.ResizeBy(0,-1)
+				self.NewsPreView.MoveBy(0,-1)
+				self.NewsPreView.ResizeBy(0,1)
 			
 		BWindow.MessageReceived(self, msg)
 
@@ -1728,7 +1767,31 @@ class GatorWindow(BWindow):
 		p = re.compile(r'<.*?>')
 		return p.sub('', data)
 		
-		
+	def curtain_roller(self,up_down):
+		x=self.esb_rect.Height()
+		while x>0:
+			curt=BMessage(2363)
+			curt.AddBool("dir",up_down)
+			self.event.wait(0.005)
+			be_app.WindowAt(0).PostMessage(curt)
+			x-=1
+		self.ongoing.release()
+	def switcher(self,dir):
+		self.ongoing.acquire()
+		if not dir and self.curtain:
+			#close curtain
+			self.slider.Hide()
+			self.curtain=False
+			#self.esbox.ResizeTo(self.esb_rect.Width(),0)
+			Thread(target=self.curtain_roller,args=(self.curtain,)).start()
+		elif dir and not self.curtain:
+			#show curtain
+			self.slider.Show()
+			self.curtain=True
+			Thread(target=self.curtain_roller,args=(self.curtain,)).start()
+		else:
+			self.ongoing.release()
+	
 	def DownloadNews(self,item):
 				# TODO inserire un lock per non sballare i valori di progress				
 				perc=BPath()
