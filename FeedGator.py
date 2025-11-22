@@ -1491,10 +1491,8 @@ class GatorWindow(BWindow):
 				self.Paperlist.lv.ItemAt(cursel).Statistics()
 				stuff = self.Paperlist.lv.ItemAt(cursel).name+"\n\nTotal news: "+str(self.Paperlist.lv.ItemAt(cursel).newscount)+"\nNew news: "+str(self.Paperlist.lv.ItemAt(cursel).cnnews)
 				ta=[text_run()]
-				#ta=text_run_array()
 				ta[-1].offset=0
 				fon1=BFont(be_bold_font)
-				#oldsize=fon1.Size()
 				fon1.SetSize(36.0)
 				ta[-1].font=fon1
 				col1=rgb_color()
@@ -1561,7 +1559,7 @@ class GatorWindow(BWindow):
 						be_app.WindowAt(0).PostMessage(msg)
 					NFile=BFile(Nitm.entry,0)
 					r,s=NFile.GetSize()
-					if not r:
+					if not r and s>0:
 						self.NewsPreView.SetText(NFile,0,s,[text_run()])
 						fnt=BFont()
 						clr=rgb_color()
@@ -1571,7 +1569,18 @@ class GatorWindow(BWindow):
 						newtxt="Published or stored (Y-m-d, H:M):\t\t\t\t\t"+Nitm.published.strftime("%Y-%m-%d, at %H:%M")+"\n - - - - - - - - - - - - - - - - - - - - - - - - - - - \n"+txtnfile
 						self.NewsPreView.SetText(newtxt,None)
 					else:
-						self.NewsPreView.SetText("There\'s no preview here",None)
+						ta=[text_run()]
+						ta[-1].offset=0
+						fon1=BFont(be_bold_font)
+						fon1.SetSize(36.0)
+						ta[-1].font=fon1
+						col1=rgb_color()
+						col1.red=150
+						col1.green=50
+						col1.blue=50
+						col1.alpha=255
+						ta[-1].color=col1
+						self.NewsPreView.SetText("There\'s no preview here",ta)
 			else:
 				self.NewsPreView.SelectAll()
 				self.NewsPreView.Clear()
