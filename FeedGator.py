@@ -908,8 +908,12 @@ class GatorWindow(BWindow):
 				if k is None:
 						menu.AddItem(BSeparatorItem())
 				else:
-					if name == "Help" or name == "Quit" or name == "Clear news" or name == "Settings":
+					if name == "Help" or name == "Quit" or name == "Settings":
 						mitm=BMenuItem(name, BMessage(k),name[0],0)
+					elif name == "Clear news":
+						mitm=BMenuItem(name, BMessage(k),name[1],0)
+					elif name == "All as read":
+						mitm=BMenuItem(name, BMessage(k),name[7],0)
 					else:
 						mitm=BMenuItem(name, BMessage(k),name[1],0)
 						if name == "Title" and sort == "1":
@@ -1208,6 +1212,7 @@ class GatorWindow(BWindow):
 		#msg.PrintToStream()
 		if msg.what == system_message_code.B_MODIFIERS_CHANGED: #shif pressed
 			value=msg.FindInt32("modifiers")
+			#print(value)
 			self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
 			self.controlok= (value & InterfaceDefs.B_CONTROL_KEY) != 0
 		elif msg.what == 444: #manage newslist ordered by title
