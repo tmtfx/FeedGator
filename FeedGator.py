@@ -820,10 +820,12 @@ class GatorWindow(BWindow):
 		self.cres=0
 		perc=BPath()
 		find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-		datapath=BDirectory(perc.Path()+"/BGator2")
-		ent=BEntry(datapath,perc.Path()+"/BGator2")
+		#datapath=BDirectory(perc.Path()+"/BGator2")
+		#ent=BEntry(datapath,perc.Path()+"/BGator2")
+		ent=BEntry(perc.Path()+"/BGator2")
 		if not ent.Exists()and ent.IsDirectory():
-			datapath.CreateDirectory(perc.Path()+"/BGator2",None)# datapath)
+			#datapath.CreateDirectory(perc.Path()+"/BGator2",None)# datapath)
+			BDirectory().CreateDirectory(perc.Path()+"/BGator2",None)
 		ent.GetPath(perc)
 		confile=BPath(perc.Path()+'/config.ini',None,False)
 		ent=BEntry(confile.Path())
@@ -1408,10 +1410,12 @@ class GatorWindow(BWindow):
 			#TODO snellire Sort By Name
 			perc=BPath()
 			find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-			datapath=BDirectory(perc.Path()+"/BGator2")
-			ent=BEntry(datapath,perc.Path()+"/BGator2")
+			#datapath=BDirectory(perc.Path()+"/BGator2")
+			#ent=BEntry(datapath,perc.Path()+"/BGator2")
+			ent=BEntry(perc.Path()+"/BGator2")
 			if not ent.Exists() and ent.IsDirectory():
-				datapath.CreateDirectory(perc.Path()+"/BGator2", None)#datapath)
+				#datapath.CreateDirectory(perc.Path()+"/BGator2", None)#datapath)
+				BDirectory().CreateDirectory(perc.Path()+"/BGator2", None)
 			ent.GetPath(perc)
 			confile=BPath(perc.Path()+'/config.ini',None,False)
 			ent=BEntry(confile.Path())
@@ -1435,10 +1439,12 @@ class GatorWindow(BWindow):
 			#TODO snellire Sort By Unread
 			perc=BPath()
 			find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-			datapath=BDirectory(perc.Path()+"/BGator2")
-			ent=BEntry(datapath,perc.Path()+"/BGator2")
+			#datapath=BDirectory(perc.Path()+"/BGator2")
+			#ent=BEntry(datapath,perc.Path()+"/BGator2")
+			ent=BEntry(perc.Path()+"/BGator2")
 			if not ent.Exists()and ent.IsDirectory():
-				datapath.CreateDirectory(perc.Path()+"/BGator2", None)#datapath)
+				#datapath.CreateDirectory(perc.Path()+"/BGator2", None)#datapath)
+				BDirectory().CreateDirectory(perc.Path()+"/BGator2", None)
 			ent.GetPath(perc)
 			confile=BPath(perc.Path()+'/config.ini',None,False)
 			ent=BEntry(confile.Path())
@@ -1462,10 +1468,12 @@ class GatorWindow(BWindow):
 			#TODO snellire Sort By Date
 			perc=BPath()
 			find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-			datapath=BDirectory(perc.Path()+"/BGator2")
-			ent=BEntry(datapath,perc.Path()+"/BGator2")
+			#datapath=BDirectory(perc.Path()+"/BGator2")
+			#ent=BEntry(datapath,perc.Path()+"/BGator2")
+			ent=BEntry(perc.Path()+"/BGator2")
 			if not ent.Exists() and ent.IsDirectory():
-				datapath.CreateDirectory(perc.Path()+"/BGator2",None)# datapath)
+				#datapath.CreateDirectory(perc.Path()+"/BGator2",None)# datapath)
+				BDirectory().CreateDirectory(perc.Path()+"/BGator2",None)
 			ent.GetPath(perc)
 			confile=BPath(perc.Path()+'/config.ini',None,False)
 			ent=BEntry(confile.Path())
