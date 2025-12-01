@@ -822,8 +822,8 @@ class GatorWindow(BWindow):
 		find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
 		datapath=BDirectory(perc.Path()+"/BGator2")
 		ent=BEntry(datapath,perc.Path()+"/BGator2")
-		if not ent.Exists():
-			datapath.CreateDirectory(perc.Path()+"/BGator2", datapath)
+		if not ent.Exists()and ent.IsDirectory():
+			datapath.CreateDirectory(perc.Path()+"/BGator2",None)# datapath)
 		ent.GetPath(perc)
 		confile=BPath(perc.Path()+'/config.ini',None,False)
 		ent=BEntry(confile.Path())
@@ -1025,8 +1025,8 @@ class GatorWindow(BWindow):
 		find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
 		datapath=BDirectory(perc.Path()+"/BGator2/Papers")
 		ent=BEntry(datapath,perc.Path()+"/BGator2/Papers")
-		if not ent.Exists():
-			datapath.CreateDirectory(perc.Path()+"/BGator2/Papers", datapath)
+		if not ent.Exists() and ent.IsDirectory():
+			datapath.CreateDirectory(perc.Path()+"/BGator2/Papers", None)#datapath)
 		ent.GetPath(perc)
 		if datapath.CountEntries() > 0:
 			datapath.Rewind()
@@ -1410,8 +1410,8 @@ class GatorWindow(BWindow):
 			find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
 			datapath=BDirectory(perc.Path()+"/BGator2")
 			ent=BEntry(datapath,perc.Path()+"/BGator2")
-			if not ent.Exists():
-				datapath.CreateDirectory(perc.Path()+"/BGator2", datapath)
+			if not ent.Exists() and ent.IsDirectory():
+				datapath.CreateDirectory(perc.Path()+"/BGator2", None)#datapath)
 			ent.GetPath(perc)
 			confile=BPath(perc.Path()+'/config.ini',None,False)
 			ent=BEntry(confile.Path())
@@ -1437,8 +1437,8 @@ class GatorWindow(BWindow):
 			find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
 			datapath=BDirectory(perc.Path()+"/BGator2")
 			ent=BEntry(datapath,perc.Path()+"/BGator2")
-			if not ent.Exists():
-				datapath.CreateDirectory(perc.Path()+"/BGator2", datapath)
+			if not ent.Exists()and ent.IsDirectory():
+				datapath.CreateDirectory(perc.Path()+"/BGator2", None)#datapath)
 			ent.GetPath(perc)
 			confile=BPath(perc.Path()+'/config.ini',None,False)
 			ent=BEntry(confile.Path())
@@ -1464,8 +1464,8 @@ class GatorWindow(BWindow):
 			find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
 			datapath=BDirectory(perc.Path()+"/BGator2")
 			ent=BEntry(datapath,perc.Path()+"/BGator2")
-			if not ent.Exists():
-				datapath.CreateDirectory(perc.Path()+"/BGator2", datapath)
+			if not ent.Exists() and ent.IsDirectory():
+				datapath.CreateDirectory(perc.Path()+"/BGator2",None)# datapath)
 			ent.GetPath(perc)
 			confile=BPath(perc.Path()+'/config.ini',None,False)
 			ent=BEntry(confile.Path())
@@ -1684,13 +1684,13 @@ class GatorWindow(BWindow):
 				folder=perc.Path()+"/BGator2/Papers/"+dirname
 				datapath=BDirectory(folder)
 				entr=BEntry(folder)
-				if entr.Exists():
+				if entr.Exists() and entr.IsDirectory():
 					saytxt="The folder "+folder+" is present, please remove it and add the feed again"
 					about = BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
 					self.alerts.append(about)
 					about.Go()
 				else:
-					datapath.CreateDirectory(perc.Path()+"/BGator2/Papers/"+dirname,datapath)
+					datapath.CreateDirectory(perc.Path()+"/BGator2/Papers/"+dirname,None)#datapath)
 					del perc
 					nd=BNode(entr)
 					givevalue=feedaddr.encode('utf-8')#bytes(feedaddr,'utf-8')
@@ -1804,7 +1804,7 @@ class GatorWindow(BWindow):
 				for x in range (y):
 					filename=rss.entries[x].title
 					newfile=BFile()
-					if datapath.CreateFile(dirpath.Path()+"/"+filename,newfile,True):
+					if datapath.CreateFile(dirpath.Path()+"/"+filename,newfile,True):#True? not 1
 						pass
 					else:
 						nd=BNode(dirpath.Path()+"/"+filename)
