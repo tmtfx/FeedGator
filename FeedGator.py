@@ -20,6 +20,7 @@ from Be.TextView import text_run, text_run_array
 from Be.Slider import thumb_style
 # from Be.fs_attr import attr_info
 from Be.Application import *
+from Be.Errors import *
 
 from Be import Entry
 from Be.Entry import entry_ref, get_ref_for_path
@@ -1213,12 +1214,13 @@ class GatorWindow(BWindow):
 	def MessageReceived(self, msg):
 		#msg.PrintToStream()
 		if msg.what == system_message_code.B_MODIFIERS_CHANGED: #shif pressed
-			value=msg.FindInt32("modifiers")
+			status,value=msg.FindInt32("modifiers")
 			#print(value)
-			self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
-			self.controlok= (value & InterfaceDefs.B_CONTROL_KEY) != 0
+			if status == B_OK:
+				self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
+				self.controlok= (value & InterfaceDefs.B_CONTROL_KEY) != 0
 		elif msg.what == 444: #manage newslist ordered by title
-			vfl=msg.FindBool("fl")
+			vfl=msg.FindBool("fl")[1]
 			if vfl:
 				try:
 					lx=len(self.tr)
@@ -1243,12 +1245,13 @@ class GatorWindow(BWindow):
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
 		elif msg.what == 445: #construct and add newsitem
-			value=msg.FindInt32("index")
-			self.NewsItemConstructor(self.tr[value])
+			status,value=msg.FindInt32("index")
+			if status==B_OK:
+				self.NewsItemConstructor(self.tr[value])
 		elif msg.what == 446: #construct Button-Blistitem
 			self.BtnItemConstructor()
 		elif msg.what == 455: #manage newslist ordered by Unread
-			vfl=msg.FindBool("fl")
+			vfl=msg.FindBool("fl")[1]
 			if vfl:
 				try:
 					lx=len(self.totallist)
@@ -1273,10 +1276,11 @@ class GatorWindow(BWindow):
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
 		elif msg.what == 456: #construct and add newsitem
-			value=msg.FindInt32("index")
-			self.NewsItemConstructor(self.totallist[value])
+			status,value=msg.FindInt32("index")
+			if status == B_OK:
+				self.NewsItemConstructor(self.totallist[value])
 		elif msg.what == 465: #manage newslist ordered by datetime
-			vfl=msg.FindBool("fl")
+			vfl=msg.FindBool("fl")[1]
 			if vfl:
 				try:
 					lx=len(self.orderedlist)
@@ -1301,8 +1305,9 @@ class GatorWindow(BWindow):
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
 		elif msg.what == 466: #construct and add newsitem
-			value=msg.FindInt32("index")
-			self.NewsItemConstructor(self.orderedlist[value][0])
+			status,value=msg.FindInt32("index")
+			if status == B_OK:
+				self.NewsItemConstructor(self.orderedlist[value][0])
 		elif msg.what == 5: #clear paper news
 			cursel=self.Paperlist.lv.CurrentSelection()
 			if cursel>-1:
@@ -1643,8 +1648,8 @@ class GatorWindow(BWindow):
 					be_app.WindowAt(0).PostMessage(msg)
 
 		elif msg.what == 83: # Mark Read/unread
-			e = msg.FindString("path")
-			unrVal = msg.FindBool("unreadValue")
+			e = msg.FindString("path")[1]
+			unrVal = msg.FindBool("unreadValue")[1]
 			nd=BNode(e)
 			ninfo,ret=nd.GetAttrInfo("Unread")
 			if not ret:
@@ -1653,10 +1658,10 @@ class GatorWindow(BWindow):
 				else:
 					givevalue=bytearray(b'\x00')
 				nd.WriteAttr("Unread",ninfo.type,0,givevalue)
-				itto=self.NewsList.lv.ItemAt(msg.FindInt32("selected"))
-				itto.DrawItem(self.NewsList.lv,self.NewsList.lv.ItemFrame(msg.FindInt32("selected")),True)
-				itto=self.Paperlist.lv.ItemAt(msg.FindInt32("selectedP"))
-				itto.DrawItem(self.Paperlist.lv,self.Paperlist.lv.ItemFrame(msg.FindInt32("selectedP")),False)
+				itto=self.NewsList.lv.ItemAt(msg.FindInt32("selected")[1])
+				itto.DrawItem(self.NewsList.lv,self.NewsList.lv.ItemFrame(msg.FindInt32("selected")[1]),True)
+				itto=self.Paperlist.lv.ItemAt(msg.FindInt32("selectedP")[1])
+				itto.DrawItem(self.Paperlist.lv,self.Paperlist.lv.ItemFrame(msg.FindInt32("selectedP")[1]),False)
 			self.NewsList.lv.Hide()
 			self.NewsList.lv.Show()
 
@@ -1683,37 +1688,39 @@ class GatorWindow(BWindow):
 			self.tmpWind[-1].Show()
 
 		elif msg.what == 245: # ADD FEED
-			feedaddr=msg.FindString("feed")
-			d=feedparser.parse(feedaddr)
-			if d.feed.has_key('title'):
-				dirname=d.feed.title
-				perc=BPath()
-				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-				folder=perc.Path()+"/BGator2/Papers/"+dirname
-				datapath=BDirectory(folder)
-				entr=BEntry(folder)
-				if entr.Exists() and entr.IsDirectory():
-					saytxt="The folder "+folder+" is present, please remove it and add the feed again"
-					about = BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
-					self.alerts.append(about)
-					about.Go()
-				else:
-					datapath.CreateDirectory(perc.Path()+"/BGator2/Papers/"+dirname,None)#datapath)
-					del perc
-					nd=BNode(entr)
-					givevalue=feedaddr.encode('utf-8')#bytes(feedaddr,'utf-8')
-					nd.WriteAttr("address",TypeConstants.B_STRING_TYPE,0,givevalue)
-					attributes=attr(nd)
-					pirc=BPath()
-					entr.GetPath(pirc)
-					for element in attributes:
-						if element[0] == "address":
-							tmpPitm.append(PaperItem(pirc,element[2][0]))
-							self.Paperlist.lv.AddItem(tmpPitm[-1])
-							be_app.WindowAt(0).PostMessage(66)
-				#controlla se esiste cartella chiamata titul&
-				#se esiste ma gli attributi non corrispondono, chiedere cosa fare
-				#se esiste ma non ha tutti gli attributi scrivili
+			status,feedaddr=msg.FindString("feed")
+			if status==B_OK:
+				print(f"siccome status era {status} proseguo con l'aggiunta del feed")
+				d=feedparser.parse(feedaddr)
+				if d.feed.has_key('title'):
+					dirname=d.feed.title
+					perc=BPath()
+					find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
+					folder=perc.Path()+"/BGator2/Papers/"+dirname
+					datapath=BDirectory(folder)
+					entr=BEntry(folder)
+					if entr.Exists() and entr.IsDirectory():
+						saytxt="The folder "+folder+" is present, please remove it and add the feed again"
+						about = BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
+						self.alerts.append(about)
+						about.Go()
+					else:
+						datapath.CreateDirectory(perc.Path()+"/BGator2/Papers/"+dirname,None)#datapath)
+						del perc
+						nd=BNode(entr)
+						givevalue=feedaddr.encode('utf-8')#bytes(feedaddr,'utf-8')
+						nd.WriteAttr("address",TypeConstants.B_STRING_TYPE,0,givevalue)
+						attributes=attr(nd)
+						pirc=BPath()
+						entr.GetPath(pirc)
+						for element in attributes:
+							if element[0] == "address":
+								tmpPitm.append(PaperItem(pirc,element[2][0]))
+								self.Paperlist.lv.AddItem(tmpPitm[-1])
+								be_app.WindowAt(0).PostMessage(66)
+					#controlla se esiste cartella chiamata titul&
+					#se esiste ma gli attributi non corrispondono, chiedere cosa fare
+					#se esiste ma non ha tutti gli attributi scrivili
 
 		elif msg.what == 66: #Parallel Update news
 			self.infostring.SetText("Updating news, please wait...")
@@ -1731,8 +1738,9 @@ class GatorWindow(BWindow):
 			
 			
 		elif msg.what == 1990:
-			d = msg.FindFloat("delta")
-			self.progress.Update(d,None,None)
+			status,d = msg.FindFloat("delta")
+			if status==B_OK:
+				self.progress.Update(d,None,None)
 		elif msg.what == 1991:
 			self.cres+=1
 			if self.cres == self.Paperlist.lv.CountItems():
@@ -1742,18 +1750,19 @@ class GatorWindow(BWindow):
 			self.Minimize(True)
 		elif msg.what == 2363:
 			direction=msg.FindBool("dir")
-			if direction:
-				self.esbox.ResizeBy(0,1)
-				self.NewsPreView.MoveBy(0,1)
-				self.NewsPreView.ResizeBy(0,-1)
-				self.scroller.MoveBy(0,1)
-				self.scroller.ResizeBy(0,-1)
-			else:
-				self.esbox.ResizeBy(0,-1)
-				self.NewsPreView.MoveBy(0,-1)
-				self.NewsPreView.ResizeBy(0,1)
-				self.scroller.MoveBy(0,-1)
-				self.scroller.ResizeBy(0,1)
+			if direction[0]==B_OK:
+				if direction[1]:
+					self.esbox.ResizeBy(0,1)
+					self.NewsPreView.MoveBy(0,1)
+					self.NewsPreView.ResizeBy(0,-1)
+					self.scroller.MoveBy(0,1)
+					self.scroller.ResizeBy(0,-1)
+				else:
+					self.esbox.ResizeBy(0,-1)
+					self.NewsPreView.MoveBy(0,-1)
+					self.NewsPreView.ResizeBy(0,1)
+					self.scroller.MoveBy(0,-1)
+					self.scroller.ResizeBy(0,1)
 		elif msg.what == 1224:
 			fnt=BFont()
 			clr=rgb_color()
