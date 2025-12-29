@@ -2,7 +2,8 @@
 from Be import BApplication, BWindow, BView, BMenu,BMenuBar, BMenuItem, BSeparatorItem, BMessage, window_type, B_NOT_RESIZABLE, B_CLOSE_ON_ESCAPE, B_QUIT_ON_WINDOW_CLOSE
 from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, BScrollView, BRect, BBox, BFont, InterfaceDefs, BPath, BDirectory, BEntry, BTabView, BTab, BSlider
 from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap,BLocker,BCheckBox,BQuery
-from Be import BTranslationUtils,BScreen#,BAppFileInfo#,BQuery
+from Be import BTranslationUtils,BScreen,BNotification,BString#,BAppFileInfo#,BQuery
+from Be.Notification import notification_type
 from Be.NodeMonitor import *
 from Be.Node import node_ref
 from Be.GraphicsDefs import *
@@ -557,13 +558,13 @@ class SettingsWindow(BWindow):
 				except:
 					saytxt="This should not happen: there's no section in config.ini!"
 					alert= BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
-					self.alerts.append(alert)
+					#self.alerts.append(alert)
 					alert.Go()
 					self.Close()
 			else:
 				saytxt="This should not happen: there's no config.ini!"
 				alert= BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
-				self.alerts.append(alert)
+				#self.alerts.append(alert)
 				alert.Go()
 				self.Close()
 			
@@ -811,6 +812,11 @@ class GatorWindow(BWindow):
 		global tab,name
 		BWindow.__init__(self, BRect(50,100,1024,750), "Feed the Gator", window_type.B_TITLED_WINDOW, B_QUIT_ON_WINDOW_CLOSE) #B_NOT_RESIZABLE | B_QUIT_ON_WINDOW_CLOSE)#B_MODAL_WINDOW
 		bounds=self.Bounds()
+		self.Notification=BNotification(notification_type.B_PROGRESS_NOTIFICATION)
+		if self.Notification.InitCheck() == B_OK:
+			self.Notification.SetGroup(BString("FeedGator"))
+			self.Notification.SetMessageID(BString("update_progress"));
+		
 		self.bckgnd = BView(self.Bounds(), "background_View", 8, 20000000)
 		self.bckgnd.SetResizingMode(B_FOLLOW_ALL_SIDES)
 		bckgnd_bounds=self.bckgnd.Bounds()
@@ -1313,7 +1319,7 @@ class GatorWindow(BWindow):
 			if cursel>-1:
 				stuff="You are going to remove all "+self.Paperlist.lv.ItemAt(cursel).name+"'s feeds. Proceed?"
 				ask=BAlert('cle', stuff, 'Yes', "No",None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
-				self.alerts.append(ask)
+				#self.alerts.append(ask)
 				ri=ask.Go()
 				if ri==0:
 					self.Paperlist.lv.DeselectAll()
@@ -1369,7 +1375,7 @@ class GatorWindow(BWindow):
 							nopages=False
 					if nopages:
 						wa=BAlert('noo', 'No help pages installed', 'Poor me', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
-						self.alerts.append(wa)
+						#self.alerts.append(wa)
 						wa.Go()
 		elif msg.what == 3: #open aboutWindow
 			self.about_window = AboutWindow()
@@ -1382,7 +1388,7 @@ class GatorWindow(BWindow):
 			if cursel>-1:
 				stuff="You are going to remove "+self.Paperlist.lv.ItemAt(cursel).name+". Proceed?"
 				ask=BAlert('rem', stuff, 'Yes', "No",None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
-				self.alerts.append(ask)
+				#self.alerts.append(ask)
 				ri=ask.Go()
 				if ri==0:
 					self.Paperlist.lv.DeselectAll()
@@ -1702,7 +1708,7 @@ class GatorWindow(BWindow):
 					if entr.Exists() and entr.IsDirectory():
 						saytxt="The folder "+folder+" is present, please remove it and add the feed again"
 						about = BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
-						self.alerts.append(about)
+						#self.alerts.append(about)
 						about.Go()
 					else:
 						datapath.CreateDirectory(perc.Path()+"/BGator2/Papers/"+dirname,None)#datapath)
@@ -1725,6 +1731,10 @@ class GatorWindow(BWindow):
 		elif msg.what == 66: #Parallel Update news
 			self.infostring.SetText("Updating news, please wait...")
 			self.progress.SetMaxValue(self.Paperlist.lv.CountItems()*100+self.Paperlist.lv.CountItems())
+			if self.Notification.InitCheck() == B_OK:
+				self.Notification.SetTitle(BString("News update from sources..."))
+				self.Notification.SetProgress(0.0)
+				self.Notification.Send()
 			self.cres=0
 			for item in self.Paperlist.lv.Items():
 				Thread(target=self.DownloadNews,args=(item,)).start()
@@ -1741,10 +1751,16 @@ class GatorWindow(BWindow):
 			status,d = msg.FindFloat("delta")
 			if status==B_OK:
 				self.progress.Update(d,None,None)
+				if self.Notification.InitCheck() == B_OK:
+					self.Notification.SetProgress(self.Notification.Progress()+d/self.progress.MaxValue())
+					self.Notification.Send()
 		elif msg.what == 1991:
 			self.cres+=1
 			if self.cres == self.Paperlist.lv.CountItems():
 				self.progress.Reset(None,None)
+				if self.Notification.InitCheck() == B_OK:
+					self.Notification.SetProgress(1.0)
+					self.Notification.Send()
 				self.infostring.SetText(None)
 		elif msg.what == 31013123:
 			self.Minimize(True)
@@ -1815,6 +1831,7 @@ class GatorWindow(BWindow):
 				valueperentry=100/(len(rss.entries)+1)
 				mxg=BMessage(1990)
 				mxg.AddFloat("delta",valueperentry)
+				mxg.AddString("newspaper",item.name)
 				be_app.WindowAt(0).PostMessage(mxg)
 				del stringa
 				y=len(rss['entries'])
