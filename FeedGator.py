@@ -243,7 +243,7 @@ class NewsItemBtn(BListItem):
 		self.fon=BFont()
 		self.font_height_value=font_height()
 		self.fon.GetHeight(self.font_height_value)
-		self.ch="Click here to load the remaining news"
+		self.ch=_("Click here to load the remaining news")
 		self.widdo=self.fon.StringWidth(self.ch)
 		BListItem.__init__(self)
 		
@@ -259,7 +259,8 @@ class NewsItemBtn(BListItem):
 		owner.SetLowColor(0,100,0,255)
 		owner.MovePenTo(frame.Width()/2-self.widdo/2,frame.bottom-self.font_height_value.descent)
 		owner.SetFont(be_plain_font)
-		owner.DrawString("Click here to load the remaining news",None)
+		#owner.DrawString("Click here to load the remaining news",None)
+		owner.DrawString(self.ch,None)
 		
 		
 class PaperItem(BListItem):
@@ -419,7 +420,7 @@ class AboutWindow(BWindow):
 		scrfrm=scr.Frame()
 		x=(scrfrm.right+1)/2-550/2
 		y=(scrfrm.bottom+1)/2-625/2
-		BWindow.__init__(self, BRect(x, y, x+550, y+625),"About",window_type.B_MODAL_WINDOW, B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)
+		BWindow.__init__(self, BRect(x, y, x+550, y+625),_("About"),window_type.B_MODAL_WINDOW, B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)
 		self.bckgnd = BView(self.Bounds(), "backgroundView", 8, 20000000)
 		self.bckgnd.SetResizingMode(B_FOLLOW_V_CENTER|B_FOLLOW_H_CENTER)
 		bckgnd_bounds=self.bckgnd.Bounds()
@@ -434,7 +435,16 @@ class AboutWindow(BWindow):
 			self.pbox=PBox(pbox_rect,"PictureBox",img1)
 			self.box.AddChild(self.pbox,None)
 		else:
-			print("no mascot found")
+			#print("no mascot found")
+			self.pbox=BBox(pbox_rect,"Missing_PBox",0x0202|0x0404,border_style.B_NO_BORDER)
+			pboxbounds=self.pbox.Bounds()
+			fon=BFont()
+			text=_("No mascotte found")
+			ww=fon.StringWidth(text)
+			hh=fon.Size()
+			self.nomascotte=BStringView(BRect(pboxbounds.Width()/2-ww/2,pboxbounds.Height()/2-hh/2,pboxbounds.Width()/2+ww/2,pboxbounds.Height()/2+hh/2),"nomascotte_txt",text)
+			self.pbox.AddChild(self.nomascotte,None)
+			self.box.AddChild(self.pbox,None)
 		#######################################################
 		abrect=BRect(2,242, self.box.Bounds().Width()-2,self.box.Bounds().Height()-2)
 		inner_ab=BRect(4,4,abrect.Width()-4,abrect.Height()-4)
