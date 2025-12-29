@@ -26,7 +26,7 @@ from Be.Errors import *
 from Be import Entry
 from Be.Entry import entry_ref, get_ref_for_path
 
-import configparser,re,html, os, sys, feedparser, struct, datetime, subprocess
+import configparser,re,html, os, sys, feedparser, struct, datetime, subprocess, gettext
 from threading import Thread,Semaphore,Event
 from random import randrange
 
@@ -92,6 +92,116 @@ def find_byte(lookf,looka,offset=0):
 		return byte_count(trunc)[0]
 	else:
 		return -1
+
+def lookfdata(name):
+	perc=BPath()
+	find_directory(directory_which.B_SYSTEM_DATA_DIRECTORY,perc,False,None)
+	ent=BEntry(perc.Path()+"/HaiPO2/"+name)
+	if ent.Exists():
+		#use mascot installed in system data folder
+		ent.GetPath(perc)
+		return (True,perc.Path())
+	else:
+		find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
+		ent=BEntry(perc.Path()+"/HaiPO2/"+name)
+		if ent.Exists():
+			#use mascot installed in user data folder
+			ent.GetPath(perc)
+			return (True,perc.Path())
+		else:
+			nopages=True
+			cwd = os.getcwd()
+			ent=BEntry(cwd+"/Data/"+name)
+			if ent.Exists():
+				#use mascot downloaded with git by cmdline
+				ent.GetPath(perc)
+				return (True,perc.Path())
+				nopages=False
+			else:
+				alt="".join(sys.argv)
+				mydir=os.path.dirname(alt)
+				link=mydir+"/Data/"+name
+				ent=BEntry(link)
+				if ent.Exists():
+					#use mascot downloaded with git by graphical launch
+					ent.GetPath(perc)
+					return (True,perc.Path())
+					nopages=False
+			if nopages:
+				return (False,None)
+
+class LocalizItem(BMenuItem):
+	def __init__(self,name):
+		self.name=name
+		msg=BMessage(600)
+		msg.AddString("name",self.name)
+		BMenuItem.__init__(self,self.name,msg,'\x00',0)
+
+locale_dir=None
+b,p=lookfdata("locale")
+if b:
+	if BEntry(p).IsDirectory():
+		locale_dir=p
+		dir=BDirectory(p)
+		ent=BEntry()
+		dir.Rewind()
+		lista_traduzioni=[]
+		ret = False
+		while not ret:
+			ret=dir.GetNextEntry(ent,True)
+			if not ret:
+				perc=BPath()
+				ent.GetPath(perc)
+				lista_traduzioni.append(perc.Leaf())
+	else:
+		locale_dir=None
+		t = gettext.NullTranslations()
+		#but it was a file
+else:
+	t = gettext.NullTranslations()
+
+def Ent_config():
+	perc=BPath()
+	find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
+	#datapath=BDirectory(perc.Path()+"/HaiPO2")
+	#ent=BEntry(datapath,perc.Path()+"/HaiPO2")
+	ent=BEntry(perc.Path()+"/HaiPO2")
+	if not ent.Exists() and ent.IsDirectory():
+		#datapath.CreateDirectory(perc.Path()+"/HaiPO2", None)#datapath)
+		BDirectory().CreateDirectory(perc.Path()+"/HaiPO2", None)
+	ent.GetPath(perc)
+	confile=BPath(perc.Path()+'/config.ini',None,False)
+	ent=BEntry(confile.Path())
+	return(ent,confile.Path())
+
+ent,confile=Ent_config()
+Config.read(confile)
+try:
+	localization=ConfigSectionMap("General")['localization']
+except:
+	localization = "en"
+	t = gettext.NullTranslations()
+	
+if locale_dir!=None:
+	try:
+		t = gettext.translation(
+			domain="feedgator",  # project name
+			localedir=locale_dir,
+			languages=[localization],
+			fallback=True  # use english if the language does not exist
+		)
+	except Exception as e:
+		print(f"Error loading translations: {e}")
+		t = gettext.NullTranslations()
+
+global _
+_ = t.gettext
+
+appname=_("FeedGator")
+ver="2.4"
+# Translators: do not translate, just transliterate
+state=_("beta")
+version=" ".join((appname,ver,state))
 
 class NewsItem(BListItem):
 	def __init__(self, title, entry, link, unread,published,consist):
@@ -318,49 +428,13 @@ class AboutWindow(BWindow):
 		self.bckgnd.AddChild(self.box,None)
 		################## PBOX ###############################
 		pbox_rect=BRect(0,0,self.box.Bounds().Width(),241)
-		perc=BPath()
-		find_directory(directory_which.B_SYSTEM_DATA_DIRECTORY,perc,False,None)
-		ent=BEntry(perc.Path()+"/BGator2/FeedGator1c.png")
-		if ent.Exists():
-			#use mascot installed in system data folder
-			ent.GetPath(perc)
-			img1=BTranslationUtils.GetBitmap(perc.Path(),None)
+		status,pth=lookfdata("FeedGator1c.png")
+		if status:
+			img1=BTranslationUtils.GetBitmap(pth,None)
 			self.pbox=PBox(pbox_rect,"PictureBox",img1)
 			self.box.AddChild(self.pbox,None)
 		else:
-			find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-			ent=BEntry(perc.Path()+"/BGator2/Data/FeedGator1c.png")
-			if ent.Exists():
-				#use mascot installed in user data folder
-				ent.GetPath(perc)
-				img1=BTranslationUtils.GetBitmap(perc.Path(),None)
-				self.pbox=PBox(pbox_rect,"PictureBox",img1)
-				self.box.AddChild(self.pbox,None)
-			else:
-				nopages=True
-				cwd = os.getcwd()
-				ent=BEntry(cwd+"/Data/FeedGator1c.png")
-				if ent.Exists():
-					#use mascot downloaded with git by cmdline
-					ent.GetPath(perc)
-					img1=BTranslationUtils.GetBitmap(perc.Path(),None)
-					self.pbox=PBox(pbox_rect,"PictureBox",img1)
-					self.box.AddChild(self.pbox,None)
-					nopages=False
-				else:
-					alt="".join(sys.argv)
-					mydir=os.path.dirname(alt)
-					link=mydir+"/Data/FeedGator1c.png"
-					ent=BEntry(link)
-					if ent.Exists():
-						#use mascot downloaded with git by graphical launc
-						ent.GetPath(perc)
-						img1=BTranslationUtils.GetBitmap(perc.Path(),None)
-						self.pbox=PBox(pbox_rect,"PictureBox",img1)
-						self.box.AddChild(self.pbox,None)
-						nopages=False
-				if nopages:
-					print("no mascot found")
+			print("no mascot found")
 		#######################################################
 		abrect=BRect(2,242, self.box.Bounds().Width()-2,self.box.Bounds().Height()-2)
 		inner_ab=BRect(4,4,abrect.Width()-4,abrect.Height()-4)
@@ -537,36 +611,27 @@ class SettingsWindow(BWindow):
 		self.views=[]
 		tabrect=BRect(0,0,self.Bounds().Width(),self.Bounds().Height()-self.tabview.TabHeight())
 		self.optionbox=[]
-		perc=BPath()
-		find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-		ent=BEntry(perc.Path()+"/BGator2")
-		if not ent.Exists():
-			self.Close()
-		else:
-			ent.GetPath(perc)
-			confile=BPath(perc.Path()+'/config.ini',None,False)
-			self.confile=confile
-			ent=BEntry(confile.Path())
-			if ent.Exists():
-				Config.read(confile.Path())
-				try:
-					sez=Config.sections()
-					for s in sez:
-						self.views.append(SectionView(tabrect,s,self.tabview.TabHeight(),confile.Path()))
-						self.tablabels.append(BTab(self.views[-1]))
-						self.tabview.AddTab(self.views[-1],self.tablabels[-1])
-				except:
-					saytxt="This should not happen: there's no section in config.ini!"
-					alert= BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
-					#self.alerts.append(alert)
-					alert.Go()
-					self.Close()
-			else:
-				saytxt="This should not happen: there's no config.ini!"
+		ent,confile=Ent_config()
+		self.confpth=confile
+		if ent.Exists():
+			Config.read(confile)#.Path())
+			try:
+				sez=Config.sections()
+				for s in sez:
+					self.views.append(SectionView(tabrect,s,self.tabview.TabHeight(),confile))#.Path()))
+					self.tablabels.append(BTab(self.views[-1]))
+					self.tabview.AddTab(self.views[-1],self.tablabels[-1])
+			except:
+				saytxt="This should not happen: there's no section in config.ini!"
 				alert= BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
 				#self.alerts.append(alert)
 				alert.Go()
 				self.Close()
+		else:
+			saytxt="This should not happen: there's no config.ini!"
+			alert= BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
+			alert.Go()
+			self.Close()
 			
 	def MessageReceived(self,msg):
 		if msg.what == 54:
@@ -582,7 +647,7 @@ class SettingsWindow(BWindow):
 
 			if theview.Options.lv.CurrentSelection()>-1:
 				option=theview.Options.lv.ItemAt(theview.Options.lv.CurrentSelection()).Text()
-				Config.read(self.confile.Path())
+				Config.read(self.confpth)
 				value=ConfigSectionMap(self.views[tabsel].sezione)[option]
 				bondi=self.views[tabsel].Bounds()
 				if value == "True" or value == "False":
@@ -604,66 +669,51 @@ class SettingsWindow(BWindow):
 			theview=self.views[tabsel]
 			if theview.Options.lv.CurrentSelection()>-1:
 				option=theview.Options.lv.ItemAt(theview.Options.lv.CurrentSelection()).Text()
-				perc=BPath()
-				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-				ent=BEntry(perc.Path()+"/BGator2")
-				ent.GetPath(perc)
-				confile=BPath(perc.Path()+'/config.ini',None,False)
-				ent=BEntry(confile.Path())
+				ent,confile=Ent_config()
 				if ent.Exists():
-					Config.read(confile.Path())
+					Config.read(confile)
 					if theview.valuebox[-1].CheckBox.Value():
 						value="True"
 					else:
 						value="False"
-					cfgfile = open(confile.Path(),'w')
+					cfgfile = open(confile,'w')
 					Config.set(theview.sezione,option, value)
 					Config.write(cfgfile)
 					cfgfile.close()
-					Config.read(confile.Path())
+					Config.read(confile)
 		elif msg.what == 1700:
 			#cambia valore stringa
 			tabsel=self.tabview.Selection()
 			theview=self.views[tabsel]
 			if theview.Options.lv.CurrentSelection()>-1:
 				option=theview.Options.lv.ItemAt(theview.Options.lv.CurrentSelection()).Text()
-				perc=BPath()
-				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-				ent=BEntry(perc.Path()+"/BGator2")
-				ent.GetPath(perc)
-				confile=BPath(perc.Path()+'/config.ini',None,False)
-				ent=BEntry(confile.Path())
+				ent,confile=Ent_config()
 				if ent.Exists():
-					Config.read(confile.Path())
-					cfgfile = open(confile.Path(),'w')
+					Config.read(confile)
+					cfgfile = open(confile,'w')
 					value=theview.valuebox[-1].stringvalue.Text()
 					Config.set(theview.sezione,option, value)
 					Config.write(cfgfile)
 					cfgfile.close()
-					Config.read(confile.Path())
+					Config.read(confile)
 		elif msg.what == 1800:
 			#cambia valore intero
 			tabsel=self.tabview.Selection()
 			theview=self.views[tabsel]
 			if theview.Options.lv.CurrentSelection()>-1:
 				option=theview.Options.lv.ItemAt(theview.Options.lv.CurrentSelection()).Text()
-				perc=BPath()
-				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-				ent=BEntry(perc.Path()+"/BGator2")
-				ent.GetPath(perc)
-				confile=BPath(perc.Path()+'/config.ini',None,False)
-				ent=BEntry(confile.Path())
+				ent,confile=Ent_config()
 				if ent.Exists():
-					Config.read(confile.Path())
+					Config.read(confile)
 					val=theview.valuebox[-1].stringvalue.Text()
 					try:
 						value=int(val)
 						theview.valuebox[-1].stringvalue.MarkAsInvalid(False)
-						cfgfile = open(confile.Path(),'w')
+						cfgfile = open(confile,'w')
 						Config.set(theview.sezione,option, val)
 						Config.write(cfgfile)
 						cfgfile.close()
-						Config.read(confile.Path())
+						Config.read(confile)
 					except:
 						theview.valuebox[-1].stringvalue.MarkAsInvalid(True)
 		elif msg.what == 1900:
@@ -672,23 +722,18 @@ class SettingsWindow(BWindow):
 			theview=self.views[tabsel]
 			if theview.Options.lv.CurrentSelection()>-1:
 				option=theview.Options.lv.ItemAt(theview.Options.lv.CurrentSelection()).Text()
-				perc=BPath()
-				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-				ent=BEntry(perc.Path()+"/BGator2")
-				ent.GetPath(perc)
-				confile=BPath(perc.Path()+'/config.ini',None,False)
-				ent=BEntry(confile.Path())
+				ent,confile=Ent_config()
 				if ent.Exists():
-					Config.read(confile.Path())
+					Config.read(confile)
 					val=theview.valuebox[-1].stringvalue.Text()
 					try:
 						value=float(val)
 						theview.valuebox[-1].stringvalue.MarkAsInvalid(False)
-						cfgfile = open(confile.Path(),'w')
+						cfgfile = open(confile,'w')
 						Config.set(theview.sezione,option, val)
 						Config.write(cfgfile)
 						cfgfile.close()
-						Config.read(confile.Path())
+						Config.read(confile)
 					except:
 						theview.valuebox[-1].stringvalue.MarkAsInvalid(True)
 		BWindow.MessageReceived(self,msg)
@@ -810,7 +855,7 @@ class GatorWindow(BWindow):
 		)
 	def __init__(self):
 		global tab,name
-		BWindow.__init__(self, BRect(50,100,1024,750), "Feed the Gator", window_type.B_TITLED_WINDOW, B_QUIT_ON_WINDOW_CLOSE) #B_NOT_RESIZABLE | B_QUIT_ON_WINDOW_CLOSE)#B_MODAL_WINDOW
+		BWindow.__init__(self, BRect(50,100,1024,750), "Feed the Gator", window_type.B_TITLED_WINDOW, B_QUIT_ON_WINDOW_CLOSE)
 		bounds=self.Bounds()
 		self.Notification=BNotification(notification_type.B_PROGRESS_NOTIFICATION)
 		if self.Notification.InitCheck() == B_OK:
@@ -825,30 +870,20 @@ class GatorWindow(BWindow):
 		x, barheight = self.bar.GetPreferredSize()
 		self.box = BBox(BRect(0,barheight,bckgnd_bounds.Width(),bckgnd_bounds.Height()),"Underbox",0x0202|0x0404,border_style.B_FANCY_BORDER)
 		self.cres=0
-		perc=BPath()
-		find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-		#datapath=BDirectory(perc.Path()+"/BGator2")
-		#ent=BEntry(datapath,perc.Path()+"/BGator2")
-		ent=BEntry(perc.Path()+"/BGator2")
-		if not ent.Exists()and ent.IsDirectory():
-			#datapath.CreateDirectory(perc.Path()+"/BGator2",None)# datapath)
-			BDirectory().CreateDirectory(perc.Path()+"/BGator2",None)
-		ent.GetPath(perc)
-		confile=BPath(perc.Path()+'/config.ini',None,False)
-		ent=BEntry(confile.Path())
+		ent,confile=Ent_config()
 		if ent.Exists():
-			Config.read(confile.Path())
+			Config.read(confile)
 			try:
 				sort=ConfigSectionMap("General")['sort']
 			except:
 				#no section
-				cfgfile = open(confile.Path(),'w')
+				cfgfile = open(confile,'w')
 				Config.add_section('General')
 				Config.set('General','sort', "1")
 				sort="1"
 				Config.write(cfgfile)
 				cfgfile.close()
-				Config.read(confile.Path())
+				Config.read(confile)
 			try:
 				min=ConfigSectionMap("General")['minimized']
 				if min == "True":
@@ -856,11 +891,11 @@ class GatorWindow(BWindow):
 				else:
 					self.startmin=False
 			except:
-				cfgfile = open(confile.Path(),'w')
+				cfgfile = open(confile,'w')
 				Config.set('General','minimized', "False")
 				Config.write(cfgfile)
 				cfgfile.close()
-				Config.read(confile.Path())
+				Config.read(confile)
 				self.startmin=False
 			try:
 				resu=ConfigSectionMap("Timer")['enabled']
@@ -869,7 +904,7 @@ class GatorWindow(BWindow):
 				else:
 					self.enabletimer=False
 			except:
-				cfgfile = open(confile.Path(),'w')
+				cfgfile = open(confile,'w')
 				Config.add_section('Timer')
 				Config.set('Timer','enabled', "False")
 				Config.set('Timer','timer', "300000000")
@@ -877,21 +912,21 @@ class GatorWindow(BWindow):
 				self.enabletimer=False
 				Config.write(cfgfile)
 				cfgfile.close()
-				Config.read(confile.Path())
+				Config.read(confile)
 			if self.enabletimer:
 				try:
 					self.timer=int(ConfigSectionMap("Timer")['timer'])
 				except:
-					cfgfile = open(confile.Path(),'w')
+					cfgfile = open(confile,'w')
 					Config.set('Timer','timer', "300000000")
 					self.timer=300000000
 					Config.write(cfgfile)
 					cfgfile.close()
-					Config.read(confile.Path())
+					Config.read(confile)
 				be_app.SetPulseRate(self.timer)
 		else:
 			#no file
-			cfgfile = open(confile.Path(),'w')
+			cfgfile = open(confile,'w')
 			Config.add_section('General')
 			Config.set('General','sort', "1")
 			Config.set('General','minimized', "False")
@@ -904,7 +939,7 @@ class GatorWindow(BWindow):
 			self.timer=300000000
 			Config.write(cfgfile)
 			cfgfile.close()
-			Config.read(confile.Path())
+			Config.read(confile)
 		self.set_savemenu = False
 		for menu, items in self.Menus:
 			if menu == "Sort By":
@@ -1419,23 +1454,13 @@ class GatorWindow(BWindow):
 		
 		elif msg.what == 40:
 			#TODO snellire Sort By Name
-			perc=BPath()
-			find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-			#datapath=BDirectory(perc.Path()+"/BGator2")
-			#ent=BEntry(datapath,perc.Path()+"/BGator2")
-			ent=BEntry(perc.Path()+"/BGator2")
-			if not ent.Exists() and ent.IsDirectory():
-				#datapath.CreateDirectory(perc.Path()+"/BGator2", None)#datapath)
-				BDirectory().CreateDirectory(perc.Path()+"/BGator2", None)
-			ent.GetPath(perc)
-			confile=BPath(perc.Path()+'/config.ini',None,False)
-			ent=BEntry(confile.Path())
+			ent,confile=Ent_config()
 			if ent.Exists():
-				cfgfile = open(confile.Path(),'w')
+				cfgfile = open(confile,'w')
 				Config.set('General','sort', "1")
 				Config.write(cfgfile)
 				cfgfile.close()
-				Config.read(confile.Path())
+				Config.read(confile)
 			menuitm=self.savemenu.FindItem(40)
 			menuitm.SetMarked(1)
 			menuitm=self.savemenu.FindItem(41)
@@ -1448,23 +1473,13 @@ class GatorWindow(BWindow):
 			self.Paperlist.lv.Select(tmpindex)
 		elif msg.what == 41:
 			#TODO snellire Sort By Unread
-			perc=BPath()
-			find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-			#datapath=BDirectory(perc.Path()+"/BGator2")
-			#ent=BEntry(datapath,perc.Path()+"/BGator2")
-			ent=BEntry(perc.Path()+"/BGator2")
-			if not ent.Exists()and ent.IsDirectory():
-				#datapath.CreateDirectory(perc.Path()+"/BGator2", None)#datapath)
-				BDirectory().CreateDirectory(perc.Path()+"/BGator2", None)
-			ent.GetPath(perc)
-			confile=BPath(perc.Path()+'/config.ini',None,False)
-			ent=BEntry(confile.Path())
+			ent,confile=Ent_config()
 			if ent.Exists():
-				cfgfile = open(confile.Path(),'w')
+				cfgfile = open(confile,'w')
 				Config.set('General','sort', "2")
 				Config.write(cfgfile)
 				cfgfile.close()
-				Config.read(confile.Path())
+				Config.read(confile)
 			menuitm=self.savemenu.FindItem(40)
 			menuitm.SetMarked(0)
 			menuitm=self.savemenu.FindItem(41)
@@ -1477,23 +1492,13 @@ class GatorWindow(BWindow):
 			self.Paperlist.lv.Select(tmpindex)
 		elif msg.what == 42:
 			#TODO snellire Sort By Date
-			perc=BPath()
-			find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-			#datapath=BDirectory(perc.Path()+"/BGator2")
-			#ent=BEntry(datapath,perc.Path()+"/BGator2")
-			ent=BEntry(perc.Path()+"/BGator2")
-			if not ent.Exists() and ent.IsDirectory():
-				#datapath.CreateDirectory(perc.Path()+"/BGator2",None)# datapath)
-				BDirectory().CreateDirectory(perc.Path()+"/BGator2",None)
-			ent.GetPath(perc)
-			confile=BPath(perc.Path()+'/config.ini',None,False)
-			ent=BEntry(confile.Path())
+			ent,confile=Ent_config()
 			if ent.Exists():
-				cfgfile = open(confile.Path(),'w')
+				cfgfile = open(confile,'w')
 				Config.set('General','sort', "3")
 				Config.write(cfgfile)
 				cfgfile.close()
-				Config.read(confile.Path())
+				Config.read(confile)
 			menuitm=self.savemenu.FindItem(40)
 			menuitm.SetMarked(0)
 			menuitm=self.savemenu.FindItem(41)
