@@ -861,6 +861,10 @@ class GatorWindow(BWindow):
 		if self.Notification.InitCheck() == B_OK:
 			self.Notification.SetGroup(BString("FeedGator"))
 			self.Notification.SetMessageID(BString("update_progress"));
+			status,pth=lookfdata("ico64.png")
+			if status:
+				img1=BTranslationUtils.GetBitmap(pth,None)
+				self.Notification.SetIcon(img1)
 		
 		self.bckgnd = BView(self.Bounds(), "background_View", 8, 20000000)
 		self.bckgnd.SetResizingMode(B_FOLLOW_ALL_SIDES)
