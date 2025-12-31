@@ -165,10 +165,10 @@ def Ent_config():
 	find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
 	#datapath=BDirectory(perc.Path()+"/HaiPO2")
 	#ent=BEntry(datapath,perc.Path()+"/HaiPO2")
-	ent=BEntry(perc.Path()+"/HaiPO2")
+	ent=BEntry(perc.Path()+"/BGator2")
 	if not ent.Exists() and ent.IsDirectory():
 		#datapath.CreateDirectory(perc.Path()+"/HaiPO2", None)#datapath)
-		BDirectory().CreateDirectory(perc.Path()+"/HaiPO2", None)
+		BDirectory().CreateDirectory(perc.Path()+"/BGator2", None)
 	ent.GetPath(perc)
 	confile=BPath(perc.Path()+'/config.ini',None,False)
 	ent=BEntry(confile.Path())
@@ -887,14 +887,21 @@ class GatorWindow(BWindow):
 		ent,confile=Ent_config()
 		if ent.Exists():
 			Config.read(confile)
-			try:
-				sort=ConfigSectionMap("General")['sort']
-			except:
-				#no section
+			if "General" in Config:
+				try:
+					sort=ConfigSectionMap("General")['sort']
+				except:
+					#no section
+					cfgfile = open(confile,'w')
+					Config.set('General','sort', "1")
+					sort="1"
+					Config.write(cfgfile)
+					cfgfile.close()
+					Config.read(confile)
+			else:
 				cfgfile = open(confile,'w')
 				Config.add_section('General')
 				Config.set('General','sort', "1")
-				sort="1"
 				Config.write(cfgfile)
 				cfgfile.close()
 				Config.read(confile)
@@ -911,13 +918,23 @@ class GatorWindow(BWindow):
 				cfgfile.close()
 				Config.read(confile)
 				self.startmin=False
-			try:
-				resu=ConfigSectionMap("Timer")['enabled']
-				if resu == "True":
-					self.enabletimer= True
-				else:
+			if "Timer" in Config:
+				try:
+					resu=ConfigSectionMap("Timer")['enabled']
+					if resu == "True":
+						self.enabletimer= True
+					else:
+						self.enabletimer=False
+				except:
+					cfgfile = open(confile,'w')
+					Config.set('Timer','enabled', "False")
+					Config.set('Timer','timer', "300000000")
+					self.timer=300000000
 					self.enabletimer=False
-			except:
+					Config.write(cfgfile)
+					cfgfile.close()
+					Config.read(confile)
+			else:
 				cfgfile = open(confile,'w')
 				Config.add_section('Timer')
 				Config.set('Timer','enabled', "False")
