@@ -1,0 +1,276 @@
+# Italian translations for PACKAGE package
+# Traduzioni italiane per il pacchetto PACKAGE..
+# Copyright (C) 2026 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Yourself <f.t.public@gmail.com>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-01-01 15:23+0100\n"
+"PO-Revision-Date: 2026-01-01 17:27+0000\n"
+"Last-Translator: Fabio Tomat <f.t.public@gmail.com>\n"
+"Language-Team: Friulian <f.t.public@gmail.com>\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Editor: HaiPO 2.6 RC\n"
+
+#: ../FeedGator.py:200
+msgid "FeedGator"
+msgstr "FeedGator"
+
+#. Translators: do not translate, just transliterate
+#: ../FeedGator.py:203
+msgid "beta"
+msgstr "beta"
+
+#: ../FeedGator.py:246
+msgid "Click here to load the remaining news"
+msgstr "Clicca qui per caricare le restanti notizie"
+
+#: ../FeedGator.py:423 ../FeedGator.py:880
+msgid "About"
+msgstr "Informazioni"
+
+#: ../FeedGator.py:442
+msgid "No mascotte found"
+msgstr "Nessuna mascotte trovata"
+
+#: ../FeedGator.py:462
+msgid "Feed our"
+msgstr "Alimenta il nostro"
+
+#: ../FeedGator.py:463
+msgid "alligator with tasty newspapers!"
+msgstr "alligatore con saporiti giornali!"
+
+#: ../FeedGator.py:463
+msgid ""
+"This is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n"
+"\n"
+"special thanks to coolcoder613eb and Zardshard\n"
+"\n"
+"FeedGator is a reworked update of BGator.\n"
+"\n"
+"Version"
+msgstr ""
+"Questa app è un semplice aggregatore di notizie scritto in Python + Haiku-PyAPI e feedparser\n"
+"\n"
+"ringraziamenti speciali a coolcoder613eb e Zardshard\n"
+"\n"
+"FeedGator è un aggiornamento rivisitato di BGator.\n"
+"\n"
+"Version"
+
+#: ../FeedGator.py:463
+msgid "by TmTFx"
+msgstr "da TmTFx"
+
+#: ../FeedGator.py:463
+msgid "press ESC to close this window"
+msgstr "premi ESC per chiudere questa finestra"
+
+#: ../FeedGator.py:515
+msgid "Paper Name:"
+msgstr "Nome giornale:"
+
+#: ../FeedGator.py:525
+msgid "Paper path on disk:"
+msgstr "Percorso su disco del giornale:"
+
+#: ../FeedGator.py:541 ../FeedGator.py:770
+msgid "Feed address:"
+msgstr "Indirizzo feed:"
+
+#: ../FeedGator.py:551
+msgid "Number of news(files) on disk:"
+msgstr "Numero di notizie(file) sul disco:"
+
+#: ../FeedGator.py:568
+msgid "Boolean"
+msgstr "Booleano"
+
+#: ../FeedGator.py:580 ../FeedGator.py:590 ../FeedGator.py:600
+msgid "Tip: Press Enter to confirm modifications"
+msgstr "Suggerimento: premi Invio per confermare le modifiche"
+
+#: ../FeedGator.py:582
+msgid "String:"
+msgstr "Stringa:"
+
+#: ../FeedGator.py:592
+msgid "Int:"
+msgstr "Intero:"
+
+#: ../FeedGator.py:602
+msgid "Float:"
+msgstr "Virgola mobile:"
+
+#: ../FeedGator.py:621 ../FeedGator.py:870
+msgid "Settings"
+msgstr "Impostazioni"
+
+#: ../FeedGator.py:642
+msgid "This should not happen: there's no section in config.ini!"
+msgstr ""
+"Questo non dovrebbe accadere: non c'è alcuna sezione nel file config.ini !"
+
+#: ../FeedGator.py:643 ../FeedGator.py:649 ../FeedGator.py:1766
+msgid "Ops"
+msgstr "Ops"
+
+#: ../FeedGator.py:643 ../FeedGator.py:649 ../FeedGator.py:1766
+msgid "Ok"
+msgstr "Ok"
+
+#: ../FeedGator.py:648
+msgid "This should not happen: there's no config.ini!"
+msgstr "Questo non dovrebbe accadere: il file config.ini non esiste!"
+
+#: ../FeedGator.py:763
+msgid "Add Feed Address"
+msgstr "Aggiungi indirizzo feed"
+
+#: ../FeedGator.py:775
+msgid "Cancel"
+msgstr "Annulla"
+
+#: ../FeedGator.py:776
+msgid "Add Feed"
+msgstr "Aggiungi feed"
+
+#: ../FeedGator.py:868
+msgid "Help"
+msgstr "Aiuto"
+
+#: ../FeedGator.py:869
+msgid "Quit"
+msgstr "Esci"
+
+#: ../FeedGator.py:871
+msgid "Clear news"
+msgstr "Rimuovi notizie"
+
+#: ../FeedGator.py:872
+msgid "All as read"
+msgstr "Segna tutte come “Lette”"
+
+#: ../FeedGator.py:873
+msgid "Title"
+msgstr "Titolo"
+
+#: ../FeedGator.py:874
+msgid "Unread"
+msgstr "Da leggere"
+
+#: ../FeedGator.py:875
+msgid "Date"
+msgstr "Data"
+
+#: ../FeedGator.py:879
+msgid "File"
+msgstr "File"
+
+#: ../FeedGator.py:879
+msgid "Add Paper"
+msgstr "Aggiungi giornale"
+
+#: ../FeedGator.py:879
+msgid "Remove Paper"
+msgstr "Rimuovi giornale"
+
+#: ../FeedGator.py:879
+msgid "News"
+msgstr "Notizie"
+
+#: ../FeedGator.py:879
+msgid "Download News"
+msgstr "Scarica notizie"
+
+#: ../FeedGator.py:879
+msgid "Sort By"
+msgstr "Ordina per"
+
+#: ../FeedGator.py:880
+msgid "Guide"
+msgstr "Guida"
+
+#: ../FeedGator.py:1058
+msgid "Mark as Unread"
+msgstr "Segna come “Da leggere”"
+
+#: ../FeedGator.py:1059
+msgid "Open with browser"
+msgstr "Apri con navigatore"
+
+#: ../FeedGator.py:1060
+msgid "Mark as Read"
+msgstr "Segna come “Letta”"
+
+#: ../FeedGator.py:1285
+msgid "No Title and no link"
+msgstr "Senza titolo e senza collegamento"
+
+#: ../FeedGator.py:1403
+#, python-brace-format
+msgid "You are going to remove all {name}'s feeds. Proceed?"
+msgstr "Stai per rimuovere tutti i feed di {name}. Procedere?"
+
+#: ../FeedGator.py:1405 ../FeedGator.py:1474
+msgid "Yes"
+msgstr "Sì"
+
+#: ../FeedGator.py:1405 ../FeedGator.py:1474
+msgid "No"
+msgstr "No"
+
+#: ../FeedGator.py:1460
+msgid "Noo"
+msgstr "Nooo!"
+
+#: ../FeedGator.py:1460
+msgid "No help pages installed"
+msgstr "Nessuna pagine di aiuto installata"
+
+#: ../FeedGator.py:1460
+msgid "Poor me"
+msgstr "Povero me!"
+
+#: ../FeedGator.py:1473
+#, python-brace-format
+msgid "You are going to remove {name}. Proceed?"
+msgstr "Stai per rimuovere {name}. Procedere?"
+
+#: ../FeedGator.py:1570
+msgid "Total news:"
+msgstr "Totale notizie:"
+
+#: ../FeedGator.py:1571
+msgid "New news:"
+msgstr "Nuove notizie:"
+
+#: ../FeedGator.py:1649
+msgid "Published or stored (Y-m-d, H:M):"
+msgstr "Pubblicata o memorizzata (A-m-g, H:M):"
+
+#: ../FeedGator.py:1663
+msgid "There's no preview here"
+msgstr "Non c'è alcuna anteprima qua"
+
+#: ../FeedGator.py:1765
+#, python-brace-format
+msgid "The folder {dir} is present, please remove it and add the feed again"
+msgstr ""
+"La cartella {dir} è presente, rimuovila e ritorna ad aggiungere il feed"
+
+#: ../FeedGator.py:1788
+msgid "Updating news, please wait..."
+msgstr "Aggiornamento notizie, attendi..."
+
+#: ../FeedGator.py:1791
+msgid "News update from sources..."
+msgstr "Aggiornamento notizie dalle fonti..."

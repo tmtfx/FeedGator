@@ -1,0 +1,272 @@
+# Friulian translations for PACKAGE package.
+# Copyright (C) 2026 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Yourself <f.t.public@gmail.com>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: FeedGator\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-01-01 15:23+0100\n"
+"PO-Revision-Date: 2026-01-01 15:11+0000\n"
+"Last-Translator: Fabio Tomat <f.t.public@gmail.com>\n"
+"Language-Team: Friulian <f.t.public@gmail.com>\n"
+"Language: fur\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Editor: HaiPO 2.6 RC\n"
+
+#: ../FeedGator.py:200
+msgid "FeedGator"
+msgstr "FeedGator\t"
+
+#. Translators: do not translate, just transliterate
+#: ../FeedGator.py:203
+msgid "beta"
+msgstr "beta"
+
+#: ../FeedGator.py:246
+msgid "Click here to load the remaining news"
+msgstr "Fâs clic achì par cjariâ lis notiziis che a restin"
+
+#: ../FeedGator.py:423 ../FeedGator.py:880
+msgid "About"
+msgstr "Informazions"
+
+#: ../FeedGator.py:442
+msgid "No mascotte found"
+msgstr "Nissune mascotte cjatade"
+
+#: ../FeedGator.py:462
+msgid "Feed our"
+msgstr "Da di mangjâ al nestri"
+
+#: ../FeedGator.py:463
+msgid "alligator with tasty newspapers!"
+msgstr " aligatôr bogns gjornâi!"
+
+#: ../FeedGator.py:463
+msgid ""
+"This is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n"
+"\n"
+"special thanks to coolcoder613eb and Zardshard\n"
+"\n"
+"FeedGator is a reworked update of BGator.\n"
+"\n"
+"Version"
+msgstr ""
+"Chest al è un sempliç coletôr di notiziis scrit in Python + Haiku-PyAPI e feedparser\n"
+"\n"
+"ringraciaments speciâi a coolcoder613eb e a Zardshard\n"
+"\n"
+"FeedGator al è un inzornament rielaborât di BGator.\n"
+"\n"
+"Version"
+
+#: ../FeedGator.py:463
+msgid "by TmTFx"
+msgstr "di TmTFx"
+
+#: ../FeedGator.py:463
+msgid "press ESC to close this window"
+msgstr "frache ESC par sierâ chest barcon"
+
+#: ../FeedGator.py:515
+msgid "Paper Name:"
+msgstr "Non dal gjornâl:"
+
+#: ../FeedGator.py:525
+msgid "Paper path on disk:"
+msgstr "Percors dal gjornâl sul disc:"
+
+#: ../FeedGator.py:541 ../FeedGator.py:770
+msgid "Feed address:"
+msgstr "Direzion dal feed:"
+
+#: ../FeedGator.py:551
+msgid "Number of news(files) on disk:"
+msgstr "Numar di notiziis(files) su disc:"
+
+#: ../FeedGator.py:568
+msgid "Boolean"
+msgstr "Boolean"
+
+#: ../FeedGator.py:580 ../FeedGator.py:590 ../FeedGator.py:600
+msgid "Tip: Press Enter to confirm modifications"
+msgstr "Sugjeriment: frache Invie par confermâ lis modifichis"
+
+#: ../FeedGator.py:582
+msgid "String:"
+msgstr "Stringhe:"
+
+#: ../FeedGator.py:592
+msgid "Int:"
+msgstr "Intîr:"
+
+#: ../FeedGator.py:602
+msgid "Float:"
+msgstr "Virgule mobile:"
+
+#: ../FeedGator.py:621 ../FeedGator.py:870
+msgid "Settings"
+msgstr "Impostazions"
+
+#: ../FeedGator.py:642
+msgid "This should not happen: there's no section in config.ini!"
+msgstr "Chest nol varès di sucedi: no je nissune sezion tal file config.ini !"
+
+#: ../FeedGator.py:643 ../FeedGator.py:649 ../FeedGator.py:1766
+msgid "Ops"
+msgstr "Orpo"
+
+#: ../FeedGator.py:643 ../FeedGator.py:649 ../FeedGator.py:1766
+msgid "Ok"
+msgstr "Va ben"
+
+#: ../FeedGator.py:648
+msgid "This should not happen: there's no config.ini!"
+msgstr "Chest nol varès di sucedi: al mancje dal dut il file config.ini !"
+
+#: ../FeedGator.py:763
+msgid "Add Feed Address"
+msgstr "Zonte direzion feed:"
+
+#: ../FeedGator.py:775
+msgid "Cancel"
+msgstr "Anule"
+
+#: ../FeedGator.py:776
+msgid "Add Feed"
+msgstr "Zonte feed"
+
+#: ../FeedGator.py:868
+msgid "Help"
+msgstr "Jutori"
+
+#: ../FeedGator.py:869
+msgid "Quit"
+msgstr "Jes"
+
+#: ../FeedGator.py:871
+msgid "Clear news"
+msgstr "Nete notiziis"
+
+#: ../FeedGator.py:872
+msgid "All as read"
+msgstr "Segne dut come let"
+
+#: ../FeedGator.py:873
+msgid "Title"
+msgstr "Titul"
+
+#: ../FeedGator.py:874
+msgid "Unread"
+msgstr "Di lei"
+
+#: ../FeedGator.py:875
+msgid "Date"
+msgstr "Date"
+
+#: ../FeedGator.py:879
+msgid "File"
+msgstr "File"
+
+#: ../FeedGator.py:879
+msgid "Add Paper"
+msgstr "Zonte gjornâl"
+
+#: ../FeedGator.py:879
+msgid "Remove Paper"
+msgstr "Gjave gjornâl"
+
+#: ../FeedGator.py:879
+msgid "News"
+msgstr "Notiziis"
+
+#: ../FeedGator.py:879
+msgid "Download News"
+msgstr "Discjame notiziis"
+
+#: ../FeedGator.py:879
+msgid "Sort By"
+msgstr "Ordene par"
+
+#: ../FeedGator.py:880
+msgid "Guide"
+msgstr "Vuide"
+
+#: ../FeedGator.py:1058
+msgid "Mark as Unread"
+msgstr "Segne come “Di lei”"
+
+#: ../FeedGator.py:1059
+msgid "Open with browser"
+msgstr "Vierç cul navigadôr"
+
+#: ../FeedGator.py:1060
+msgid "Mark as Read"
+msgstr "Segne come “Let”"
+
+#: ../FeedGator.py:1285
+msgid "No Title and no link"
+msgstr "Cence titul e cence colegament"
+
+#: ../FeedGator.py:1403
+#, python-brace-format
+msgid "You are going to remove all {name}'s feeds. Proceed?"
+msgstr "Tu stâs par gjavâ ducj i feeds di {name}. Continuâ?"
+
+#: ../FeedGator.py:1405 ../FeedGator.py:1474
+msgid "Yes"
+msgstr "Sì"
+
+#: ../FeedGator.py:1405 ../FeedGator.py:1474
+msgid "No"
+msgstr "No"
+
+#: ../FeedGator.py:1460
+msgid "Noo"
+msgstr "No po!"
+
+#: ../FeedGator.py:1460
+msgid "No help pages installed"
+msgstr "Nissune pagjine di jutori instalade"
+
+#: ../FeedGator.py:1460
+msgid "Poor me"
+msgstr "Biât jo"
+
+#: ../FeedGator.py:1473
+#, python-brace-format
+msgid "You are going to remove {name}. Proceed?"
+msgstr "Tu stâs par gjavâ {name}. Continuâ?"
+
+#: ../FeedGator.py:1570
+msgid "Total news:"
+msgstr "Notiziis complessivis:"
+
+#: ../FeedGator.py:1571
+msgid "New news:"
+msgstr "Gnovis notiziis:"
+
+#: ../FeedGator.py:1649
+msgid "Published or stored (Y-m-d, H:M):"
+msgstr "Publicade o archiviade (an-mês-dì, H:M):"
+
+#: ../FeedGator.py:1663
+msgid "There's no preview here"
+msgstr "E mancje une anteprime par cheste notizie"
+
+#: ../FeedGator.py:1765
+#, python-brace-format
+msgid "The folder {dir} is present, please remove it and add the feed again"
+msgstr "E esist la cartele {dir}, gjavile e torne a zontâ il feed"
+
+#: ../FeedGator.py:1788
+msgid "Updating news, please wait..."
+msgstr "Inzornament notiziis, par plasê spiete..."
+
+#: ../FeedGator.py:1791
+msgid "News update from sources..."
+msgstr "Inzornament notiziis da lis fonts..."
