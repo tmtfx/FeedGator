@@ -26,7 +26,7 @@ from Be.Errors import *
 from Be import Entry
 from Be.Entry import entry_ref, get_ref_for_path
 
-import configparser,re,html, os, sys, feedparser, struct, datetime, subprocess, gettext
+import configparser,re,html, os, sys, feedparser, struct, datetime, subprocess, gettext, locale
 from threading import Thread,Semaphore,Event
 from random import randrange
 
@@ -153,6 +153,7 @@ if b:
 				perc=BPath()
 				ent.GetPath(perc)
 				lista_traduzioni.append(perc.Leaf())
+				
 	else:
 		locale_dir=None
 		t = gettext.NullTranslations()
@@ -177,9 +178,12 @@ def Ent_config():
 ent,confile=Ent_config()
 Config.read(confile)
 try:
-	localization=ConfigSectionMap("General")['localization']
+	localization=locale.getlocale()[0]
 except:
 	localization = "en"
+try:
+	localization=ConfigSectionMap("General")['localization']
+except:
 	t = gettext.NullTranslations()
 	
 if locale_dir!=None:
