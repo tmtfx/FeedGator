@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: FeedGator-2.4.b\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-01 15:23+0100\n"
-"PO-Revision-Date: 2026-01-01 19:10+0000\n"
+"PO-Revision-Date: 2026-01-01 19:34+0000\n"
 "Last-Translator: Fabio Tomat <f.t.public@gmail.com>\n"
 "Language-Team: Friulian <f.t.public@gmail.com>\n"
 "Language: it\n"
@@ -88,7 +88,7 @@ msgstr "Indirizzo feed:"
 
 #: ../FeedGator.py:551
 msgid "Number of news(files) on disk:"
-msgstr "Numero di notizie(file) sul disco:"
+msgstr "Numero di notizie(file) su disco:"
 
 #: ../FeedGator.py:568
 msgid "Boolean"
