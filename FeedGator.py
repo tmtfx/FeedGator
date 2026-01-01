@@ -458,9 +458,12 @@ class AboutWindow(BWindow):
 		self.AboutText.MakeEditable(False)
 		self.AboutText.MakeSelectable(False)
 		self.AboutText.SetStylable(True)
-		stuff="FeedGator\nFeed our alligator with tasty newspapers!\n\nThis is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\nFeedGator is a reworked update of BGator.\n\nVersion 2.3-beta\n\t\t\t\t\t\t\t\t\tby TmTFx\n\n\t\tpress ESC to close this window"
+		#stuff="FeedGator\nFeed our alligator with tasty newspapers!\n\nThis is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\nFeedGator is a reworked update of BGator.\n\nVersion 2.3-beta\n\t\t\t\t\t\t\t\t\tby TmTFx\n\n\t\tpress ESC to close this window"
+		fo=_("Feed our")
+		stuff=appname+"\n"+fo+" "+_("alligator with tasty newspapers!")+"\n\n"+_("This is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\nFeedGator is a reworked update of BGator.\n\nVersion")+" "+ver+"-"+state+"\n\t\t\t\t\t\t\t\t\t"+_("by TmTFx")+"\n\n\t\t"+_("press ESC to close this window")
 		arra=[]
-		i = len("FeedGator")
+		#i = len("FeedGator")
+		i = len(appname)
 		c=0
 		fon1=BFont(be_bold_font)
 		fon1.SetSize(48.0)
@@ -476,7 +479,7 @@ class AboutWindow(BWindow):
 			arra[-1].color=col
 			c+=1
 		
-		n=find_byte("Feed our",stuff)
+		n=find_byte(fo,stuff)
 		txtrun2=text_run()
 		txtrun2.offset=n
 		txtrun2.font=be_plain_font
@@ -509,7 +512,7 @@ class PapDetails(BWindow):
 		fon=BFont()
 		font_height_value=font_height()
 		fon.GetHeight(font_height_value)
-		desc1="Paper Name:"
+		desc1=_("Paper Name:")
 		self.desc1=BStringView(BRect(5,5,fon.StringWidth(desc1)+5,font_height_value.ascent+5),"desc1",desc1)
 		self.box.AddChild(self.desc1,None)
 		desc1_bounds=self.desc1.Frame()
@@ -519,7 +522,7 @@ class PapDetails(BWindow):
 		self.box.AddChild(self.risp1,None)
 		risp1_bounds=self.risp1.Frame()
 		###########################
-		desc2="Paper path on disk:"
+		desc2=_("Paper path on disk:")
 		self.desc2=BStringView(BRect(5,15+risp1_bounds.bottom,fon.StringWidth(desc2)+5,risp1_bounds.bottom + font_height_value.ascent+15),"desc2",desc2)
 		self.box.AddChild(self.desc2,None)
 		desc2_bounds=self.desc2.Frame()
@@ -535,7 +538,7 @@ class PapDetails(BWindow):
 		self.box.AddChild(self.risp2,None)
 		risp2_bounds=self.risp2.Frame()
 		###########################
-		desc3="Feed address:"
+		desc3=_("Feed address:")
 		self.desc3=BStringView(BRect(5,15+risp2_bounds.bottom,fon.StringWidth(desc3)+5,risp2_bounds.bottom + font_height_value.ascent+15),"desc3",desc3)
 		self.box.AddChild(self.desc3,None)
 		desc3_bounds=self.desc3.Frame()
@@ -545,7 +548,7 @@ class PapDetails(BWindow):
 		self.box.AddChild(self.risp3,None)
 		risp3_bounds=self.risp3.Frame()
 		###########################
-		desc4="Number of news(files) on disk:"
+		desc4=_("Number of news(files) on disk:")
 		self.desc4=BStringView(BRect(5,15+risp3_bounds.bottom,fon.StringWidth(desc4)+5,risp3_bounds.bottom + font_height_value.ascent+15),"desc4",desc4)
 		self.box.AddChild(self.desc4,None)
 		desc4_bounds=self.desc4.Frame()
@@ -562,8 +565,9 @@ class BoolBox(BBox):
 	def __init__(self,rect,name,res,flag,value):
 		BBox.__init__(self,rect,name,res,flag)
 		a=BFont()
-		l=self.StringWidth("Boolean")
-		self.CheckBox=BCheckBox(BRect(4,rect.Height()/2-a.Size()/2,l+34,rect.Height()/2+a.Size()/2+4),"option_value","Boolean",BMessage(1600))
+		txi=_("Boolean")
+		l=self.StringWidth(txi)
+		self.CheckBox=BCheckBox(BRect(4,rect.Height()/2-a.Size()/2,l+34,rect.Height()/2+a.Size()/2+4),"option_value",txi,BMessage(1600))
 		if value == "True":
 			self.CheckBox.SetValue(1)
 		elif value == "False":
@@ -573,28 +577,31 @@ class StringBox(BBox):
 	def __init__(self,rect,name,res,flag,value):
 		BBox.__init__(self,rect,name,res,flag)
 		a=BFont()
-		self.labello=BStringView(BRect(8,rect.Height()-a.Size()*2,rect.Width()-8,rect.Height()-4),"suggest","Tip: Press Enter to confirm modifications")
+		self.labello=BStringView(BRect(8,rect.Height()-a.Size()*2,rect.Width()-8,rect.Height()-4),"suggest",_("Tip: Press Enter to confirm modifications"))
 		self.AddChild(self.labello,None)
-		self.stringvalue=BTextControl(BRect(8,rect.Height()/2-a.Size()/2,rect.Width()-8,rect.Height()/2+a.Size()/2-4),"option_value", "String:",value,BMessage(1700))
-		self.stringvalue.SetDivider(self.StringWidth("String:"))
+		txi=_("String:")
+		self.stringvalue=BTextControl(BRect(8,rect.Height()/2-a.Size()/2,rect.Width()-8,rect.Height()/2+a.Size()/2-4),"option_value", txi,value,BMessage(1700))
+		self.stringvalue.SetDivider(self.StringWidth(txi))
 		self.AddChild(self.stringvalue,None)
 class IntBox(BBox):
 	def __init__(self,rect,name,res,flag,value):
 		BBox.__init__(self,rect,name,res,flag)
 		a=BFont()
-		self.labello=BStringView(BRect(8,rect.Height()-a.Size()*2,rect.Width()-8,rect.Height()-4),"suggest","Tip: Press Enter to confirm modifications")
+		self.labello=BStringView(BRect(8,rect.Height()-a.Size()*2,rect.Width()-8,rect.Height()-4),"suggest",_("Tip: Press Enter to confirm modifications"))
 		self.AddChild(self.labello,None)
-		self.stringvalue=BTextControl(BRect(8,rect.Height()/2-a.Size()/2,rect.Width()-8,rect.Height()/2+a.Size()/2-4),"option_value", "Int:",str(value),BMessage(1800))
-		self.stringvalue.SetDivider(self.StringWidth("Int:"))
+		txi=_("Int:")
+		self.stringvalue=BTextControl(BRect(8,rect.Height()/2-a.Size()/2,rect.Width()-8,rect.Height()/2+a.Size()/2-4),"option_value", txi,str(value),BMessage(1800))
+		self.stringvalue.SetDivider(self.StringWidth(txi))
 		self.AddChild(self.stringvalue,None)
 class FloatBox(BBox):
 	def __init__(self,rect,name,res,flag,value):
 		BBox.__init__(self,rect,name,res,flag)
 		a=BFont()
-		self.labello=BStringView(BRect(8,rect.Height()-a.Size()*2,rect.Width()-8,rect.Height()-4),"suggest","Tip: Press Enter to confirm modifications")
+		self.labello=BStringView(BRect(8,rect.Height()-a.Size()*2,rect.Width()-8,rect.Height()-4),"suggest",_("Tip: Press Enter to confirm modifications"))
 		self.AddChild(self.labello,None)
-		self.stringvalue=BTextControl(BRect(8,rect.Height()/2-a.Size()/2,rect.Width()-8,rect.Height()/2+a.Size()/2-4),"option_value", "Float:",str(value),BMessage(1900))
-		self.stringvalue.SetDivider(self.StringWidth("Float:"))
+		txi=_("Float:")
+		self.stringvalue=BTextControl(BRect(8,rect.Height()/2-a.Size()/2,rect.Width()-8,rect.Height()/2+a.Size()/2-4),"option_value", txi,str(value),BMessage(1900))
+		self.stringvalue.SetDivider(self.StringWidth(txi))
 		self.AddChild(self.stringvalue,None)
 		
 class SectionView(BView):
@@ -611,7 +618,7 @@ class SectionView(BView):
 
 class SettingsWindow(BWindow):
 	def __init__(self):
-		BWindow.__init__(self, BRect(200,150,800,450), "Settings", window_type.B_FLOATING_WINDOW,  B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)
+		BWindow.__init__(self, BRect(200,150,800,450), _("Settings"), window_type.B_FLOATING_WINDOW,  B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)
 		self.bckgnd = BView(self.Bounds(), "bckgnd_View", 8, 20000000)
 		self.AddChild(self.bckgnd,None)
 		self.bckgnd.SetResizingMode(B_FOLLOW_ALL_SIDES)
@@ -632,14 +639,14 @@ class SettingsWindow(BWindow):
 					self.tablabels.append(BTab(self.views[-1]))
 					self.tabview.AddTab(self.views[-1],self.tablabels[-1])
 			except:
-				saytxt="This should not happen: there's no section in config.ini!"
-				alert= BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
+				saytxt=_("This should not happen: there's no section in config.ini!")
+				alert= BAlert(_('Ops'), saytxt, _('Ok'), None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
 				#self.alerts.append(alert)
 				alert.Go()
 				self.Close()
 		else:
-			saytxt="This should not happen: there's no config.ini!"
-			alert= BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
+			saytxt=_("This should not happen: there's no config.ini!")
+			alert= BAlert(_('Ops'), saytxt, _('Ok'), None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
 			alert.Go()
 			self.Close()
 			
@@ -753,19 +760,20 @@ class SettingsWindow(BWindow):
 
 class AddFeedWindow(BWindow):
 	def __init__(self):
-		BWindow.__init__(self, BRect(150,150,500,300), "Add Feed Address", window_type.B_FLOATING_WINDOW,  B_NOT_RESIZABLE | B_CLOSE_ON_ESCAPE)#B_QUIT_ON_WINDOW_CLOSE)#B_BORDERED_WINDOW B_FLOATING_WINDOW
+		BWindow.__init__(self, BRect(150,150,500,300), _("Add Feed Address"), window_type.B_FLOATING_WINDOW,  B_NOT_RESIZABLE | B_CLOSE_ON_ESCAPE)#B_QUIT_ON_WINDOW_CLOSE)#B_BORDERED_WINDOW B_FLOATING_WINDOW
 		self.bckgnd = BView(self.Bounds(), "bckgnd_View", 8, 20000000)
 		bckgnd_bounds=self.bckgnd.Bounds()
 		self.AddChild(self.bckgnd,None)
 		self.box = BBox(bckgnd_bounds,"Underbox",0x0202|0x0404,border_style.B_FANCY_BORDER)
 		self.bckgnd.AddChild(self.box,None)
 		a=BFont()
-		wid=a.StringWidth("Feed address:")
-		self.feedaddress = BTextControl(BRect(10,30,bckgnd_bounds.Width()-10,60),'TxTCtrl', "Feed address:",None,BMessage(1),0x0202|0x0404)
+		txi=_("Feed address:")
+		wid=a.StringWidth(txi)
+		self.feedaddress = BTextControl(BRect(10,30,bckgnd_bounds.Width()-10,60),'TxTCtrl', txi,None,BMessage(1),0x0202|0x0404)
 		self.feedaddress.SetDivider(wid+5)
 		self.box.AddChild(self.feedaddress,None)
-		self.cancelBtn = BButton(BRect(10,80,bckgnd_bounds.Width()/2-5,110),'GetNewsButton','Cancel',BMessage(6))
-		self.addfeedBtn = BButton(BRect(bckgnd_bounds.Width()/2+5,80,bckgnd_bounds.Width()-10,110),'GetNewsButton','Add Feed',BMessage(7))
+		self.cancelBtn = BButton(BRect(10,80,bckgnd_bounds.Width()/2-5,110),'GetNewsButton',_('Cancel'),BMessage(6))
+		self.addfeedBtn = BButton(BRect(bckgnd_bounds.Width()/2+5,80,bckgnd_bounds.Width()-10,110),'GetNewsButton',_('Add Feed'),BMessage(7))
 		self.box.AddChild(self.cancelBtn,None)
 		self.box.AddChild(self.addfeedBtn,None)
 
@@ -857,11 +865,19 @@ class GatorWindow(BWindow):
 	tmpWind=[]
 	papdetW=[]
 	alerts=[]
+	hlp=_('Help')
+	qui=_('Quit')
+	stt=_('Settings')
+	cln=_('Clear news')
+	alr=_('All as read')
+	tit=_('Title')
+	unr=_('Unread')
+	dat=_('Date')
 	shiftok=False
 	enabletimer=False
 	Menus = (
-		('File', ((1, 'Add Paper'),(2, 'Remove Paper'),(6, 'Settings'),(None, None),(int(AppDefs.B_QUIT_REQUESTED), 'Quit'))),('News', ((66, 'Download News'),(4, 'All as read'),(5, 'Clear news'))),('Sort By', ((40, 'Title'),(41, 'Unread'),(42, 'Date'))),
-		('Help', ((8, 'Help'),(3, 'About')))
+		(_('File'), ((1, _('Add Paper')),(2, _('Remove Paper')),(6, stt),(None, None),(int(AppDefs.B_QUIT_REQUESTED), qui))),(_('News'), ((66, _('Download News')),(4, alr),(5, cln))),(_('Sort By'), ((40, tit),(41, unr),(42, dat))),
+		(hlp, ((8, _('Guide')),(3, _('About'))))
 		)
 	def __init__(self):
 		global tab,name
@@ -869,7 +885,7 @@ class GatorWindow(BWindow):
 		bounds=self.Bounds()
 		self.Notification=BNotification(notification_type.B_PROGRESS_NOTIFICATION)
 		if self.Notification.InitCheck() == B_OK:
-			self.Notification.SetGroup(BString("FeedGator"))
+			self.Notification.SetGroup(BString(appname))
 			self.Notification.SetMessageID(BString("update_progress"));
 			status,pth=lookfdata("ico64.png")
 			if status:
@@ -983,19 +999,19 @@ class GatorWindow(BWindow):
 				if k is None:
 						menu.AddItem(BSeparatorItem())
 				else:
-					if name == "Help" or name == "Quit" or name == "Settings":
+					if name == self.hlp or name == self.qui or name == self.stt:
 						mitm=BMenuItem(name, BMessage(k),name[0],0)
-					elif name == "Clear news":
+					elif name == self.cln:
 						mitm=BMenuItem(name, BMessage(k),name[1],0)
-					elif name == "All as read":
+					elif name == self.alr:
 						mitm=BMenuItem(name, BMessage(k),name[7],0)
 					else:
 						mitm=BMenuItem(name, BMessage(k),name[1],0)
-						if name == "Title" and sort == "1":
+						if name == self.tit and sort == "1":
 							mitm.SetMarked(True)
-						elif name == "Unread" and sort == "2":
+						elif name == self.unr and sort == "2":
 							mitm.SetMarked(True)
-						elif name == "Date" and sort == "3":
+						elif name == self.dat and sort == "3":
 							mitm.SetMarked(True)
 					menu.AddItem(mitm)
 			if set_savemenu:
@@ -1039,9 +1055,9 @@ class GatorWindow(BWindow):
 		
 		btnswidth=round((boxboundsw - 8 - (8 + boxboundsw / 3) -8 - 8)/3,2)
 		markBounds=BRect(round(8 + boxboundsw / 3, 2),round(boxboundsh - 36, 2),round(8 + boxboundsw / 3 + btnswidth, 2) ,round(boxboundsh - 8,2))
-		self.markUnreadBtn = BButton(markBounds,'markUnreadButton','Mark as Unread',BMessage(9),B_FOLLOW_BOTTOM)
-		self.openBtn = BButton(BRect(round(boxboundsw-8-btnswidth, 2),round( boxboundsh - 36, 2),round(boxboundsw-8, 2),round(boxboundsh-8, 2)),'openButton','Open with browser',BMessage(self.NewsList.HiWhat),B_FOLLOW_BOTTOM)
-		self.markReadBtn = BButton(BRect(round(8 + boxboundsw / 3 + btnswidth + 8, 2),round( boxboundsh - 36, 2),round(boxboundsw-16-btnswidth, 2),round(boxboundsh-8, 2)),'markReadButton','Mark as Read',BMessage(10),B_FOLLOW_BOTTOM)
+		self.markUnreadBtn = BButton(markBounds,'markUnreadButton',_('Mark as Unread'),BMessage(9),B_FOLLOW_BOTTOM)
+		self.openBtn = BButton(BRect(round(boxboundsw-8-btnswidth, 2),round( boxboundsh - 36, 2),round(boxboundsw-8, 2),round(boxboundsh-8, 2)),'openButton',_('Open with browser'),BMessage(self.NewsList.HiWhat),B_FOLLOW_BOTTOM)
+		self.markReadBtn = BButton(BRect(round(8 + boxboundsw / 3 + btnswidth + 8, 2),round( boxboundsh - 36, 2),round(boxboundsw-16-btnswidth, 2),round(boxboundsh-8, 2)),'markReadButton',_('Mark as Read'),BMessage(10),B_FOLLOW_BOTTOM)
 		self.outbox_preview.AddChild(self.NewsPreView,None)
 		self.box.AddChild(self.markUnreadBtn,None)
 		markUnreadBtn_bounds=self.markUnreadBtn.Frame()
@@ -1140,7 +1156,7 @@ class GatorWindow(BWindow):
 				loaded = 0
 				rit = False
 				if self.set_savemenu:
-					if marked == "Title":
+					if marked == self.tit:#"Title":
 						self.tr=[]
 						while not rit:
 							itmEntry=BEntry()
@@ -1150,7 +1166,7 @@ class GatorWindow(BWindow):
 						tmsg=BMessage(444)
 						tmsg.AddBool("fl",firstload)
 						be_app.WindowAt(0).PostMessage(tmsg)
-					if marked == "Unread":
+					if marked == self.unr:#"Unread":
 						self.listunread=[]
 						self.listread=[]
 						while not rit:
@@ -1179,7 +1195,7 @@ class GatorWindow(BWindow):
 						#for item in listread:
 						#	self.NewsItemConstructor(item)
 						
-					if marked == "Date": # TODO
+					if marked == self.dat:#"Date": # TODO
 						from Be import stat
 						getlist=[]
 						self.orderedlist=[]
@@ -1266,7 +1282,7 @@ class GatorWindow(BWindow):
 					unread = False
 				if not btitle:
 					if link == "":
-						title = "No Title and no link"
+						title = _("No Title and no link")
 					else:
 						title = link
 				tmpNitm.append(NewsItem(title,entry,link,unread,consist))
@@ -1383,9 +1399,10 @@ class GatorWindow(BWindow):
 		elif msg.what == 5: #clear paper news
 			cursel=self.Paperlist.lv.CurrentSelection()
 			if cursel>-1:
-				stuff="You are going to remove all "+self.Paperlist.lv.ItemAt(cursel).name+"'s feeds. Proceed?"
-				ask=BAlert('cle', stuff, 'Yes', "No",None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
-				#self.alerts.append(ask)
+				item_name = self.Paperlist.lv.ItemAt(cursel).name
+				stuff = _("You are going to remove all {name}'s feeds. Proceed?").format(name=item_name)
+				#stuff="You are going to remove all "+self.Paperlist.lv.ItemAt(cursel).name+"'s feeds. Proceed?"
+				ask=BAlert('cle', stuff, _('Yes'), _("No"),None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
 				ri=ask.Go()
 				if ri==0:
 					self.Paperlist.lv.DeselectAll()
@@ -1440,7 +1457,7 @@ class GatorWindow(BWindow):
 							t.run()
 							nopages=False
 					if nopages:
-						wa=BAlert('noo', 'No help pages installed', 'Poor me', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
+						wa=BAlert(_('Noo'), _('No help pages installed'), _('Poor me'), None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
 						#self.alerts.append(wa)
 						wa.Go()
 		elif msg.what == 3: #open aboutWindow
@@ -1452,8 +1469,9 @@ class GatorWindow(BWindow):
 		elif msg.what == 2: #remove feed and relative files and dir
 			cursel=self.Paperlist.lv.CurrentSelection()
 			if cursel>-1:
-				stuff="You are going to remove "+self.Paperlist.lv.ItemAt(cursel).name+". Proceed?"
-				ask=BAlert('rem', stuff, 'Yes', "No",None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
+				itemname=self.Paperlist.lv.ItemAt(cursel).name
+				stuff=_("You are going to remove {name}. Proceed?").format(name=itemname)
+				ask=BAlert('rem', stuff, _('Yes'), _("No"),None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
 				#self.alerts.append(ask)
 				ri=ask.Go()
 				if ri==0:
@@ -1549,7 +1567,9 @@ class GatorWindow(BWindow):
 				tmpNitm.clear()
 			if cursel>-1:
 				self.Paperlist.lv.ItemAt(cursel).Statistics()
-				stuff = self.Paperlist.lv.ItemAt(cursel).name+"\n\nTotal news: "+str(self.Paperlist.lv.ItemAt(cursel).newscount)+"\nNew news: "+str(self.Paperlist.lv.ItemAt(cursel).cnnews)
+				totn=_("Total news:")
+				nnws=_("New news:")
+				stuff = self.Paperlist.lv.ItemAt(cursel).name+"\n\n"+totn+" "+str(self.Paperlist.lv.ItemAt(cursel).newscount)+"\n"+nnws+" "+str(self.Paperlist.lv.ItemAt(cursel).cnnews)
 				ta=[text_run()]
 				ta[-1].offset=0
 				fon1=BFont(be_bold_font)
@@ -1561,7 +1581,7 @@ class GatorWindow(BWindow):
 				col1.blue=0
 				col1.alpha=255
 				ta[-1].color=col1
-				n=find_byte("Total news:",stuff)
+				n=find_byte(totn,stuff)
 				ta.append(text_run())
 				ta[-1].offset=n
 				fon1=BFont(be_plain_font)
@@ -1573,7 +1593,7 @@ class GatorWindow(BWindow):
 				col1.blue=0
 				col1.alpha=255
 				ta[-1].color=col1
-				n=find_byte("New news:",stuff)
+				n=find_byte(nnws,stuff)
 				ta.append(text_run())
 				ta[-1].offset=n
 				if self.Paperlist.lv.ItemAt(cursel).cnnews!=0:
@@ -1626,7 +1646,7 @@ class GatorWindow(BWindow):
 						self.NewsPreView.GetFontAndColor(0,fnt,clr)
 						self.slider.SetValue(int(round(fnt.Size())))
 						txtnfile=self.NewsPreView.Text()
-						newtxt="Published or stored (Y-m-d, H:M):\t\t\t\t\t"+Nitm.published.strftime("%Y-%m-%d, at %H:%M")+"\n - - - - - - - - - - - - - - - - - - - - - - - - - - - \n"+txtnfile
+						newtxt=_("Published or stored (Y-m-d, H:M):")+"\t\t\t\t\t"+Nitm.published.strftime("%Y-%m-%d, at %H:%M")+"\n - - - - - - - - - - - - - - - - - - - - - - - - - - - \n"+txtnfile
 						self.NewsPreView.SetText(newtxt,None)
 					else:
 						ta=[text_run()]
@@ -1640,7 +1660,7 @@ class GatorWindow(BWindow):
 						col1.blue=50
 						col1.alpha=255
 						ta[-1].color=col1
-						self.NewsPreView.SetText("There\'s no preview here",ta)
+						self.NewsPreView.SetText(_("There\'s no preview here"),ta)
 			else:
 				self.NewsPreView.SelectAll()
 				self.NewsPreView.Clear()
@@ -1732,7 +1752,7 @@ class GatorWindow(BWindow):
 		elif msg.what == 245: # ADD FEED
 			status,feedaddr=msg.FindString("feed")
 			if status==B_OK:
-				print(f"siccome status era {status} proseguo con l'aggiunta del feed")
+				#print(f"siccome status era {status} proseguo con l'aggiunta del feed")
 				d=feedparser.parse(feedaddr)
 				if d.feed.has_key('title'):
 					dirname=d.feed.title
@@ -1742,8 +1762,8 @@ class GatorWindow(BWindow):
 					datapath=BDirectory(folder)
 					entr=BEntry(folder)
 					if entr.Exists() and entr.IsDirectory():
-						saytxt="The folder "+folder+" is present, please remove it and add the feed again"
-						about = BAlert('Ops', saytxt, 'Ok', None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
+						saytxt=_("The folder {dir} is present, please remove it and add the feed again").format(dir=folder)
+						about = BAlert(_('Ops'), saytxt, _('Ok'), None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
 						#self.alerts.append(about)
 						about.Go()
 					else:
@@ -1765,10 +1785,10 @@ class GatorWindow(BWindow):
 					#se esiste ma non ha tutti gli attributi scrivili
 
 		elif msg.what == 66: #Parallel Update news
-			self.infostring.SetText("Updating news, please wait...")
+			self.infostring.SetText(_("Updating news, please wait..."))
 			self.progress.SetMaxValue(self.Paperlist.lv.CountItems()*100+self.Paperlist.lv.CountItems())
 			if self.Notification.InitCheck() == B_OK:
-				self.Notification.SetTitle(BString("News update from sources..."))
+				self.Notification.SetTitle(BString(_("News update from sources...")))
 				self.Notification.SetProgress(0.0)
 				self.Notification.Send()
 			self.cres=0
