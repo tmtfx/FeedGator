@@ -1,0 +1,4 @@
+[submodule "LocalizationHelper"]
+	path = LocalizationHelper
+	url = https://codeberg.org/tmtfx/LocalizationHelper.git
+	branch = FeedGator
