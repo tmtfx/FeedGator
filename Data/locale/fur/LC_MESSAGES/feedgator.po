@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: FeedGator\n"
+"Project-Id-Version: FeedGator-2.4.b\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-01 15:23+0100\n"
-"PO-Revision-Date: 2026-01-01 15:11+0000\n"
+"PO-Revision-Date: 2026-01-01 17:53+0000\n"
 "Last-Translator: Fabio Tomat <f.t.public@gmail.com>\n"
 "Language-Team: Friulian <f.t.public@gmail.com>\n"
 "Language: fur\n"
