@@ -167,8 +167,10 @@ def Ent_config():
 	#datapath=BDirectory(perc.Path()+"/HaiPO2")
 	#ent=BEntry(datapath,perc.Path()+"/HaiPO2")
 	ent=BEntry(perc.Path()+"/BGator2")
-	if not ent.Exists() and ent.IsDirectory():
-		#datapath.CreateDirectory(perc.Path()+"/HaiPO2", None)#datapath)
+	if not ent.Exists():
+		BDirectory().CreateDirectory(perc.Path()+"/BGator2", None)
+	elif not ent.IsDirectory():
+		ent.Rename(perc.Path()+"/BGator2tmp")
 		BDirectory().CreateDirectory(perc.Path()+"/BGator2", None)
 	ent.GetPath(perc)
 	confile=BPath(perc.Path()+'/config.ini',None,False)
@@ -1762,6 +1764,13 @@ class GatorWindow(BWindow):
 					dirname=d.feed.title
 					perc=BPath()
 					find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
+					paperfolder=perc.Path()+"/BGator2/Papers"
+					antr=BEntry(paperfolder)
+					if antr.Exists() and not antr.IsDirectory():
+						antr.Rename(paperfolder+"_tmp")
+						BDirectory().CreateDirectory(paperfolder, None)
+					if not antr.Exists():
+						BDirectory().CreateDirectory(paperfolder,None)
 					folder=perc.Path()+"/BGator2/Papers/"+dirname
 					datapath=BDirectory(folder)
 					entr=BEntry(folder)
