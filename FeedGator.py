@@ -1433,7 +1433,7 @@ class GatorWindow(BWindow):
 				t.run()
 			else:
 				find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-				link=perc.Path()+"/BGator2/Data/help/index.html"
+				link=perc.Path()+"/BGator2/help/index.html"
 				ent=BEntry(link)
 				if ent.Exists():
 					#open user installed help
