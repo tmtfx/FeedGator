@@ -96,14 +96,14 @@ def find_byte(lookf,looka,offset=0):
 def lookfdata(name):
 	perc=BPath()
 	find_directory(directory_which.B_SYSTEM_DATA_DIRECTORY,perc,False,None)
-	ent=BEntry(perc.Path()+"/HaiPO2/"+name)
+	ent=BEntry(perc.Path()+"/BGator2/"+name)
 	if ent.Exists():
 		#use mascot installed in system data folder
 		ent.GetPath(perc)
 		return (True,perc.Path())
 	else:
 		find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-		ent=BEntry(perc.Path()+"/HaiPO2/"+name)
+		ent=BEntry(perc.Path()+"/BGator2/"+name)
 		if ent.Exists():
 			#use mascot installed in user data folder
 			ent.GetPath(perc)
@@ -153,7 +153,6 @@ if b:
 				perc=BPath()
 				ent.GetPath(perc)
 				lista_traduzioni.append(perc.Leaf())
-				
 	else:
 		locale_dir=None
 		t = gettext.NullTranslations()
