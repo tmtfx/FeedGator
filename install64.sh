@@ -51,7 +51,7 @@ fi
 echo
 if [ -e FeedGator.py ]
 then
-	if [ -e data/FeedGator2.hvif ]; then
+	if [ -e Data/FeedGator2.hvif ]; then
 		addattr -t \'VICN\' BEOS:ICON -f Data/FeedGator2.hvif FeedGator.py
 	fi
 	if ! [[ -e /boot/home/config/non-packaged/data/BGator2 ]]; then
