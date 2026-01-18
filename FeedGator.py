@@ -158,14 +158,18 @@ def LookForAttribs(entry,attriblist):
 	nodo.Sync()
 	listout=[]
 	for attribname in attriblist:
+		#print(f"ora recupero {attribname}")
 		attrinfo,status=nodo.GetAttrInfo(attribname)
 		if status==B_OK:
 			value,size=nodo.ReadAttr(attribname,attrinfo.type,0,None,attrinfo.size)
-			listout.append(attribname,value,size)
-			return (value,size)
+			#if attribname == "title":
+			#	print("recuperato titolo:",value,attrinfo.type)
+			listout.append((attribname,value,size))
+			#print(listout[-1])
 		else:
-			listout.append(attribname,None,status)
+			listout.append((attribname,None,status))
 	nodo.RewindAttrs()
+	del nodo
 	return listout
 	#for element in attr(nodo):
 	#	if element[0] == attribname:
@@ -252,10 +256,10 @@ state=_("beta")
 version=" ".join((appname,ver,state))
 
 class NewsItem(BListItem):
-	def __init__(self, title, entry, link, unread,published,consist):
+	def __init__(self, title, entryref, link, unread,published,consist):
 		self.name=title
 		self.consistent=consist
-		self.entry = entry
+		self.entry = entryref
 		self.link = link
 		self.unread = unread
 		self.published = published
@@ -344,6 +348,7 @@ class PaperItem(BListItem):
 
 	def Statistics(self):
 		self.cnnews=0
+		self.newnews=False
 		self.newscount=self.datapath.CountEntries()
 		if self.newscount > 0:
 			perc=BPath()
@@ -361,31 +366,33 @@ class PaperItem(BListItem):
 								unr=element[2][0]
 								if unr:
 									self.cnnews+=1
+									if not self.newnews:
+										self.newnews=True
 					except:
 						continue
 		return self.cnnews
 
 	def DrawItem(self, owner, frame, complete):
-		self.newnews=False
+		#self.newnews=False
 		perc=BPath()
 		self.newscount=self.datapath.CountEntries()
 		if self.newscount > 0:
 			self.datapath.Rewind()
 			ret=False
-			while not ret:
-				evalent=BEntry()
-				ret=self.datapath.GetNextEntry(evalent)
-				if not ret:
-					evalent.GetPath(perc)
-					nf=BNode(perc.Path())
-					attributes=attr(nf)
-					for element in attributes:
-						if element[0] == "Unread":
-							unr=element[2][0]
-							if unr:
-								ret=True
-								self.newnews=True
-								break
+			#while not ret:
+			#	evalent=BEntry()
+			#	ret=self.datapath.GetNextEntry(evalent)
+			#	if not ret:
+			#		evalent.GetPath(perc)
+			#		nf=BNode(perc.Path())
+			#		attributes=attr(nf)
+			#		for element in attributes:
+			#			if element[0] == "Unread":
+			#				unr=element[2][0]
+			#				if unr:
+			#					ret=True
+			#					self.newnews=True
+			#					break
 		if self.IsSelected() or complete:
 			if self.newnews == True:
 				owner.SetHighColor(250,80,80,255)
@@ -1186,10 +1193,6 @@ class GatorWindow(BWindow):
 					porc=BPath()
 					evalent.GetPath(porc)
 					self.PaperItemConstructor(porc)
-
-	# def NewsItemLoadMore(self):
-		# tmpNitm.append(NewsItemBtn())
-		# self.Paperlist.lv.AddItem(tmpNitm[-1])
 					
 	def PaperItemConstructor(self, perc):
 		nf=BNode(perc.Path())
@@ -1197,6 +1200,7 @@ class GatorWindow(BWindow):
 		for element in attributes:
 			if element[0] == "address":
 				tmpPitm.append(PaperItem(perc,element[2][0]))
+				tmpPitm[-1].Statistics()
 				self.Paperlist.lv.AddItem(tmpPitm[-1])
 
 	def gjornaaltolet(self,firstload):
@@ -1211,34 +1215,50 @@ class GatorWindow(BWindow):
 			indic=0
 			if firstload:
 				self.listentries=[]
-			print("in gjornaaltolet il numero dei file è:",x)
+			#print("in gjornaaltolet il numero dei file è:",x)
 			if x>0:
 				dirpaper.Rewind()
+				itmEntry=BEntry()
 				while indic<x:
 					try:
 						if firstload:
-							itmEntry=BEntry()
+							#itmEntry=BEntry()
 							rit=dirpaper.GetNextEntry(itmEntry)
 							if rit != B_OK:
 								print("fallito a ottenere prossima entry",itmEntry.GetName())
 							if itmEntry.Exists():
-								titul,ris = LookForAttrib(itmEntry,"title")
-								if int(ris) < 0:
-									titul = itmEntry.GetName()[1]
-								unread,ris = LookForAttrib(itmEntry,"Unread")
-								if int(ris) < 0:
-									unread = True
-								published,ris = LookForAttrib(itmEntry,"Published")
-								if int(ris) < 0:
-									tmpPath=BPath()
-									rt = itmEntry.GetPath(tmpPath)
-									if rt==B_OK:
-										st=os.stat(tmpPath.Path())
-										published=datetime.datetime.fromtimestamp(st.st_mtime)
-								link,ris = LookForAttrib(itmEntry,"link")
-								if int(ris) < 0:
-									link = ""
-								self.listentries.append((itmEntry,titul,unread,published,link))
+								listout=LookForAttribs(itmEntry,["title","Unread","published","link"])
+								titul=""
+								unread=True
+								published=None
+								link=""
+								for att in listout:
+									if int(att[2])<0:
+										if att[0] == "title":
+											titul = itmEntry.GetName()[1]
+										elif att[0] == "Unread":
+											unread = True
+										elif att[0] == "published":
+											tmpPath=BPath()
+											rt = itmEntry.GetPath(tmpPath)
+											if rt==B_OK:
+												st=os.stat(tmpPath.Path())
+												published=datetime.datetime.fromtimestamp(st.st_mtime)
+										elif att[0] == "link":
+											link = ""
+									else:
+										if att[0] == "title":
+											titul = att[1]
+										elif att[0] == "Unread":
+											unread = att[1]
+										elif att[0] == "published":
+											published = att[1]
+										elif att[0] == "link":
+											link = att[1]
+								ref=entry_ref()
+								itmEntry.GetRef(ref)
+								self.listentries.append((ref,titul,unread,published,link))
+							itmEntry.Unset()
 					except Exception as e:
 						print("qualcosa non è andato con il file",e)
 					indic+=1
@@ -1265,11 +1285,15 @@ class GatorWindow(BWindow):
 		unread=itm[2]
 		published=itm[3]
 		link=itm[4]
-		if title == entry.GetName()[1] and link!="":
-			consist = True
-		else:
+		tmpEntry=BEntry(entry)
+		try:
+			if title == tmpEntry.GetName()[1] and link!="":
+				consist = True
+			else:
+				consist = False
+		except:
 			consist = False
-		if entry.Exists():
+		if tmpEntry.Exists():
 			tmpNitm.append(NewsItem(title,entry,link,unread,published,consist))
 			self.NewsList.lv.AddItem(tmpNitm[-1])
 
@@ -1305,7 +1329,7 @@ class GatorWindow(BWindow):
 			else:
 				en = len(self.orderedlist)
 			i=0
-			print("lunghezza caricata:",en)
+			#print("lunghezza caricata:",en)
 			while i<en:
 				mxg=BMessage(466)
 				mxg.AddInt32("index",i)
@@ -1573,7 +1597,7 @@ class GatorWindow(BWindow):
 						Nitm.unread=False
 						msg=BMessage(83)
 						pth=BPath()
-						Nitm.entry.GetPath(pth)
+						BEntry(Nitm.entry).GetPath(pth)
 						msg.AddString("path",pth.Path())
 						msg.AddBool("unreadValue",False)
 						msg.AddInt32("selected",curit)
@@ -1614,7 +1638,7 @@ class GatorWindow(BWindow):
 						item.unread = False
 						msg=BMessage(83)
 						pth=BPath()
-						item.entry.GetPath(pth)
+						BEntry(item.entry).GetPath(pth)
 						msg.AddString("path",pth.Path())
 						msg.AddBool("unreadValue",False)
 						msg.AddInt32("selected",self.NewsList.lv.IndexOf(item))
@@ -1629,7 +1653,7 @@ class GatorWindow(BWindow):
 					Nitm.unread = True
 					msg=BMessage(83)
 					pth=BPath()
-					Nitm.entry.GetPath(pth)
+					BEntry(Nitm.entry).GetPath(pth)
 					msg.AddString("path",pth.Path())
 					msg.AddBool("unreadValue",True)
 					msg.AddInt32("selected",curit)
@@ -1644,7 +1668,7 @@ class GatorWindow(BWindow):
 					Nitm.unread = True
 					msg=BMessage(83)
 					pth=BPath()
-					Nitm.entry.GetPath(pth)
+					BEntry(Nitm.entry).GetPath(pth)
 					msg.AddString("path",pth.Path())
 					msg.AddBool("unreadValue",False)
 					msg.AddInt32("selected",curit)
@@ -1662,6 +1686,8 @@ class GatorWindow(BWindow):
 				else:
 					givevalue=bytearray(b'\x00')
 				nd.WriteAttr("Unread",ninfo.type,0,givevalue)
+				if self.Paperlist.lv.CurrentSelection()>0:
+					self.Paperlist.lv.ItemAt(self.Paperlist.lv.CurrentSelection()).Statistics()
 				itto=self.NewsList.lv.ItemAt(msg.FindInt32("selected")[1])
 				itto.DrawItem(self.NewsList.lv,self.NewsList.lv.ItemFrame(msg.FindInt32("selected")[1]),True)
 				itto=self.Paperlist.lv.ItemAt(msg.FindInt32("selectedP")[1])
@@ -1898,6 +1924,7 @@ class GatorWindow(BWindow):
 						finally:
 							newfile.Write(texttowrite)
 					be_app.WindowAt(0).PostMessage(mxg)
+					item.Statistics()
 				be_app.WindowAt(0).PostMessage(542)
 				be_app.WindowAt(0).PostMessage(1991)
 	
