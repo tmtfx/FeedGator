@@ -4,7 +4,7 @@ from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, B
 from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap,BLocker,BCheckBox,BQuery
 from Be import BTranslationUtils, BScreen, BNotification, BString, AppDefs, ui_color, B_PANEL_BACKGROUND_COLOR, stat, BQuery#,BAppFileInfo
 from Be.fs_attr import attr_info
-from Be.Query import query_op
+#from Be.Query import query_op
 from Be.Notification import notification_type
 from Be.NodeMonitor import *
 from Be.Node import node_ref
@@ -20,10 +20,9 @@ from Be.AppDefs import *
 from Be.Font import be_plain_font, be_bold_font
 from Be.TextView import text_run, text_run_array
 from Be.Slider import thumb_style
-# from Be.fs_attr import attr_info
 from Be.Application import *
 from Be.Errors import *
-
+from Be.Font import font_height
 from Be.Entry import entry_ref, get_ref_for_path
 import configparser,re,html, os, sys, feedparser, struct, datetime, subprocess, gettext, locale
 from threading import Thread,Semaphore,Event
@@ -252,7 +251,7 @@ _ = t.gettext
 appname=_("FeedGator")
 ver="2.4"
 # Translators: do not translate, just transliterate
-state=_("beta")
+state=_("RC")
 version=" ".join((appname,ver,state))
 
 class NewsItem(BListItem):
@@ -286,9 +285,7 @@ class NewsItem(BListItem):
 			owner.StrokeLine(sp,ep)
 		owner.SetLowColor(255,255,255,255)
 
-		
 
-from Be.Font import font_height
 
 class NewsItemBtn(BListItem):
 	def __init__(self):
@@ -376,9 +373,9 @@ class PaperItem(BListItem):
 		#self.newnews=False
 		perc=BPath()
 		self.newscount=self.datapath.CountEntries()
-		if self.newscount > 0:
-			self.datapath.Rewind()
-			ret=False
+		#if self.newscount > 0:
+		#	self.datapath.Rewind()
+		#	ret=False
 			#while not ret:
 			#	evalent=BEntry()
 			#	ret=self.datapath.GetNextEntry(evalent)
@@ -1634,16 +1631,17 @@ class GatorWindow(BWindow):
 		elif msg.what == 4: #mark all read
 			if self.NewsList.lv.CountItems()>0:
 				for item in self.NewsList.lv.Items():
-					if item.unread:
-						item.unread = False
-						msg=BMessage(83)
-						pth=BPath()
-						BEntry(item.entry).GetPath(pth)
-						msg.AddString("path",pth.Path())
-						msg.AddBool("unreadValue",False)
-						msg.AddInt32("selected",self.NewsList.lv.IndexOf(item))
-						msg.AddInt32("selectedP",self.Paperlist.lv.CurrentSelection())
-						be_app.WindowAt(0).PostMessage(msg)
+					if type(item)==NewsItem:
+						if item.unread:
+							item.unread = False
+							msg=BMessage(83)
+							pth=BPath()
+							BEntry(item.entry).GetPath(pth)
+							msg.AddString("path",pth.Path())
+							msg.AddBool("unreadValue",False)
+							msg.AddInt32("selected",self.NewsList.lv.IndexOf(item))
+							msg.AddInt32("selectedP",self.Paperlist.lv.CurrentSelection())
+							be_app.WindowAt(0).PostMessage(msg)
 			return
 		elif msg.what == 9: #mark unread btn
 			curit = self.NewsList.lv.CurrentSelection()
