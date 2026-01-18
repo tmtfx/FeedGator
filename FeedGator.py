@@ -23,9 +23,8 @@ from Be.Slider import thumb_style
 from Be.Application import *
 from Be.Errors import *
 
-from Be import Entry
+from Be import Entry,ui_color, B_PANEL_BACKGROUND_COLOR,stat
 from Be.Entry import entry_ref, get_ref_for_path
-
 import configparser,re,html, os, sys, feedparser, struct, datetime, subprocess, gettext, locale
 from threading import Thread,Semaphore,Event
 from random import randrange
@@ -50,7 +49,8 @@ def openlink(link):
 
 def attr(node):
 	al = []
-	while 1:
+	node.RewindAttrs()
+	while True:
 		an = node.GetNextAttrName()
 		if not an[1]:
 			a = an[0]
@@ -63,9 +63,19 @@ def attr(node):
 			pnfo = node.GetAttrInfo(a)
 			if not pnfo[1]:
 				nfo = pnfo[0]
-			type_string = get_type_string(nfo.type)
-			ritorno=node.ReadAttr(a, nfo.type, 0, None,nfo.size)
-			al.append((a,("Type:",type_string,"Size:",nfo.size),node.ReadAttr(a, nfo.type, 0, None,nfo.size)))
+				type_string = get_type_string(nfo.type)
+				ritorno=node.ReadAttr(a, nfo.type, 0, None,nfo.size)
+				al.append((a,("Type:",type_string,"Size:",nfo.size),node.ReadAttr(a, nfo.type, 0, None,nfo.size)))
+			else:
+				try:
+					print("ci provo ugualmente")
+					nfo = pnfo[0]
+					type_string = get_type_string(nfo.type)
+					ritorno=node.ReadAttr(a, nfo.type, 0, None,nfo.size)
+					al.append((a,("Type:",type_string,"Size:",nfo.size),node.ReadAttr(a, nfo.type, 0, None,nfo.size)))
+				except:
+					print("errore nel leggere gli attributi")
+			
 	return al
 
 def get_type_string(value):
@@ -129,6 +139,15 @@ def lookfdata(name):
 					nopages=False
 			if nopages:
 				return (False,None)
+
+def LookForAttrib(entry,attribname):
+	nodo=BNode(entry)
+	nodo.Sync()
+	for element in attr(nodo):
+		if element[0] == attribname:
+			return(True,element[2][0])
+		
+	return(False,None)
 
 class LocalizItem(BMenuItem):
 	def __init__(self,name):
@@ -310,14 +329,17 @@ class PaperItem(BListItem):
 				evalent=BEntry()
 				ret=self.datapath.GetNextEntry(evalent)
 				if not ret:
-					evalent.GetPath(perc)
-					nf=BNode(perc.Path())
-					attributes=attr(nf)
-					for element in attributes:
-						if element[0] == "Unread":
-							unr=element[2][0]
-							if unr:
-								self.cnnews+=1
+					#evalent.GetPath(perc)
+					try:
+						nf=BNode(evalent)
+						for element in attr(nf):
+							if element[0] == "Unread":
+								unr=element[2][0]
+								if unr:
+									self.cnnews+=1
+					except:
+						continue
+		return self.cnnews
 
 	def DrawItem(self, owner, frame, complete):
 		self.newnews=False
@@ -412,7 +434,7 @@ class PBox(BBox):
 	def __init__(self,frame,name,immagine):
 		self.immagine = immagine
 		self.frame = frame
-		BBox.__init__(self,frame,name,0x0202|0x0404,InterfaceDefs.border_style.B_NO_BORDER)
+		BBox.__init__(self,frame,name,B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_NO_BORDER)
 
 	def Draw(self,rect):
 		BBox.Draw(self, rect)
@@ -426,11 +448,12 @@ class AboutWindow(BWindow):
 		x=(scrfrm.right+1)/2-550/2
 		y=(scrfrm.bottom+1)/2-625/2
 		BWindow.__init__(self, BRect(x, y, x+550, y+625),_("About"),window_type.B_MODAL_WINDOW, B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)
-		self.bckgnd = BView(self.Bounds(), "backgroundView", 8, 20000000)
+		self.bckgnd = BView(self.Bounds(), "backgroundView", B_FOLLOW_ALL_SIDES, B_WILL_DRAW)
+		self.bckgnd.SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR))
 		self.bckgnd.SetResizingMode(B_FOLLOW_V_CENTER|B_FOLLOW_H_CENTER)
 		bckgnd_bounds=self.bckgnd.Bounds()
 		self.AddChild(self.bckgnd,None)
-		self.box = BBox(bckgnd_bounds,"Underbox",0x0202|0x0404,border_style.B_FANCY_BORDER)
+		self.box = BBox(bckgnd_bounds,"Underbox",B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER)
 		self.bckgnd.AddChild(self.box,None)
 		################## PBOX ###############################
 		pbox_rect=BRect(0,0,self.box.Bounds().Width(),241)
@@ -441,7 +464,7 @@ class AboutWindow(BWindow):
 			self.box.AddChild(self.pbox,None)
 		else:
 			#print("no mascot found")
-			self.pbox=BBox(pbox_rect,"Missing_PBox",0x0202|0x0404,border_style.B_NO_BORDER)
+			self.pbox=BBox(pbox_rect,"Missing_PBox",B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_NO_BORDER)
 			pboxbounds=self.pbox.Bounds()
 			fon=BFont()
 			text=_("No mascotte found")
@@ -507,10 +530,11 @@ class AboutWindow(BWindow):
 class PapDetails(BWindow):
 	def __init__(self,item):
 		BWindow.__init__(self, BRect(400,150,800,450), item.name, window_type.B_FLOATING_WINDOW,  B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)
-		self.bckgnd = BView(self.Bounds(), "bckgnd_View", 8, 20000000)
+		self.bckgnd = BView(self.Bounds(), "bckgnd_View", B_FOLLOW_ALL_SIDES, B_WILL_DRAW)
+		self.bckgnd.SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR))
 		bckgnd_bounds=self.bckgnd.Bounds()
 		self.AddChild(self.bckgnd,None)
-		self.box = BBox(bckgnd_bounds,"Underbox",0x0202|0x0404,border_style.B_FANCY_BORDER)
+		self.box = BBox(bckgnd_bounds,"Underbox",B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER)
 		self.bckgnd.AddChild(self.box,None)
 		self.listitem=item
 
@@ -624,7 +648,8 @@ class SectionView(BView):
 class SettingsWindow(BWindow):
 	def __init__(self):
 		BWindow.__init__(self, BRect(200,150,800,450), _("Settings"), window_type.B_FLOATING_WINDOW,  B_NOT_RESIZABLE|B_CLOSE_ON_ESCAPE)
-		self.bckgnd = BView(self.Bounds(), "bckgnd_View", 8, 20000000)
+		self.bckgnd = BView(self.Bounds(), "bckgnd_View", B_FOLLOW_ALL_SIDES, B_WILL_DRAW)
+		self.bckgnd.SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR))
 		self.AddChild(self.bckgnd,None)
 		self.bckgnd.SetResizingMode(B_FOLLOW_ALL_SIDES)
 		self.tabview=BTabView(self.bckgnd.Bounds(),"TabView")
@@ -673,17 +698,17 @@ class SettingsWindow(BWindow):
 				value=ConfigSectionMap(self.views[tabsel].sezione)[option]
 				bondi=self.views[tabsel].Bounds()
 				if value == "True" or value == "False":
-					theview.valuebox.append(BoolBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,0x0202|0x0404,border_style.B_FANCY_BORDER,value))
+					theview.valuebox.append(BoolBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER,value))
 				else:
 					try:
 						entire=int(value)
-						theview.valuebox.append(IntBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,0x0202|0x0404,border_style.B_FANCY_BORDER,entire))
+						theview.valuebox.append(IntBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER,entire))
 					except:
 						try:
 							flt = float(value)
-							theview.valuebox.append(FloatBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,0x0202|0x0404,border_style.B_FANCY_BORDER,flt))
+							theview.valuebox.append(FloatBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER,flt))
 						except:
-							theview.valuebox.append(StringBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,0x0202|0x0404,border_style.B_FANCY_BORDER,value))
+							theview.valuebox.append(StringBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER,value))
 				theview.AddChild(theview.valuebox[-1],None)
 		elif msg.what == 1600:
 			#cambia valore booleano
@@ -766,15 +791,16 @@ class SettingsWindow(BWindow):
 class AddFeedWindow(BWindow):
 	def __init__(self):
 		BWindow.__init__(self, BRect(150,150,500,300), _("Add Feed Address"), window_type.B_FLOATING_WINDOW,  B_NOT_RESIZABLE | B_CLOSE_ON_ESCAPE)#B_QUIT_ON_WINDOW_CLOSE)#B_BORDERED_WINDOW B_FLOATING_WINDOW
-		self.bckgnd = BView(self.Bounds(), "bckgnd_View", 8, 20000000)
+		self.bckgnd = BView(self.Bounds(), "bckgnd_View", B_FOLLOW_ALL_SIDES, B_WILL_DRAW)
+		self.bckgnd.SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR))
 		bckgnd_bounds=self.bckgnd.Bounds()
 		self.AddChild(self.bckgnd,None)
-		self.box = BBox(bckgnd_bounds,"Underbox",0x0202|0x0404,border_style.B_FANCY_BORDER)
+		self.box = BBox(bckgnd_bounds,"Underbox",B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER)
 		self.bckgnd.AddChild(self.box,None)
 		a=BFont()
 		txi=_("Feed address:")
 		wid=a.StringWidth(txi)
-		self.feedaddress = BTextControl(BRect(10,30,bckgnd_bounds.Width()-10,60),'TxTCtrl', txi,None,BMessage(1),0x0202|0x0404)
+		self.feedaddress = BTextControl(BRect(10,30,bckgnd_bounds.Width()-10,60),'TxTCtrl', txi,None,BMessage(1),B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP)
 		self.feedaddress.SetDivider(wid+5)
 		self.box.AddChild(self.feedaddress,None)
 		self.cancelBtn = BButton(BRect(10,80,bckgnd_bounds.Width()/2-5,110),'GetNewsButton',_('Cancel'),BMessage(6))
@@ -880,6 +906,7 @@ class GatorWindow(BWindow):
 	dat=_('Date')
 	shiftok=False
 	enabletimer=False
+	totallist=[]
 	Menus = (
 		(_('File'), ((1, _('Add Paper')),(2, _('Remove Paper')),(6, stt),(None, None),(int(AppDefs.B_QUIT_REQUESTED), qui))),(_('News'), ((66, _('Download News')),(4, alr),(5, cln))),(_('Sort By'), ((40, tit),(41, unr),(42, dat))),
 		(hlp, ((8, _('Guide')),(3, _('About'))))
@@ -897,13 +924,14 @@ class GatorWindow(BWindow):
 				img1=BTranslationUtils.GetBitmap(pth,None)
 				self.Notification.SetIcon(img1)
 		
-		self.bckgnd = BView(self.Bounds(), "background_View", 8, 20000000)
+		self.bckgnd = BView(self.Bounds(), "background_View", B_FOLLOW_ALL_SIDES, B_WILL_DRAW)
+		self.bckgnd.SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR))
 		self.bckgnd.SetResizingMode(B_FOLLOW_ALL_SIDES)
 		bckgnd_bounds=self.bckgnd.Bounds()
 		self.AddChild(self.bckgnd,None)
 		self.bar = BMenuBar(bckgnd_bounds, 'Bar')
 		x, barheight = self.bar.GetPreferredSize()
-		self.box = BBox(BRect(0,barheight,bckgnd_bounds.Width(),bckgnd_bounds.Height()),"Underbox",0x0202|0x0404,border_style.B_FANCY_BORDER)
+		self.box = BBox(BRect(0,barheight,bckgnd_bounds.Width(),bckgnd_bounds.Height()),"Underbox",B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER)
 		self.cres=0
 		ent,confile=Ent_config()
 		if ent.Exists():
@@ -994,7 +1022,7 @@ class GatorWindow(BWindow):
 			Config.read(confile)
 		self.set_savemenu = False
 		for menu, items in self.Menus:
-			if menu == "Sort By":
+			if menu == _("Sort By"):
 				self.set_savemenu = True
 				set_savemenu=True
 			else:
@@ -1048,7 +1076,7 @@ class GatorWindow(BWindow):
 		self.NewsList = NewsScrollView(BRect(8 + boxboundsw / 3 , 70, boxboundsw -28 , boxboundsh / 1.8 ), 'NewsListScrollView')
 		self.box.AddChild(self.NewsList.sv,None)
 		txtRect=BRect(8 + boxboundsw / 3, boxboundsh / 1.8 + 8,boxboundsw -8,boxboundsh - 38)
-		self.outbox_preview=BBox(txtRect,"previewframe",B_FOLLOW_LEFT|B_FOLLOW_BOTTOM|B_FOLLOW_RIGHT,border_style.B_FANCY_BORDER)#
+		self.outbox_preview=BBox(txtRect,"previewframe",B_FOLLOW_LEFT|B_FOLLOW_BOTTOM|B_FOLLOW_RIGHT,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER)#
 		self.box.AddChild(self.outbox_preview,None)
 		innerRect= BRect(8,8,txtRect.Width()-30,txtRect.Height())
 		self.NewsPreView = PreviewTextView(self,BRect(2,2, self.outbox_preview.Bounds().Width()-20,self.outbox_preview.Bounds().Height()-2), 'NewsTxTView', innerRect,B_FOLLOW_ALL_SIDES)#, 0x0404|0x0202)#,2000000)
@@ -1083,7 +1111,7 @@ class GatorWindow(BWindow):
 		self.UpdatePapers()
 		self.ongoing=Semaphore()
 		self.esb_rect=BRect(0,0, self.outbox_preview.Bounds().Width(),40)
-		self.esbox=BBox(self.esb_rect,"extend_sight_box",B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP,border_style.B_PLAIN_BORDER)
+		self.esbox=BBox(self.esb_rect,"extend_sight_box",B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_PLAIN_BORDER)
 		self.outbox_preview.AddChild(self.esbox,None)
 		self.esbox.ResizeTo(self.esb_rect.Width(),0)
 		self.curtain=False
@@ -1159,195 +1187,97 @@ class GatorWindow(BWindow):
 			if x>0:
 				curpaper.datapath.Rewind()
 				loaded = 0
-				rit = False
-				if self.set_savemenu:
-					if marked == self.tit:#"Title":
-						self.tr=[]
-						while not rit:
-							itmEntry=BEntry()
-							rit=curpaper.datapath.GetNextEntry(itmEntry)
-							#self.NewsItemConstructor(itmEntry)
-							self.tr.append(itmEntry)
-						tmsg=BMessage(444)
-						tmsg.AddBool("fl",firstload)
-						be_app.WindowAt(0).PostMessage(tmsg)
-					if marked == self.unr:#"Unread":
-						self.listunread=[]
-						self.listread=[]
-						while not rit:
-							itmEntry=BEntry()
-							rit=curpaper.datapath.GetNextEntry(itmEntry)
-							nf = BNode(itmEntry)
-							attributes = attr(nf)
-							gotounread = False
-							for element in attributes:
-								if element[0] == "Unread":
-									unread = element[2][0]
-									if unread == True:
-										gotounread = True
-							if gotounread==True:
-								self.listunread.append(itmEntry)
-							else:
-								self.listread.append(itmEntry)
-						self.totallist=[]
-						self.totallist+=self.listunread
-						self.totallist+=self.listread
-						tmsg=BMessage(455)
-						tmsg.AddBool("fl",firstload)
-						be_app.WindowAt(0).PostMessage(tmsg)
-						#for item in listunread:
-						#	self.NewsItemConstructor(item)
-						#for item in listread:
-						#	self.NewsItemConstructor(item)
-						
-					if marked == self.dat:#"Date": # TODO
-						from Be import stat
-						getlist=[]
-						self.orderedlist=[]
-						
-						while not rit:
-							itmEntry=BEntry()
-							rit=curpaper.datapath.GetNextEntry(itmEntry)
-							nf = BNode(itmEntry)
-							attributes = attr(nf)
-							gotdate = False
-							for element in attributes:
-								if element[0] == "published":
-									published = element[2][0]
-									gotdate = True
-							if not gotdate:
-								#fetch filesystem date info
-								tmpPath=BPath()
-								rt = itmEntry.GetPath(tmpPath)
-								if not rt:
-									st=os.stat(tmpPath.Path())
-									published=datetime.datetime.fromtimestamp(st.st_mtime)
-							getlist.append((itmEntry, published))
-						self.orderedlist = sorted(getlist, key=lambda x: x[1], reverse=True)
-						tmsg=BMessage(465)
-						tmsg.AddBool("fl",firstload)
-						be_app.WindowAt(0).PostMessage(tmsg)
-						#for item in self.orderedlist:
-						#	self.NewsItemConstructor(item[0])
-				else:
-					while not rit:
-						itmEntry=BEntry()
-						rit=curpaper.datapath.GetNextEntry(itmEntry)
-						self.NewsItemConstructor(itmEntry)
-
-	def NewsItemConstructor(self,entry):
-		if entry.Exists():
-			stato,charro = entry.GetName()
-			nf = BNode(entry)
-			attributes = attr(nf)
-			addnews = False
-			blink = False
-			bunread = False
-			btitle = False
-			bpub = False
-			for element in attributes:
-				if element[0] == "link":
-						link = element[2][0]
-						blink = True
-				if element[0] == "Unread":
-						unread = element[2][0]
-						bunread = True
-				if element[0] == "title":
-						title = element[2][0]
-						btitle = True
-				if element[0] == "published":
-						published = element[2][0]
-						bpub = True
-			try:
-				type(link)
-				type(unread)
-				type(title)			
-				addnews=True
-			except:
-				stato,charro=entry.GetName()
-				if stato:
-					print("stato true unconsistent news for "+charro)
-				else:
-					print("stato false unconsistent news for "+charro)
-			if not bpub:
-				tmpPath=BPath()
-				rt = entry.GetPath(tmpPath)
-				if not rt:
-					st=os.stat(tmpPath.Path())
-					published=datetime.datetime.fromtimestamp(st.st_mtime)
-			if addnews:
-				consist=True
-				tmpNitm.append(NewsItem(title,entry,link,unread,published,consist))
-				self.NewsList.lv.AddItem(tmpNitm[-1])
-			else:
-				consist=False
-				if not blink:
-					link = ""
-				if not bunread:
-					unread = False
-				if not btitle:
-					if link == "":
-						title = _("No Title and no link")
-					else:
-						title = link
-				tmpNitm.append(NewsItem(title,entry,link,unread,consist))
-				self.NewsList.lv.AddItem(tmpNitm[-1])
+				rit = B_OK
+				listentries=[]
+				while rit==B_OK:
+					itmEntry=BEntry()
+					rit=curpaper.datapath.GetNextEntry(itmEntry)
+					if rit == B_OK:
+						nf = BNode(itmEntry)
+						attributes = attr(nf)
+						gottitle = False
+						gotunread = False
+						gotdate = False
+						gotlink = False
+						for element in attributes:
+							if element[0] == "title":
+								titul = element[2][0]
+								gottitle = True
+							elif element[0] == "Unread":
+								unread = element[2][0]
+								gotunread = True
+							elif element[0] == "published":
+								published = element[2][0]
+								gotdate = True
+							elif element[0] == "link":
+								link = element[2][0]
+								gotlink = True
+						if not gottitle:
+							titul = itmEntry.GetName()[1]
+						if not gotunread:
+							unread = True
+						if not gotdate:
+							tmpPath=BPath()
+							rt = itmEntry.GetPath(tmpPath)
+							if not rt:
+								st=os.stat(tmpPath.Path())
+								published=datetime.datetime.fromtimestamp(st.st_mtime)
+						if not gotlink:
+							link = ""
+						nf.Sync()
+						listentries.append((itmEntry,titul,unread,published,link))
 				
+				curpaper.datapath.Rewind()
+				if self.set_savemenu:
+					if marked == self.tit:
+						self.orderedlist = sorted(listentries, key=lambda x: x[1], reverse=False)
+					elif marked == self.unr:#"Unread":
+						self.orderedlist = sorted(listentries, key=lambda x: x[2], reverse=True)
+					elif marked == self.dat:#"Date": # TODO
+						self.orderedlist = sorted(listentries, key=lambda x: x[3], reverse=True)
+					tmsg=BMessage(465)
+					tmsg.AddBool("fl",firstload)
+					be_app.WindowAt(0).PostMessage(tmsg)
+				else:
+					print("repeç")
+					for itm in listentries:
+						self.NewsItemConstructor(itm)
+				
+	def NewsItemConstructor(self,itm):
+		entry=itm[0]
+		title=itm[1]
+		unread=itm[2]
+		published=itm[3]
+		link=itm[4]
+		if title == entry.GetName()[1] and link!="":
+			consist = True
+		else:
+			consist = False
+		if entry.Exists():
+			tmpNitm.append(NewsItem(title,entry,link,unread,published,consist))
+			self.NewsList.lv.AddItem(tmpNitm[-1])
+
 	def BtnItemConstructor(self):
 		tmpNitm.append(NewsItemBtn())
 		self.NewsList.lv.AddItem(tmpNitm[-1])
-# se è il primo caricamento carica solo 99 elementi, atrimenti li carica tutti
-					#if firstload:
-					#	loaded+=1
-					#	if loaded == 99:
-					#		ret = True
-					#		self.PaperItemLoadMore()
-					#		print("interrompo caricamento")
 
 	def MessageReceived(self, msg):
 		#msg.PrintToStream()
 		if msg.what == system_message_code.B_MODIFIERS_CHANGED: #shif pressed
 			status,value=msg.FindInt32("modifiers")
-			#print(value)
 			if status == B_OK:
 				self.shiftok = (value & InterfaceDefs.B_SHIFT_KEY) != 0
 				self.controlok= (value & InterfaceDefs.B_CONTROL_KEY) != 0
-		elif msg.what == 444: #manage newslist ordered by title
-			vfl=msg.FindBool("fl")[1]
-			if vfl:
-				try:
-					lx=len(self.tr)
-					if lx<100:
-						en=lx
-					else:
-						en=100
-				except:
-					en=100
-			else:
-				en=len(self.tr)
-			i=0
-			while i<en-1:
-				mxg=BMessage(445)
-				mxg.AddInt32("index",i)
-				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
-				thr.start()
-				i+=1
-			if vfl and (len(self.tr)>99):
-				mxg=BMessage(446)
-				# mxg.AddInt32("index",100)
-				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
-				thr.start()
-		elif msg.what == 445: #construct and add newsitem
-			status,value=msg.FindInt32("index")
-			if status==B_OK:
-				self.NewsItemConstructor(self.tr[value])
+			return
 		elif msg.what == 446: #construct Button-Blistitem
 			self.BtnItemConstructor()
+			return
 		elif msg.what == 455: #manage newslist ordered by Unread
-			vfl=msg.FindBool("fl")[1]
+			status,vfl=msg.FindBool("fl")
 			if vfl:
 				try:
-					lx=len(self.totallist)
+					#lx=len(self.totallist)
+					lx=len(self.orderedlist)
 					if lx<100:
 						en=lx
 					else:
@@ -1355,7 +1285,8 @@ class GatorWindow(BWindow):
 				except:
 					en=100
 			else:
-				en = len(self.totallist)
+				#en = len(self.totallist)
+				en = len(self.orderedlist)
 			i=0
 			while i<en-1:
 				mxg=BMessage(456)
@@ -1363,17 +1294,21 @@ class GatorWindow(BWindow):
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
 				i+=1
-			if vfl and (len(self.totallist)>99):
+			#if vfl and (len(self.totallist)>99):
+			if vfl and (len(self.orderedlist)>99):
 				mxg=BMessage(446)
 				# mxg.AddInt32("index",100)
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
+			return
 		elif msg.what == 456: #construct and add newsitem
 			status,value=msg.FindInt32("index")
 			if status == B_OK:
-				self.NewsItemConstructor(self.totallist[value])
-		elif msg.what == 465: #manage newslist ordered by datetime
-			vfl=msg.FindBool("fl")[1]
+				#self.NewsItemConstructor(self.totallist[value])
+				self.NewsItemConstructor(self.orderedlist[value])
+			return
+		elif msg.what == 465: #manage newslist ordered by datetime/title
+			status,vfl=msg.FindBool("fl")
 			if vfl:
 				try:
 					lx=len(self.orderedlist)
@@ -1389,6 +1324,10 @@ class GatorWindow(BWindow):
 			while i<en:
 				mxg=BMessage(466)
 				mxg.AddInt32("index",i)
+				#eref=entry_ref()
+				#st=self.orderedlist[i][0].GetRef(eref)
+				#if st==B_OK:
+				#	mxg.AddRef("ref",eref)
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
 				i+=1
@@ -1397,10 +1336,16 @@ class GatorWindow(BWindow):
 				# mxg.AddInt32("index",100)
 				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
 				thr.start()
+			return
 		elif msg.what == 466: #construct and add newsitem
 			status,value=msg.FindInt32("index")
+			#st,eref=msg.FindRef("ref")
+			#if st == B_OK:
+			#	self.NewsItemConstructor(BEntry(eref))
+			#	return
 			if status == B_OK:
-				self.NewsItemConstructor(self.orderedlist[value][0])
+				self.NewsItemConstructor(self.orderedlist[value])
+			return
 		elif msg.what == 5: #clear paper news
 			cursel=self.Paperlist.lv.CurrentSelection()
 			if cursel>-1:
@@ -1571,10 +1516,10 @@ class GatorWindow(BWindow):
 					del item
 				tmpNitm.clear()
 			if cursel>-1:
-				self.Paperlist.lv.ItemAt(cursel).Statistics()
+				contanewnews=self.Paperlist.lv.ItemAt(cursel).Statistics()
 				totn=_("Total news:")
 				nnws=_("New news:")
-				stuff = self.Paperlist.lv.ItemAt(cursel).name+"\n\n"+totn+" "+str(self.Paperlist.lv.ItemAt(cursel).newscount)+"\n"+nnws+" "+str(self.Paperlist.lv.ItemAt(cursel).cnnews)
+				stuff = self.Paperlist.lv.ItemAt(cursel).name+"\n\n"+totn+" "+str(self.Paperlist.lv.ItemAt(cursel).newscount)+"\n"+nnws+" "+str(contanewnews)
 				ta=[text_run()]
 				ta[-1].offset=0
 				fon1=BFont(be_bold_font)
@@ -1601,7 +1546,7 @@ class GatorWindow(BWindow):
 				n=find_byte(nnws,stuff)
 				ta.append(text_run())
 				ta[-1].offset=n
-				if self.Paperlist.lv.ItemAt(cursel).cnnews!=0:
+				if contanewnews!=0:
 					fon1=BFont(be_bold_font)
 					fon1.SetSize(20.0)
 					col1=rgb_color()
