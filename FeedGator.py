@@ -2,7 +2,9 @@
 from Be import BApplication, BWindow, BView, BMenu,BMenuBar, BMenuItem, BSeparatorItem, BMessage, window_type, B_NOT_RESIZABLE, B_CLOSE_ON_ESCAPE, B_QUIT_ON_WINDOW_CLOSE
 from Be import BButton, BTextView, BTextControl, BAlert, BListItem, BListView, BScrollView, BRect, BBox, BFont, InterfaceDefs, BPath, BDirectory, BEntry, BTabView, BTab, BSlider
 from Be import BNode, BStringItem, BFile, BPoint, BLooper, BHandler, BTextControl, TypeConstants, BScrollBar, BStatusBar, BStringView, BUrl, BBitmap,BLocker,BCheckBox,BQuery
-from Be import BTranslationUtils,BScreen,BNotification,BString#,BAppFileInfo#,BQuery
+from Be import BTranslationUtils, BScreen, BNotification, BString, AppDefs, ui_color, B_PANEL_BACKGROUND_COLOR, stat, BQuery#,BAppFileInfo
+from Be.fs_attr import attr_info
+from Be.Query import query_op
 from Be.Notification import notification_type
 from Be.NodeMonitor import *
 from Be.Node import node_ref
@@ -16,14 +18,12 @@ from Be.InterfaceDefs import border_style,orientation
 from Be.ListView import list_view_type
 from Be.AppDefs import *
 from Be.Font import be_plain_font, be_bold_font
-from Be import AppDefs
 from Be.TextView import text_run, text_run_array
 from Be.Slider import thumb_style
 # from Be.fs_attr import attr_info
 from Be.Application import *
 from Be.Errors import *
 
-from Be import Entry,ui_color, B_PANEL_BACKGROUND_COLOR,stat
 from Be.Entry import entry_ref, get_ref_for_path
 import configparser,re,html, os, sys, feedparser, struct, datetime, subprocess, gettext, locale
 from threading import Thread,Semaphore,Event
@@ -143,11 +143,35 @@ def lookfdata(name):
 def LookForAttrib(entry,attribname):
 	nodo=BNode(entry)
 	nodo.Sync()
-	for element in attr(nodo):
-		if element[0] == attribname:
-			return(True,element[2][0])
+	#attrinfo=attr_info()
+	attrinfo,status=nodo.GetAttrInfo(attribname)
+	if status==B_OK:
+		value,size=nodo.ReadAttr(attribname,attrinfo.type,0,None,attrinfo.size)
+		nodo.RewindAttrs()
+		return (value,size)
+	else:
+		nodo.RewindAttrs()
+		return (None,status)
 		
-	return(False,None)
+def LookForAttribs(entry,attriblist):
+	nodo=BNode(entry)
+	nodo.Sync()
+	listout=[]
+	for attribname in attriblist:
+		attrinfo,status=nodo.GetAttrInfo(attribname)
+		if status==B_OK:
+			value,size=nodo.ReadAttr(attribname,attrinfo.type,0,None,attrinfo.size)
+			listout.append(attribname,value,size)
+			return (value,size)
+		else:
+			listout.append(attribname,None,status)
+	nodo.RewindAttrs()
+	return listout
+	#for element in attr(nodo):
+	#	if element[0] == attribname:
+	#		return(True,element[2][0])
+		
+	
 
 class LocalizItem(BMenuItem):
 	def __init__(self,name):
@@ -1182,65 +1206,57 @@ class GatorWindow(BWindow):
 			#### check sort type
 			if self.set_savemenu:
 				marked=self.savemenu.FindMarked().Label()
-			curpaper=self.Paperlist.lv.ItemAt(self.Paperlist.lv.CurrentSelection())
-			x=curpaper.datapath.CountEntries()
+			dirpaper=BDirectory(self.Paperlist.lv.ItemAt(self.Paperlist.lv.CurrentSelection()).path.Path())
+			x=dirpaper.CountEntries()
+			indic=0
+			if firstload:
+				self.listentries=[]
+			print("in gjornaaltolet il numero dei file è:",x)
 			if x>0:
-				curpaper.datapath.Rewind()
-				loaded = 0
-				rit = B_OK
-				listentries=[]
-				while rit==B_OK:
-					itmEntry=BEntry()
-					rit=curpaper.datapath.GetNextEntry(itmEntry)
-					if rit == B_OK:
-						nf = BNode(itmEntry)
-						attributes = attr(nf)
-						gottitle = False
-						gotunread = False
-						gotdate = False
-						gotlink = False
-						for element in attributes:
-							if element[0] == "title":
-								titul = element[2][0]
-								gottitle = True
-							elif element[0] == "Unread":
-								unread = element[2][0]
-								gotunread = True
-							elif element[0] == "published":
-								published = element[2][0]
-								gotdate = True
-							elif element[0] == "link":
-								link = element[2][0]
-								gotlink = True
-						if not gottitle:
-							titul = itmEntry.GetName()[1]
-						if not gotunread:
-							unread = True
-						if not gotdate:
-							tmpPath=BPath()
-							rt = itmEntry.GetPath(tmpPath)
-							if not rt:
-								st=os.stat(tmpPath.Path())
-								published=datetime.datetime.fromtimestamp(st.st_mtime)
-						if not gotlink:
-							link = ""
-						nf.Sync()
-						listentries.append((itmEntry,titul,unread,published,link))
-				
-				curpaper.datapath.Rewind()
+				dirpaper.Rewind()
+				while indic<x:
+					try:
+						if firstload:
+							itmEntry=BEntry()
+							rit=dirpaper.GetNextEntry(itmEntry)
+							if rit != B_OK:
+								print("fallito a ottenere prossima entry",itmEntry.GetName())
+							if itmEntry.Exists():
+								titul,ris = LookForAttrib(itmEntry,"title")
+								if int(ris) < 0:
+									titul = itmEntry.GetName()[1]
+								unread,ris = LookForAttrib(itmEntry,"Unread")
+								if int(ris) < 0:
+									unread = True
+								published,ris = LookForAttrib(itmEntry,"Published")
+								if int(ris) < 0:
+									tmpPath=BPath()
+									rt = itmEntry.GetPath(tmpPath)
+									if rt==B_OK:
+										st=os.stat(tmpPath.Path())
+										published=datetime.datetime.fromtimestamp(st.st_mtime)
+								link,ris = LookForAttrib(itmEntry,"link")
+								if int(ris) < 0:
+									link = ""
+								self.listentries.append((itmEntry,titul,unread,published,link))
+					except Exception as e:
+						print("qualcosa non è andato con il file",e)
+					indic+=1
+				dirpaper.Rewind()
 				if self.set_savemenu:
 					if marked == self.tit:
-						self.orderedlist = sorted(listentries, key=lambda x: x[1], reverse=False)
+						self.orderedlist = sorted(self.listentries, key=lambda x: x[1], reverse=False)
 					elif marked == self.unr:#"Unread":
-						self.orderedlist = sorted(listentries, key=lambda x: x[2], reverse=True)
+						self.orderedlist = sorted(self.listentries, key=lambda x: x[2], reverse=True)
 					elif marked == self.dat:#"Date": # TODO
-						self.orderedlist = sorted(listentries, key=lambda x: x[3], reverse=True)
+						self.orderedlist = sorted(self.listentries, key=lambda x: x[3], reverse=True)
 					tmsg=BMessage(465)
 					tmsg.AddBool("fl",firstload)
+					#print(f"prima di mandare il messaggio con firstload a {firstload} ho:",self.orderedlist)
 					be_app.WindowAt(0).PostMessage(tmsg)
 				else:
 					print("repeç")
-					for itm in listentries:
+					for itm in self.listentries:
 						self.NewsItemConstructor(itm)
 				
 	def NewsItemConstructor(self,itm):
@@ -1257,10 +1273,6 @@ class GatorWindow(BWindow):
 			tmpNitm.append(NewsItem(title,entry,link,unread,published,consist))
 			self.NewsList.lv.AddItem(tmpNitm[-1])
 
-	def BtnItemConstructor(self):
-		tmpNitm.append(NewsItemBtn())
-		self.NewsList.lv.AddItem(tmpNitm[-1])
-
 	def MessageReceived(self, msg):
 		#msg.PrintToStream()
 		if msg.what == system_message_code.B_MODIFIERS_CHANGED: #shif pressed
@@ -1270,36 +1282,8 @@ class GatorWindow(BWindow):
 				self.controlok= (value & InterfaceDefs.B_CONTROL_KEY) != 0
 			return
 		elif msg.what == 446: #construct Button-Blistitem
-			self.BtnItemConstructor()
-			return
-		elif msg.what == 455: #manage newslist ordered by Unread
-			status,vfl=msg.FindBool("fl")
-			if vfl:
-				try:
-					#lx=len(self.totallist)
-					lx=len(self.orderedlist)
-					if lx<100:
-						en=lx
-					else:
-						en=100
-				except:
-					en=100
-			else:
-				#en = len(self.totallist)
-				en = len(self.orderedlist)
-			i=0
-			while i<en-1:
-				mxg=BMessage(456)
-				mxg.AddInt32("index",i)
-				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
-				thr.start()
-				i+=1
-			#if vfl and (len(self.totallist)>99):
-			if vfl and (len(self.orderedlist)>99):
-				mxg=BMessage(446)
-				# mxg.AddInt32("index",100)
-				thr=Thread(target=be_app.WindowAt(0).PostMessage,args=(mxg,))
-				thr.start()
+			tmpNitm.append(NewsItemBtn())
+			self.NewsList.lv.AddItem(tmpNitm[-1])
 			return
 		elif msg.what == 456: #construct and add newsitem
 			status,value=msg.FindInt32("index")
@@ -1307,7 +1291,7 @@ class GatorWindow(BWindow):
 				#self.NewsItemConstructor(self.totallist[value])
 				self.NewsItemConstructor(self.orderedlist[value])
 			return
-		elif msg.what == 465: #manage newslist ordered by datetime/title
+		elif msg.what == 465: #manage newslist ordered by datetime/title/Unread
 			status,vfl=msg.FindBool("fl")
 			if vfl:
 				try:
@@ -1321,6 +1305,7 @@ class GatorWindow(BWindow):
 			else:
 				en = len(self.orderedlist)
 			i=0
+			print("lunghezza caricata:",en)
 			while i<en:
 				mxg=BMessage(466)
 				mxg.AddInt32("index",i)
@@ -1366,7 +1351,8 @@ class GatorWindow(BWindow):
 							ret=datapath.GetNextEntry(evalent)
 							if not ret:
 								ret_status=evalent.Remove()
-		elif msg.what == 8:
+			return
+		elif msg.what == 8: # Open help pages
 			perc=BPath()
 			find_directory(directory_which.B_SYSTEM_DOCUMENTATION_DIRECTORY,perc,False,None)
 			link=perc.Path()+"/packages/feedgator/BGator2/index.html"
@@ -1410,12 +1396,15 @@ class GatorWindow(BWindow):
 						wa=BAlert(_('Noo'), _('No help pages installed'), _('Poor me'), None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
 						#self.alerts.append(wa)
 						wa.Go()
+			return
 		elif msg.what == 3: #open aboutWindow
 			self.about_window = AboutWindow()
 			self.about_window.Show()
+			return
 		elif msg.what == 6: #open settings window
 			self.settings_window = SettingsWindow()
 			self.settings_window.Show()
+			return
 		elif msg.what == 2: #remove feed and relative files and dir
 			cursel=self.Paperlist.lv.CurrentSelection()
 			if cursel>-1:
@@ -1449,8 +1438,8 @@ class GatorWindow(BWindow):
 						i+=1
 					self.Paperlist.lv.RemoveItem(cursel)
 					if remarray:
-						del tmpPitm[i]
-		
+						del tmpPitm[i]		
+			return
 		elif msg.what == 40:
 			#TODO snellire Sort By Name
 			ent,confile=Ent_config()
@@ -1470,6 +1459,7 @@ class GatorWindow(BWindow):
 			#TODO crash on changing
 			self.Paperlist.lv.DeselectAll()
 			self.Paperlist.lv.Select(tmpindex)
+			return
 		elif msg.what == 41:
 			#TODO snellire Sort By Unread
 			ent,confile=Ent_config()
@@ -1489,6 +1479,7 @@ class GatorWindow(BWindow):
 			#TODO: crash on changing
 			self.Paperlist.lv.DeselectAll()
 			self.Paperlist.lv.Select(tmpindex)
+			return
 		elif msg.what == 42:
 			#TODO snellire Sort By Date
 			ent,confile=Ent_config()
@@ -1508,6 +1499,7 @@ class GatorWindow(BWindow):
 			#TODO: crash on changing
 			self.Paperlist.lv.DeselectAll()
 			self.Paperlist.lv.Select(tmpindex)
+			return
 		elif msg.what == self.Paperlist.PaperSelection: #Paper selection
 			self.NewsList.lv.MakeEmpty()
 			cursel=self.Paperlist.lv.CurrentSelection()
@@ -1569,7 +1561,7 @@ class GatorWindow(BWindow):
 			else:
 				self.NewsPreView.SelectAll()
 				self.NewsPreView.Clear()
-
+			return
 		elif msg.what == self.NewsList.NewsSelection: #News selection
 			curit = self.NewsList.lv.CurrentSelection()
 			if curit>-1:
@@ -1614,7 +1606,7 @@ class GatorWindow(BWindow):
 			else:
 				self.NewsPreView.SelectAll()
 				self.NewsPreView.Clear()
-
+			return
 		elif msg.what == 4: #mark all read
 			if self.NewsList.lv.CountItems()>0:
 				for item in self.NewsList.lv.Items():
@@ -1628,7 +1620,7 @@ class GatorWindow(BWindow):
 						msg.AddInt32("selected",self.NewsList.lv.IndexOf(item))
 						msg.AddInt32("selectedP",self.Paperlist.lv.CurrentSelection())
 						be_app.WindowAt(0).PostMessage(msg)
-
+			return
 		elif msg.what == 9: #mark unread btn
 			curit = self.NewsList.lv.CurrentSelection()
 			if curit>-1:
@@ -1643,7 +1635,7 @@ class GatorWindow(BWindow):
 					msg.AddInt32("selected",curit)
 					msg.AddInt32("selectedP",self.Paperlist.lv.CurrentSelection())
 					be_app.WindowAt(0).PostMessage(msg)
-
+			return
 		elif msg.what == 10: #mark read btn
 			curit = self.NewsList.lv.CurrentSelection()
 			if curit>-1:
@@ -1658,7 +1650,7 @@ class GatorWindow(BWindow):
 					msg.AddInt32("selected",curit)
 					msg.AddInt32("selectedP",self.Paperlist.lv.CurrentSelection())
 					be_app.WindowAt(0).PostMessage(msg)
-
+			return
 		elif msg.what == 83: # Mark Read/unread
 			e = msg.FindString("path")[1]
 			unrVal = msg.FindBool("unreadValue")[1]
@@ -1676,7 +1668,7 @@ class GatorWindow(BWindow):
 				itto.DrawItem(self.Paperlist.lv,self.Paperlist.lv.ItemFrame(msg.FindInt32("selectedP")[1]),False)
 			self.NewsList.lv.Hide()
 			self.NewsList.lv.Show()
-
+			return
 		elif msg.what == self.NewsList.HiWhat: #open link
 			curit=self.NewsList.lv.CurrentSelection()
 			if curit>-1:
@@ -1684,7 +1676,7 @@ class GatorWindow(BWindow):
 				if itto.link != "":
 					t = Thread(target=openlink,args=(itto.link,))
 					t.run()
-			
+			return
 		elif msg.what == self.Paperlist.HiWhat: #open paper folder or details
 			curit=self.Paperlist.lv.CurrentSelection()
 			if curit>-1:
@@ -1694,11 +1686,11 @@ class GatorWindow(BWindow):
 				else:
 					ittp=self.Paperlist.lv.ItemAt(curit)
 					subprocess.run(["open",ittp.path.Path()])
-
+			return
 		elif msg.what == 1: #open add feed window
 			self.tmpWind.append(AddFeedWindow())
 			self.tmpWind[-1].Show()
-
+			return
 		elif msg.what == 245: # ADD FEED
 			status,feedaddr=msg.FindString("feed")
 			if status==B_OK:
@@ -1740,7 +1732,7 @@ class GatorWindow(BWindow):
 					#controlla se esiste cartella chiamata titul&
 					#se esiste ma gli attributi non corrispondono, chiedere cosa fare
 					#se esiste ma non ha tutti gli attributi scrivili
-
+			return
 		elif msg.what == 66: #Parallel Update news
 			self.infostring.SetText(_("Updating news, please wait..."))
 			self.progress.SetMaxValue(self.Paperlist.lv.CountItems()*100+self.Paperlist.lv.CountItems())
@@ -1753,13 +1745,12 @@ class GatorWindow(BWindow):
 				Thread(target=self.DownloadNews,args=(item,)).start()
 			self.Paperlist.lv.Hide()
 			self.Paperlist.lv.Show()
-			
+			return
 		elif msg.what == 542:
 			# eventually remove this
 			self.Paperlist.lv.Hide()
 			self.Paperlist.lv.Show()
-			
-			
+			return
 		elif msg.what == 1990:
 			status,d = msg.FindFloat("delta")
 			if status==B_OK:
@@ -1767,6 +1758,7 @@ class GatorWindow(BWindow):
 				if self.Notification.InitCheck() == B_OK:
 					self.Notification.SetProgress(self.Notification.Progress()+d/self.progress.MaxValue())
 					self.Notification.Send()
+			return
 		elif msg.what == 1991:
 			self.cres+=1
 			if self.cres == self.Paperlist.lv.CountItems():
@@ -1775,8 +1767,10 @@ class GatorWindow(BWindow):
 					self.Notification.SetProgress(1.0)
 					self.Notification.Send()
 				self.infostring.SetText(None)
+			return
 		elif msg.what == 31013123:
 			self.Minimize(True)
+			return
 		elif msg.what == 2363:
 			direction=msg.FindBool("dir")
 			if direction[0]==B_OK:
@@ -1792,6 +1786,7 @@ class GatorWindow(BWindow):
 					self.NewsPreView.ResizeBy(0,1)
 					self.scroller.MoveBy(0,-1)
 					self.scroller.ResizeBy(0,1)
+			return
 		elif msg.what == 1224:
 			fnt=BFont()
 			clr=rgb_color()
@@ -1802,6 +1797,7 @@ class GatorWindow(BWindow):
 			m=byte_count("\n - - - - - - - - - - - - - - - - - - - - - - - - - - - \n")[0]
 			self.NewsPreView.SetFontAndColor(n+m,self.NewsPreView.TextLength(),fnt,set_font_mask.B_FONT_ALL,clr)
 			self.NewsPreView.Invalidate()
+			return
 		BWindow.MessageReceived(self, msg)
 
 	def remove_html_tags(self,data):
