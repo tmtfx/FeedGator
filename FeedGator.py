@@ -142,7 +142,6 @@ def lookfdata(name):
 def LookForAttrib(entry,attribname):
 	nodo=BNode(entry)
 	nodo.Sync()
-	#attrinfo=attr_info()
 	attrinfo,status=nodo.GetAttrInfo(attribname)
 	if status==B_OK:
 		value,size=nodo.ReadAttr(attribname,attrinfo.type,0,None,attrinfo.size)
@@ -157,24 +156,15 @@ def LookForAttribs(entry,attriblist):
 	nodo.Sync()
 	listout=[]
 	for attribname in attriblist:
-		#print(f"ora recupero {attribname}")
 		attrinfo,status=nodo.GetAttrInfo(attribname)
 		if status==B_OK:
 			value,size=nodo.ReadAttr(attribname,attrinfo.type,0,None,attrinfo.size)
-			#if attribname == "title":
-			#	print("recuperato titolo:",value,attrinfo.type)
 			listout.append((attribname,value,size))
-			#print(listout[-1])
 		else:
 			listout.append((attribname,None,status))
 	nodo.RewindAttrs()
 	del nodo
 	return listout
-	#for element in attr(nodo):
-	#	if element[0] == attribname:
-	#		return(True,element[2][0])
-		
-	
 
 class LocalizItem(BMenuItem):
 	def __init__(self,name):
@@ -209,8 +199,6 @@ else:
 def Ent_config():
 	perc=BPath()
 	find_directory(directory_which.B_USER_NONPACKAGED_DATA_DIRECTORY,perc,False,None)
-	#datapath=BDirectory(perc.Path()+"/HaiPO2")
-	#ent=BEntry(datapath,perc.Path()+"/HaiPO2")
 	ent=BEntry(perc.Path()+"/BGator2")
 	if not ent.Exists():
 		BDirectory().CreateDirectory(perc.Path()+"/BGator2", None)
@@ -308,7 +296,6 @@ class NewsItemBtn(BListItem):
 		owner.SetLowColor(0,100,0,255)
 		owner.MovePenTo(frame.Width()/2-self.widdo/2,frame.bottom-self.font_height_value.descent)
 		owner.SetFont(be_plain_font)
-		#owner.DrawString("Click here to load the remaining news",None)
 		owner.DrawString(self.ch,None)
 		
 		
@@ -357,7 +344,6 @@ class PaperItem(BListItem):
 				evalent=BEntry()
 				ret=self.datapath.GetNextEntry(evalent)
 				if not ret:
-					#evalent.GetPath(perc)
 					try:
 						nf=BNode(evalent)
 						for element in attr(nf):
@@ -402,7 +388,7 @@ class PaperItem(BListItem):
 			owner.FillRect(frame)
 			owner.SetHighColor(0,0,0,255)
 			owner.SetLowColor(255,255,255,255)
-		owner.MovePenTo(5,frame.bottom-self.font_height_value.descent)#2
+		owner.MovePenTo(5,frame.bottom-self.font_height_value.descent)
 		if self.newnews:
 			owner.SetFont(be_bold_font)
 			owner.DrawString(self.name,None)#"▶ "+
@@ -427,7 +413,6 @@ class NewsScrollView:
 		self.lv.SetInvocationMessage(BMessage(self.HiWhat))
 		self.sv = BScrollView(name, self.lv,B_FOLLOW_NONE,0,False,True,border_style.B_FANCY_BORDER)
 		self.sv.SetResizingMode(B_FOLLOW_ALL_SIDES)
-		#'NewsScrollView'
 	def topview(self):
 		return self.sv
 
@@ -499,7 +484,6 @@ class AboutWindow(BWindow):
 			self.pbox=PBox(pbox_rect,"PictureBox",img1)
 			self.box.AddChild(self.pbox,None)
 		else:
-			#print("no mascot found")
 			self.pbox=BBox(pbox_rect,"Missing_PBox",B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_NO_BORDER)
 			pboxbounds=self.pbox.Bounds()
 			fon=BFont()
@@ -522,11 +506,9 @@ class AboutWindow(BWindow):
 		self.AboutText.MakeEditable(False)
 		self.AboutText.MakeSelectable(False)
 		self.AboutText.SetStylable(True)
-		#stuff="FeedGator\nFeed our alligator with tasty newspapers!\n\nThis is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\nFeedGator is a reworked update of BGator.\n\nVersion 2.3-beta\n\t\t\t\t\t\t\t\t\tby TmTFx\n\n\t\tpress ESC to close this window"
 		fo=_("Feed our")
 		stuff=appname+"\n"+fo+" "+_("alligator with tasty newspapers!")+"\n\n"+_("This is a simple feed aggregator written in Python + Haiku-PyAPI and feedparser\n\nspecial thanks to coolcoder613eb and Zardshard\n\nFeedGator is a reworked update of BGator.\n\nVersion")+" "+ver+"-"+state+"\n\t\t\t\t\t\t\t\t\t"+_("by TmTFx")+"\n\n\t\t"+_("press ESC to close this window")
 		arra=[]
-		#i = len("FeedGator")
 		i = len(appname)
 		c=0
 		fon1=BFont(be_bold_font)
@@ -594,12 +576,6 @@ class PapDetails(BWindow):
 		######
 		risp2=item.path.Path()
 		self.risp2=BTextControl(BRect(15,desc2_bounds.bottom+5,bckgnd_bounds.right-15,desc2_bounds.bottom+font_height_value.ascent+5),"risp2",None,risp2,BMessage(152))
-		# questo non funziona
-		#a=self.risp2.TextView()
-		#l=a.TextLength()-10
-		#print(l,"<- mi posiziono qui")
-		#a.Select(l,l)
-		#a.ScrollToSelection()
 		self.box.AddChild(self.risp2,None)
 		risp2_bounds=self.risp2.Frame()
 		###########################
@@ -697,17 +673,16 @@ class SettingsWindow(BWindow):
 		ent,confile=Ent_config()
 		self.confpth=confile
 		if ent.Exists():
-			Config.read(confile)#.Path())
+			Config.read(confile)
 			try:
 				sez=Config.sections()
 				for s in sez:
-					self.views.append(SectionView(tabrect,s,self.tabview.TabHeight(),confile))#.Path()))
+					self.views.append(SectionView(tabrect,s,self.tabview.TabHeight(),confile))
 					self.tablabels.append(BTab(self.views[-1]))
 					self.tabview.AddTab(self.views[-1],self.tablabels[-1])
 			except:
 				saytxt=_("This should not happen: there's no section in config.ini!")
 				alert= BAlert(_('Ops'), saytxt, _('Ok'), None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
-				#self.alerts.append(alert)
 				alert.Go()
 				self.Close()
 		else:
@@ -826,7 +801,7 @@ class SettingsWindow(BWindow):
 
 class AddFeedWindow(BWindow):
 	def __init__(self):
-		BWindow.__init__(self, BRect(150,150,500,300), _("Add Feed Address"), window_type.B_FLOATING_WINDOW,  B_NOT_RESIZABLE | B_CLOSE_ON_ESCAPE)#B_QUIT_ON_WINDOW_CLOSE)#B_BORDERED_WINDOW B_FLOATING_WINDOW
+		BWindow.__init__(self, BRect(150,150,500,300), _("Add Feed Address"), window_type.B_FLOATING_WINDOW,  B_NOT_RESIZABLE | B_CLOSE_ON_ESCAPE)
 		self.bckgnd = BView(self.Bounds(), "bckgnd_View", B_FOLLOW_ALL_SIDES, B_WILL_DRAW)
 		self.bckgnd.SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR))
 		bckgnd_bounds=self.bckgnd.Bounds()
@@ -942,7 +917,6 @@ class GatorWindow(BWindow):
 	dat=_('Date')
 	shiftok=False
 	enabletimer=False
-	totallist=[]
 	Menus = (
 		(_('File'), ((1, _('Add Paper')),(2, _('Remove Paper')),(6, stt),(None, None),(int(AppDefs.B_QUIT_REQUESTED), qui))),(_('News'), ((66, _('Download News')),(4, alr),(5, cln))),(_('Sort By'), ((40, tit),(41, unr),(42, dat))),
 		(hlp, ((8, _('Guide')),(3, _('About'))))
@@ -1091,7 +1065,7 @@ class GatorWindow(BWindow):
 		bf=BFont()
 		oldSize=bf.Size()
 		bf.SetSize(32)
-		self.addBtn = AddBtn(BRect(8,8,68,58),'AddButton','⊕',BMessage(1))#BButton
+		self.addBtn = AddBtn(BRect(8,8,68,58),'AddButton','⊕',BMessage(1))
 		self.addBtn.SetFont(bf)
 		self.box.AddChild(self.addBtn,None)
 		self.remBtn = DelBtn(BRect(72,8,132,58),'RemoveButton','⊖',BMessage(2))
@@ -1112,10 +1086,10 @@ class GatorWindow(BWindow):
 		self.NewsList = NewsScrollView(BRect(8 + boxboundsw / 3 , 70, boxboundsw -28 , boxboundsh / 1.8 ), 'NewsListScrollView')
 		self.box.AddChild(self.NewsList.sv,None)
 		txtRect=BRect(8 + boxboundsw / 3, boxboundsh / 1.8 + 8,boxboundsw -8,boxboundsh - 38)
-		self.outbox_preview=BBox(txtRect,"previewframe",B_FOLLOW_LEFT|B_FOLLOW_BOTTOM|B_FOLLOW_RIGHT,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER)#
+		self.outbox_preview=BBox(txtRect,"previewframe",B_FOLLOW_LEFT|B_FOLLOW_BOTTOM|B_FOLLOW_RIGHT,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER)
 		self.box.AddChild(self.outbox_preview,None)
 		innerRect= BRect(8,8,txtRect.Width()-30,txtRect.Height())
-		self.NewsPreView = PreviewTextView(self,BRect(2,2, self.outbox_preview.Bounds().Width()-20,self.outbox_preview.Bounds().Height()-2), 'NewsTxTView', innerRect,B_FOLLOW_ALL_SIDES)#, 0x0404|0x0202)#,2000000)
+		self.NewsPreView = PreviewTextView(self,BRect(2,2, self.outbox_preview.Bounds().Width()-20,self.outbox_preview.Bounds().Height()-2), 'NewsTxTView', innerRect,B_FOLLOW_ALL_SIDES)
 		self.NewsPreView.MakeEditable(False)
 		self.NewsPreView.SetStylable(True)
 		NewsPreView_bounds=self.outbox_preview.Bounds()
@@ -1186,7 +1160,7 @@ class GatorWindow(BWindow):
 		datapath=BDirectory(perc.Path()+"/BGator2/Papers")
 		ent=BEntry(datapath,perc.Path()+"/BGator2/Papers")
 		if not ent.Exists() and ent.IsDirectory():
-			datapath.CreateDirectory(perc.Path()+"/BGator2/Papers", None)#datapath)
+			datapath.CreateDirectory(perc.Path()+"/BGator2/Papers", None)
 		ent.GetPath(perc)
 		if datapath.CountEntries() > 0:
 			datapath.Rewind()
@@ -1220,17 +1194,15 @@ class GatorWindow(BWindow):
 			indic=0
 			if firstload:
 				self.listentries=[]
-			#print("in gjornaaltolet il numero dei file è:",x)
 			if x>0:
 				dirpaper.Rewind()
 				itmEntry=BEntry()
 				while indic<x:
 					try:
 						if firstload:
-							#itmEntry=BEntry()
 							rit=dirpaper.GetNextEntry(itmEntry)
 							if rit != B_OK:
-								print("fallito a ottenere prossima entry",itmEntry.GetName())
+								raise Exception(_("failed obtaining the next file"))
 							if itmEntry.Exists():
 								listout=LookForAttribs(itmEntry,["title","Unread","published","link"])
 								titul=""
@@ -1265,7 +1237,7 @@ class GatorWindow(BWindow):
 								self.listentries.append((ref,titul,unread,published,link))
 							itmEntry.Unset()
 					except Exception as e:
-						print("qualcosa non è andato con il file",e)
+						print(_("Something went wrong:"),e)
 					indic+=1
 				dirpaper.Rewind()
 				if self.set_savemenu:
@@ -1273,14 +1245,13 @@ class GatorWindow(BWindow):
 						self.orderedlist = sorted(self.listentries, key=lambda x: x[1], reverse=False)
 					elif marked == self.unr:#"Unread":
 						self.orderedlist = sorted(self.listentries, key=lambda x: x[2], reverse=True)
-					elif marked == self.dat:#"Date": # TODO
+					elif marked == self.dat:#"Date":
 						self.orderedlist = sorted(self.listentries, key=lambda x: x[3], reverse=True)
 					tmsg=BMessage(465)
 					tmsg.AddBool("fl",firstload)
-					#print(f"prima di mandare il messaggio con firstload a {firstload} ho:",self.orderedlist)
 					be_app.WindowAt(0).PostMessage(tmsg)
 				else:
-					print("repeç")
+					print(_("Fallback: plain list"))
 					for itm in self.listentries:
 						self.NewsItemConstructor(itm)
 				
@@ -1317,7 +1288,6 @@ class GatorWindow(BWindow):
 		elif msg.what == 456: #construct and add newsitem
 			status,value=msg.FindInt32("index")
 			if status == B_OK:
-				#self.NewsItemConstructor(self.totallist[value])
 				self.NewsItemConstructor(self.orderedlist[value])
 			return
 		elif msg.what == 465: #manage newslist ordered by datetime/title/Unread
@@ -1334,7 +1304,6 @@ class GatorWindow(BWindow):
 			else:
 				en = len(self.orderedlist)
 			i=0
-			#print("lunghezza caricata:",en)
 			while i<en:
 				mxg=BMessage(466)
 				mxg.AddInt32("index",i)
@@ -1365,7 +1334,6 @@ class GatorWindow(BWindow):
 			if cursel>-1:
 				item_name = self.Paperlist.lv.ItemAt(cursel).name
 				stuff = _("You are going to remove all {name}'s feeds. Proceed?").format(name=item_name)
-				#stuff="You are going to remove all "+self.Paperlist.lv.ItemAt(cursel).name+"'s feeds. Proceed?"
 				ask=BAlert('cle', stuff, _('Yes'), _("No"),None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
 				ri=ask.Go()
 				if ri==0:
@@ -1423,7 +1391,6 @@ class GatorWindow(BWindow):
 							nopages=False
 					if nopages:
 						wa=BAlert(_('Noo'), _('No help pages installed'), _('Poor me'), None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
-						#self.alerts.append(wa)
 						wa.Go()
 			return
 		elif msg.what == 3: #open aboutWindow
@@ -1440,7 +1407,6 @@ class GatorWindow(BWindow):
 				itemname=self.Paperlist.lv.ItemAt(cursel).name
 				stuff=_("You are going to remove {name}. Proceed?").format(name=itemname)
 				ask=BAlert('rem', stuff, _('Yes'), _("No"),None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_INFO_ALERT)
-				#self.alerts.append(ask)
 				ri=ask.Go()
 				if ri==0:
 					self.Paperlist.lv.DeselectAll()
@@ -1485,7 +1451,6 @@ class GatorWindow(BWindow):
 			menuitm=self.savemenu.FindItem(42)
 			menuitm.SetMarked(0)
 			tmpindex=self.Paperlist.lv.CurrentSelection()
-			#TODO crash on changing
 			self.Paperlist.lv.DeselectAll()
 			self.Paperlist.lv.Select(tmpindex)
 			return
@@ -1505,7 +1470,6 @@ class GatorWindow(BWindow):
 			menuitm=self.savemenu.FindItem(42)
 			menuitm.SetMarked(0)
 			tmpindex=self.Paperlist.lv.CurrentSelection()
-			#TODO: crash on changing
 			self.Paperlist.lv.DeselectAll()
 			self.Paperlist.lv.Select(tmpindex)
 			return
@@ -1525,7 +1489,6 @@ class GatorWindow(BWindow):
 			menuitm=self.savemenu.FindItem(42)
 			menuitm.SetMarked(1)
 			tmpindex=self.Paperlist.lv.CurrentSelection()
-			#TODO: crash on changing
 			self.Paperlist.lv.DeselectAll()
 			self.Paperlist.lv.Select(tmpindex)
 			return
@@ -1726,7 +1689,6 @@ class GatorWindow(BWindow):
 		elif msg.what == 245: # ADD FEED
 			status,feedaddr=msg.FindString("feed")
 			if status==B_OK:
-				#print(f"siccome status era {status} proseguo con l'aggiunta del feed")
 				d=feedparser.parse(feedaddr)
 				if d.feed.has_key('title'):
 					dirname=d.feed.title
@@ -1745,13 +1707,12 @@ class GatorWindow(BWindow):
 					if entr.Exists() and entr.IsDirectory():
 						saytxt=_("The folder {dir} is present, please remove it and add the feed again").format(dir=folder)
 						about = BAlert(_('Ops'), saytxt, _('Ok'), None,None,InterfaceDefs.B_WIDTH_AS_USUAL,alert_type.B_WARNING_ALERT)
-						#self.alerts.append(about)
 						about.Go()
 					else:
-						datapath.CreateDirectory(perc.Path()+"/BGator2/Papers/"+dirname,None)#datapath)
+						datapath.CreateDirectory(perc.Path()+"/BGator2/Papers/"+dirname,None)
 						del perc
 						nd=BNode(entr)
-						givevalue=feedaddr.encode('utf-8')#bytes(feedaddr,'utf-8')
+						givevalue=feedaddr.encode('utf-8')
 						nd.WriteAttr("address",TypeConstants.B_STRING_TYPE,0,givevalue)
 						attributes=attr(nd)
 						pirc=BPath()
@@ -1879,7 +1840,7 @@ class GatorWindow(BWindow):
 				for x in range (y):
 					filename=rss.entries[x].title
 					newfile=BFile()
-					if datapath.CreateFile(dirpath.Path()+"/"+filename,newfile,True):#True? not 1
+					if datapath.CreateFile(dirpath.Path()+"/"+filename,newfile,True):
 						pass
 					else:
 						nd=BNode(dirpath.Path()+"/"+filename)
@@ -1909,7 +1870,7 @@ class GatorWindow(BWindow):
 							published = None
 						else:
 						#if published != None:
-							#print(published)# TODO There's a difference of 1 hour between time parsed from feedrss and what is written and read in the filesystem attribute
+							#print(published)# TODO There's an 1 hour difference between time parsed from feedrss and what is written and read in the filesystem attribute
 							################## does this means I didn't care of timezone? or something else? legal hour?
 							asd=datetime.datetime(published.tm_year,published.tm_mon,published.tm_mday,published.tm_hour,published.tm_min,published.tm_sec)
 							asd_sec = round((asd - datetime.datetime(1970, 1, 1,0,0,0)).total_seconds()) 
@@ -1979,7 +1940,6 @@ class App(BApplication):
 	def ReadyToRun(self):
 		self.window = GatorWindow()
 		self.window.Show()
-		#self.window.Minimize(self.window.startmin)
 		if self.window.startmin:
 			be_app.WindowAt(0).PostMessage(31013123) #Posticipate hiding
 	def MessageReceived(self,msg):
