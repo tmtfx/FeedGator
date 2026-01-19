@@ -324,9 +324,11 @@ class PaperItem(BListItem):
 		self.cnnews=0
 		self.datapath=BDirectory(path.Path())
 		self.newscount=self.datapath.CountEntries()
-		fon=BFont()
+		self.fon=BFont()
 		self.font_height_value=font_height()
-		fon.GetHeight(self.font_height_value)
+		self.fon.GetHeight(self.font_height_value)
+		self.smallfon=BFont()
+		self.smallfon.SetSize(self.smallfon.Size()-4)
 		self.newscount=self.datapath.CountEntries()
 
 ####### watch_node not working ##################
@@ -404,6 +406,12 @@ class PaperItem(BListItem):
 		if self.newnews:
 			owner.SetFont(be_bold_font)
 			owner.DrawString(self.name,None)#"▶ "+
+			owner.SetFont(self.smallfon,set_font_mask.B_FONT_ALL)
+			txt=str(self.cnnews)
+			w=self.smallfon.StringWidth(txt)
+			owner.MovePenTo(frame.right-15-w,frame.bottom-self.font_height_value.descent)
+			owner.DrawString(txt,None)
+			owner.SetFont(self.fon,set_font_mask.B_FONT_ALL)
 		else:
 			owner.SetFont(be_plain_font)
 			owner.DrawString(self.name,None)
