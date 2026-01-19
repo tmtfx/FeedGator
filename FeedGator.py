@@ -603,8 +603,8 @@ class PapDetails(BWindow):
 		self.ResizeTo(400,300)
 
 class BoolBox(BBox):
-	def __init__(self,rect,name,res,flag,value):
-		BBox.__init__(self,rect,name,res,flag)
+	def __init__(self,rect,name,res,flag,bor,value):
+		BBox.__init__(self,rect,name,res,flag,bor)
 		a=BFont()
 		txi=_("Boolean")
 		l=self.StringWidth(txi)
@@ -615,8 +615,8 @@ class BoolBox(BBox):
 			self.CheckBox.SetValue(0)
 		self.AddChild(self.CheckBox,None)
 class StringBox(BBox):
-	def __init__(self,rect,name,res,flag,value):
-		BBox.__init__(self,rect,name,res,flag)
+	def __init__(self,rect,name,res,flag,bor,value):
+		BBox.__init__(self,rect,name,res,flag,bor)
 		a=BFont()
 		self.labello=BStringView(BRect(8,rect.Height()-a.Size()*2,rect.Width()-8,rect.Height()-4),"suggest",_("Tip: Press Enter to confirm modifications"))
 		self.AddChild(self.labello,None)
@@ -625,8 +625,8 @@ class StringBox(BBox):
 		self.stringvalue.SetDivider(self.StringWidth(txi))
 		self.AddChild(self.stringvalue,None)
 class IntBox(BBox):
-	def __init__(self,rect,name,res,flag,value):
-		BBox.__init__(self,rect,name,res,flag)
+	def __init__(self,rect,name,res,flag,bor,value):
+		BBox.__init__(self,rect,name,res,flag,bor)
 		a=BFont()
 		self.labello=BStringView(BRect(8,rect.Height()-a.Size()*2,rect.Width()-8,rect.Height()-4),"suggest",_("Tip: Press Enter to confirm modifications"))
 		self.AddChild(self.labello,None)
@@ -635,8 +635,8 @@ class IntBox(BBox):
 		self.stringvalue.SetDivider(self.StringWidth(txi))
 		self.AddChild(self.stringvalue,None)
 class FloatBox(BBox):
-	def __init__(self,rect,name,res,flag,value):
-		BBox.__init__(self,rect,name,res,flag)
+	def __init__(self,rect,name,res,flag,bor,value):
+		BBox.__init__(self,rect,name,res,flag,bor)
 		a=BFont()
 		self.labello=BStringView(BRect(8,rect.Height()-a.Size()*2,rect.Width()-8,rect.Height()-4),"suggest",_("Tip: Press Enter to confirm modifications"))
 		self.AddChild(self.labello,None)
@@ -708,18 +708,19 @@ class SettingsWindow(BWindow):
 				Config.read(self.confpth)
 				value=ConfigSectionMap(self.views[tabsel].sezione)[option]
 				bondi=self.views[tabsel].Bounds()
+				boxrect=BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8)
 				if value == "True" or value == "False":
-					theview.valuebox.append(BoolBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER,value))
+					theview.valuebox.append(BoolBox(boxrect,None,B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER,value))
 				else:
 					try:
 						entire=int(value)
-						theview.valuebox.append(IntBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER,entire))
+						theview.valuebox.append(IntBox(boxrect,None,B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER,entire))
 					except:
 						try:
 							flt = float(value)
-							theview.valuebox.append(FloatBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER,flt))
+							theview.valuebox.append(FloatBox(boxrect,None,B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER,flt))
 						except:
-							theview.valuebox.append(StringBox(BRect(bondi.Width()/2.5+20 , 4, bondi.Width()-8, bondi.Height()-8 ),None,B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER,value))
+							theview.valuebox.append(StringBox(boxrect,None,B_FOLLOW_ALL_SIDES,B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE_JUMP,border_style.B_FANCY_BORDER,value))
 				theview.AddChild(theview.valuebox[-1],None)
 		elif msg.what == 1600:
 			#cambia valore booleano
