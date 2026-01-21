@@ -648,7 +648,8 @@ class FloatBox(BBox):
 class SectionView(BView):
 	alerts=[]
 	def __init__(self,frame,sezione,htabs,conpath):
-		BView.__init__(self,frame,sezione,8,20000000)
+		BView.__init__(self,frame,sezione,B_FOLLOW_ALL_SIDES, B_WILL_DRAW)
+		self.SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR))
 		self.sezione=sezione
 		self.Options = ScrollView(BRect(4 , 4, self.Bounds().Width()/2.5-4, self.Bounds().Height()-htabs ), 'OptionsScrollView')
 		self.AddChild(self.Options.sv,None)
