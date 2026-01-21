@@ -239,7 +239,7 @@ _ = t.gettext
 appname=_("FeedGator")
 ver="2.4"
 # Translators: do not translate, just transliterate
-state=_("RC")
+state=_("release")
 version=" ".join((appname,ver,state))
 
 class NewsItem(BListItem):
